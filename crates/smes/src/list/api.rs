@@ -1,7 +1,7 @@
 mod header;
 mod types;
 
-use crate::error::{ByteDecodeError, DeserializationError, UnsuccessfulResponseError};
+use crate::error::{BuildError, ByteDecodeError, DeserializationError, UnsuccessfulResponseError};
 use crate::ApiError;
 use reqwest::header::{
     HeaderMap, HeaderValue, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CONTENT_TYPE, ORIGIN,
@@ -108,6 +108,25 @@ impl ListApi {
         Ok(response)
     }
 
+    pub async fn get_total_count(&self) -> Result<usize, ApiError> {
+        let payload = ListPayloadBuilder::default()
+            .pg(1_usize)
+            .page_size(1_usize)
+            .build()
+            .map_err(|e| {
+                ApiError::Build(BuildError {
+                    message: "Failed to build payload",
+                    source: Some(Box::new(e)),
+                })
+            })?;
+        let total_count = self
+            .make_request(&payload)
+            .await?
+            .total_count
+            .ok_or(ApiError::MissingExpectedField("total_count".to_string()))?;
+        Ok(total_count)
+    }
+
     fn fake_header(&self) -> HeaderMap {
         let mut headers = HeaderMap::new();
         headers.insert(
@@ -155,6 +174,7 @@ impl ListApi {
 mod tests {
     use crate::list::api::types::ListPayloadBuilder;
     use crate::list::api::ListApi;
+    use crate::ListResponse;
     use goldrust::{goldrust, Goldrust, ResponseSource};
     use tracing::Instrument;
     use wiremock::matchers::{method, path};
@@ -232,5 +252,60 @@ mod tests {
             })
             .unwrap();
         // endregion: Cleanup
+    }
+
+    #[tokio::test]
+    async fn list_api_total_count_should_succeed() {
+        // region: Arrange
+        let test_id = utils::function_id!();
+        tracing_setup::subscribe();
+        let allow_external_api_call: bool = std::env::var("GOLDRUST_ALLOW_EXTERNAL_API_CALL")
+            .expect("Failed to get GOLDRUST_ALLOW_EXTERNAL_API_CALL")
+            .parse()
+            .expect("Failed to parse GOLDRUST_ALLOW_EXTERNAL_API_CALL to bool");
+
+        let mock_server = wiremock::MockServer::start()
+            .instrument(tracing::info_span!("test", ?test_id))
+            .await;
+        let mut api = ListApi::new();
+        const MOCK_TOTAL_COUNT: usize = 100;
+
+        match allow_external_api_call {
+            true => {}
+            false => {
+                let response = ListResponse {
+                    total_count: Some(MOCK_TOTAL_COUNT),
+                    now_page: None,
+                    result: "SUCCESS".to_string(),
+                    data_list: None,
+                };
+
+                Mock::given(method("POST"))
+                    .and(path("/venturein/pbntc/searchVntrCmpAction"))
+                    .respond_with(ResponseTemplate::new(200).set_body_json(&response))
+                    .expect(1)
+                    .mount(&mock_server)
+                    .await;
+
+                api.domain = mock_server.uri();
+            }
+        }
+        // endregion: Arrange
+
+        let total_count = api
+            .get_total_count()
+            .await
+            .expect("Failed to get total count");
+
+        match allow_external_api_call {
+            true => {
+                tracing::trace!(?total_count, "Total count received from an external api");
+                assert!(total_count > 0);
+            }
+            false => {
+                tracing::trace!(?total_count, "Total count received from a mock api");
+                assert_eq!(total_count, MOCK_TOTAL_COUNT);
+            }
+        }
     }
 }

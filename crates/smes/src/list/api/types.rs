@@ -48,13 +48,13 @@ pub struct ListResponse {
     #[serde(deserialize_with = "deserialize_optional_number_from_string")]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
-    total_count: Option<usize>,
+    pub total_count: Option<usize>,
     #[serde(serialize_with = "serialize_optional_number_as_string")]
     #[serde(deserialize_with = "deserialize_optional_number_from_string")]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
-    now_page: Option<usize>,
-    result: String,
+    pub now_page: Option<usize>,
+    pub result: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub data_list: Option<Vec<Company>>,

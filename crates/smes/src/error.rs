@@ -11,7 +11,26 @@ pub enum ApiError {
     UnsuccessfulResponse(#[from] UnsuccessfulResponseError),
     #[error("Conversion error: {0}")]
     Conversion(#[from] ByteDecodeError),
+    #[error("Missing expected field: {0}")]
+    MissingExpectedField(String),
+    #[error("Build error: {0}")]
+    Build(#[from] BuildError),
 }
+
+#[derive(Debug)]
+pub struct BuildError {
+    pub source: Option<Box<dyn std::error::Error>>,
+    pub message: &'static str,
+}
+
+#[cfg_attr(coverage_nightly, coverage(off))]
+impl std::fmt::Display for BuildError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Build error: {}", self.message)
+    }
+}
+
+impl_error!(BuildError);
 
 #[derive(Debug)]
 pub struct DeserializationError {
