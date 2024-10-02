@@ -217,7 +217,7 @@ mod tests {
     }
 
     async fn populate_companies(db: &LibsqlDb, size: usize) -> Vec<Company> {
-        let mut incremental_id: usize = 1000000000;
+        let mut incremental_id: usize = 1000000;
         let companies: Vec<Company> = (0..size)
             .map(|_| {
                 let company = ().fake::<Company>();

@@ -27,7 +27,7 @@ pub trait Params {
 #[derive(Debug, Serialize, Deserialize, Clone, Validate)]
 pub struct Company {
     /// 고유번호 (Unique Number)
-    #[validate(length(min = 10, max = 10))]
+    #[validate(length(min = 7, max = 7))]
     pub id: String,
     /// 대표자명 (Representative Name)
     pub representative_name: String,

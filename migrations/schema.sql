@@ -6,7 +6,7 @@
 CREATE TABLE schema_migrations (id VARCHAR(255) PRIMARY KEY);
 CREATE TABLE company
 (
-    id                           TEXT PRIMARY KEY NOT NULL CHECK ( length(id) = 10 ),
+    id                           TEXT PRIMARY KEY NOT NULL CHECK ( length(id) = 7 ),
     representative_name          TEXT             NOT NULL,
     headquarters_address         TEXT             NOT NULL,
     business_registration_number TEXT             NOT NULL CHECK ( length(business_registration_number) = 10 ),
