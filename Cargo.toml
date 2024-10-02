@@ -9,9 +9,13 @@ rust-version = "1.70.0"
 publish = false
 
 [dependencies]
+db = { workspace = true }
+hashbrown = { workspace = true }
 libsql = { workspace = true, features = ["core", "serde"] }
+smes = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true, features = ["log"] }
+tracing-setup = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 
 [workspace.dependencies]
@@ -19,6 +23,7 @@ anyhow = "1.0.89"
 base64 = "0.22.1"
 derive_builder = "0.20.1"
 derive_more = "1.0.0"
+hashbrown = "0.15.0"
 image = "0.25.2"
 libsql = { version = "0.6.0", default-features = false }
 rand = "0.8.5"
