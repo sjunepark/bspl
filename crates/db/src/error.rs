@@ -4,12 +4,14 @@ use utils::impl_error;
 pub enum DbError {
     #[error("Connection error: {0}")]
     Connection(#[from] ConnectionError),
-    #[error("Libsql error: {0}")]
-    Libsql(#[from] libsql::Error),
     #[error("Serde error: {0}")]
     Deserialize(#[from] serde::de::value::Error),
     #[error("Io error: {0}")]
     Io(#[from] std::io::Error),
+    #[error("Libsql error: {0}")]
+    Libsql(#[from] libsql::Error),
+    #[error("Validation error: {0}")]
+    Validation(#[from] validator::ValidationErrors),
 }
 
 #[derive(Debug)]

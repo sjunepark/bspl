@@ -5,8 +5,9 @@ set dotenv-filename := ".env.dev"
 
 watch_base := "cargo watch -q -c -i 'tests/resources/**/*'"
 
-run:
-    cargo run
+run bin="":
+    clear
+    cargo run --bin {{bin}}
 
 # Watch
 
@@ -67,3 +68,7 @@ geni-down-local:
 
 backup-db:
     scripts/backup_db.sh
+
+## Others
+git-gc:
+    git gc --prune=now --aggressive

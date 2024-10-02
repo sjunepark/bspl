@@ -1,4 +1,4 @@
 mod db;
 mod model;
 
-pub use model::Company;
+pub use model::{Companies, Company};

@@ -45,14 +45,18 @@ impl LibsqlDb {
                      business_registration_number,
                      company_name,
                      industry_code,
-                     industry_name)
+                     industry_name,
+                     create_date,
+                     update_date)
 VALUES (:id,
         :representative_name,
         :headquarters_address,
         :business_registration_number,
         :company_name,
         :industry_code,
-        :industry_name)",
+        :industry_name,
+        :create_date,
+        :update_date);",
             )
             .await?;
 
@@ -76,20 +80,25 @@ VALUES (:id,
                      business_registration_number,
                      company_name,
                      industry_code,
-                     industry_name)
+                     industry_name,
+                     create_date,
+                     update_date)
 VALUES (:id,
         :representative_name,
         :headquarters_address,
         :business_registration_number,
         :company_name,
         :industry_code,
-        :industry_name)
+        :industry_name,
+        :create_date,
+        :update_date)
 ON CONFLICT (id) DO UPDATE SET representative_name          = EXCLUDED.representative_name,
                                headquarters_address         = EXCLUDED.headquarters_address,
                                business_registration_number = EXCLUDED.business_registration_number,
                                company_name                 = EXCLUDED.company_name,
                                industry_code                = EXCLUDED.industry_code,
-                               industry_name                = EXCLUDED.industry_name",
+                               industry_name                = EXCLUDED.industry_name,
+                               update_date                  = EXCLUDED.update_date;",
             )
             .await?;
 
@@ -217,7 +226,7 @@ mod tests {
     }
 
     async fn populate_companies(db: &LibsqlDb, size: usize) -> Vec<Company> {
-        let mut incremental_id: usize = 1000000000;
+        let mut incremental_id: usize = 1000000;
         let companies: Vec<Company> = (0..size)
             .map(|_| {
                 let company = ().fake::<Company>();

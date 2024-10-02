@@ -1,11 +1,11 @@
 mod header;
 mod types;
 
-use crate::error::{ByteDecodeError, DeserializationError, UnsuccessfulResponseError};
+use crate::error::{BuildError, ByteDecodeError, DeserializationError, UnsuccessfulResponseError};
 use crate::ApiError;
 use reqwest::header::{
-    HeaderMap, HeaderValue, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CONTENT_TYPE, ORIGIN,
-    REFERER, USER_AGENT,
+    HeaderMap, HeaderValue, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CONNECTION, CONTENT_TYPE,
+    HOST, ORIGIN, REFERER, USER_AGENT,
 };
 use std::fmt::Debug;
 pub use types::{Company, ListPayload, ListPayloadBuilder, ListResponse};
@@ -108,6 +108,21 @@ impl ListApi {
         Ok(response)
     }
 
+    pub async fn get_total_count(&self) -> Result<usize, ApiError> {
+        let payload = ListPayloadBuilder::default().build().map_err(|e| {
+            ApiError::Build(BuildError {
+                message: "Failed to build payload",
+                source: Some(Box::new(e)),
+            })
+        })?;
+        let total_count = self
+            .make_request(&payload)
+            .await?
+            .total_count
+            .ok_or(ApiError::MissingExpectedField("total_count".to_string()))?;
+        Ok(total_count)
+    }
+
     fn fake_header(&self) -> HeaderMap {
         let mut headers = HeaderMap::new();
         headers.insert(
@@ -122,15 +137,20 @@ impl ListApi {
             ACCEPT_LANGUAGE,
             HeaderValue::from_static("en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7,id;q=0.6"),
         );
+        headers.insert(CONNECTION, HeaderValue::from_static("keep-alive"));
         headers.insert(
             CONTENT_TYPE,
             HeaderValue::from_static("application/json; charset=UTF-8"),
         );
+        headers.insert(HOST, HeaderValue::from_static("www.smes.go.kr"));
+        headers.insert(ORIGIN, HeaderValue::from_static("https://www.smes.go.kr"));
         headers.insert(
             REFERER,
             HeaderValue::from_static("https://www.smes.go.kr/venturein/pbntc/searchVntrCmp"),
         );
-        headers.insert(ORIGIN, HeaderValue::from_static("https://www.smes.go.kr"));
+        headers.insert("Sec-Fetch-Dest", HeaderValue::from_static("empty"));
+        headers.insert("Sec-Fetch-Mode", HeaderValue::from_static("cors"));
+        headers.insert("Sec-Fetch-Site", HeaderValue::from_static("same-origin"));
         headers.insert(USER_AGENT, HeaderValue::from_static("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"));
         headers.insert(
             "X-Requested-With",
@@ -155,6 +175,7 @@ impl ListApi {
 mod tests {
     use crate::list::api::types::ListPayloadBuilder;
     use crate::list::api::ListApi;
+    use crate::ListResponse;
     use goldrust::{goldrust, Goldrust, ResponseSource};
     use tracing::Instrument;
     use wiremock::matchers::{method, path};
@@ -232,5 +253,60 @@ mod tests {
             })
             .unwrap();
         // endregion: Cleanup
+    }
+
+    #[tokio::test]
+    async fn list_api_total_count_should_succeed() {
+        // region: Arrange
+        let test_id = utils::function_id!();
+        tracing_setup::subscribe();
+        let allow_external_api_call: bool = std::env::var("GOLDRUST_ALLOW_EXTERNAL_API_CALL")
+            .unwrap_or("false".to_string())
+            .parse()
+            .expect("Failed to parse GOLDRUST_ALLOW_EXTERNAL_API_CALL to bool");
+
+        let mock_server = wiremock::MockServer::start()
+            .instrument(tracing::info_span!("test", ?test_id))
+            .await;
+        let mut api = ListApi::new();
+        const MOCK_TOTAL_COUNT: usize = 100;
+
+        match allow_external_api_call {
+            true => {}
+            false => {
+                let response = ListResponse {
+                    total_count: Some(MOCK_TOTAL_COUNT),
+                    now_page: None,
+                    result: "SUCCESS".to_string(),
+                    data_list: None,
+                };
+
+                Mock::given(method("POST"))
+                    .and(path("/venturein/pbntc/searchVntrCmpAction"))
+                    .respond_with(ResponseTemplate::new(200).set_body_json(&response))
+                    .expect(1)
+                    .mount(&mock_server)
+                    .await;
+
+                api.domain = mock_server.uri();
+            }
+        }
+        // endregion: Arrange
+
+        let total_count = api
+            .get_total_count()
+            .await
+            .expect("Failed to get total count");
+
+        match allow_external_api_call {
+            true => {
+                tracing::trace!(?total_count, "Total count received from an external api");
+                assert!(total_count > 0);
+            }
+            false => {
+                tracing::trace!(?total_count, "Total count received from a mock api");
+                assert_eq!(total_count, MOCK_TOTAL_COUNT);
+            }
+        }
     }
 }
