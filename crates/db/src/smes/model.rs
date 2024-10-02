@@ -128,6 +128,7 @@ impl Deref for Companies {
 #[cfg(test)]
 mod test_impl {
     use super::*;
+    use chrono::Local;
     use fake::faker::address::ja_jp::CityName;
     use fake::faker::company::ja_jp::{CompanyName, Industry};
     use fake::faker::name::ja_jp::Name;
