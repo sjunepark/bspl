@@ -13,7 +13,7 @@ async fn main() {
         .unwrap();
 
     let response = api
-        .make_request(&payload)
+        .get_company_list(&payload)
         .await
         .inspect_err(|e| tracing::error!(?e, "Failed to make request"))
         .unwrap();

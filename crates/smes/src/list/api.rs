@@ -1,10 +1,7 @@
-mod types;
-
 use crate::error::{BuildError, ByteDecodeError, DeserializationError, UnsuccessfulResponseError};
 use crate::header::FakeHeader;
-use crate::{header, SmesError};
+use crate::{ListPayload, ListPayloadBuilder, ListResponse, SmesError};
 use std::fmt::Debug;
-pub use types::{Company, ListPayload, ListPayloadBuilder, ListResponse};
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -39,7 +36,7 @@ impl ListApi {
     /// - Request returned a status code of 200,
     ///   but the api response body contained an invalid result value
     #[tracing::instrument(skip(self))]
-    pub async fn make_request(&self, payload: &ListPayload) -> Result<ListResponse, SmesError> {
+    pub async fn get_company_list(&self, payload: &ListPayload) -> Result<ListResponse, SmesError> {
         // Send request
         let request_response = self
             .client
@@ -48,7 +45,7 @@ impl ListApi {
                 "{}{}",
                 &self.domain, "/venturein/pbntc/searchVntrCmpAction"
             ))
-            .headers(header::FakeHeader::list_header())
+            .headers(FakeHeader::list_header())
             .json(payload)
             .send()
             .await
@@ -104,7 +101,7 @@ impl ListApi {
         Ok(response)
     }
 
-    pub async fn get_total_count(&self) -> Result<usize, SmesError> {
+    pub async fn get_company_list_count(&self) -> Result<usize, SmesError> {
         let payload = ListPayloadBuilder::default().build().map_err(|e| {
             SmesError::Build(BuildError {
                 message: "Failed to build payload",
@@ -112,7 +109,7 @@ impl ListApi {
             })
         })?;
         let total_count = self
-            .make_request(&payload)
+            .get_company_list(&payload)
             .await?
             .total_count
             .ok_or(SmesError::MissingExpectedField("total_count".to_string()))?;
@@ -122,9 +119,7 @@ impl ListApi {
 
 #[cfg(test)]
 mod tests {
-    use crate::list::api::types::ListPayloadBuilder;
-    use crate::list::api::ListApi;
-    use crate::ListResponse;
+    use crate::{ListApi, ListPayloadBuilder, ListResponse};
     use goldrust::{goldrust, Goldrust, ResponseSource};
     use tracing::Instrument;
     use wiremock::matchers::{method, path};
@@ -176,7 +171,7 @@ mod tests {
 
         // region: Act
         let response = api
-            .make_request(&payload)
+            .get_company_list(&payload)
             .instrument(tracing::info_span!("test", ?test_id))
             .await
             .inspect_err(|e| {
@@ -243,7 +238,7 @@ mod tests {
         // endregion: Arrange
 
         let total_count = api
-            .get_total_count()
+            .get_company_list_count()
             .await
             .expect("Failed to get total count");
 
