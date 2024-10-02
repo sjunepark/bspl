@@ -3,6 +3,7 @@
 mod captcha;
 mod db;
 mod error;
+mod header;
 mod list;
 mod utils;
 

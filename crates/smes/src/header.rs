@@ -6,15 +6,9 @@ use reqwest::header::{
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, AsRef)]
-pub struct Fake(HeaderMap);
+pub(crate) struct FakeHeader(HeaderMap);
 
-impl Fake {
-    pub fn header(&self) -> &HeaderMap {
-        &self.0
-    }
-}
-
-macro_rules! header {
+macro_rules! header_map {
     ($($key:expr => $value:expr),*) => {
         {
             let mut headers = HeaderMap::new();
@@ -24,14 +18,14 @@ macro_rules! header {
                     reqwest::header::HeaderValue::from_static($value),
                 );
             )*
-            Fake(headers)
+            headers
         }
     };
 }
 
-impl Default for Fake {
-    fn default() -> Self {
-        header! {
+impl FakeHeader {
+    pub fn list_header() -> HeaderMap {
+        header_map! {
             ACCEPT => "application/json, text/javascript, */*; q=0.01",
             ACCEPT_ENCODING => "gzip, deflate, br, zstd",
             ACCEPT_LANGUAGE => "en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7,id;q=0.6",

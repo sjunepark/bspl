@@ -1,8 +1,8 @@
-mod header;
 mod types;
 
 use crate::error::{BuildError, ByteDecodeError, DeserializationError, UnsuccessfulResponseError};
-use crate::SmesError;
+use crate::header::FakeHeader;
+use crate::{header, SmesError};
 use std::fmt::Debug;
 pub use types::{Company, ListPayload, ListPayloadBuilder, ListResponse};
 
@@ -25,7 +25,7 @@ impl Default for ListApi {
     fn default() -> Self {
         Self {
             client: reqwest::Client::builder()
-                .default_headers(header::Fake::default().header().to_owned())
+                .default_headers(FakeHeader::list_header())
                 .build()
                 .expect("Failed to build reqwest client"),
             domain: "https://www.smes.go.kr".to_string(),
@@ -48,7 +48,7 @@ impl ListApi {
                 "{}{}",
                 &self.domain, "/venturein/pbntc/searchVntrCmpAction"
             ))
-            .headers(header::Fake::default().header().to_owned())
+            .headers(header::FakeHeader::list_header())
             .json(payload)
             .send()
             .await
