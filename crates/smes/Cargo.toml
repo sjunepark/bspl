@@ -1,0 +1,29 @@
+[package]
+name = "smes"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+anyhow = { workspace = true }
+base64 = { workspace = true }
+derive_builder = { workspace = true }
+derive_more = { workspace = true, features = ["as_ref"] }
+image = { workspace = true }
+reqwest = { workspace = true, features = ["json"] }
+serde = { workspace = true, features = ["derive"] }
+serde-aux = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+tracing = { workspace = true, features = ["log"] }
+utils = { workspace = true }
+
+[dev-dependencies]
+goldrust = { workspace = true }
+tracing-setup = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+wiremock = { workspace = true }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage,coverage_nightly)'] }

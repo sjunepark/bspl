@@ -1,0 +1,61 @@
+### Valid list request
+# @no-cookie-jar
+POST https://www.smes.go.kr/venturein/pbntc/searchVntrCmpAction
+Accept: application/json, text/javascript, */*; q=0.01
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7,id;q=0.6
+Connection: keep-alive
+Content-Length: 105
+Content-Type: application/json; charset=UTF-8
+Host: www.smes.go.kr
+Origin: https://www.smes.go.kr
+Referer: https://www.smes.go.kr/venturein/pbntc/searchVntrCmp
+Sec-Fetch-Dest: empty
+Sec-Fetch-Mode: cors
+Sec-Fetch-Site: same-origin
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36
+X-Requested-With: XMLHttpRequest
+dnt: 1
+sec-ch-ua: "Google Chrome";v="129", "Not=A?Brand";v="8", "Chromium";v="129"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "macOS"
+sec-gpc: 1
+
+{
+  "cmpNm": null,
+  "rprsvNm": null,
+  "bizRNo": null,
+  "pg": 1,
+  "pageSize": "30",
+  "areaCd": null,
+  "sigunguAreaCd": null,
+  "indstyCd": null
+}
+
+###
+
+### List request with large page
+# @no-cookie-jar
+POST https://www.smes.go.kr/venturein/pbntc/searchVntrCmpAction
+Accept: application/json, text/javascript, */*; q=0.01
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7,id;q=0.6
+Connection: keep-alive
+Content-Type: application/json; charset=UTF-8
+Host: www.smes.go.kr
+Origin: https://www.smes.go.kr
+Referer: https://www.smes.go.kr/venturein/pbntc/searchVntrCmp
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36
+
+{
+  "cmpNm": "a",
+  "rprsvNm": "",
+  "bizRNo": "",
+  "pg": 1,
+  "pageSize": "30",
+  "areaCd": "",
+  "sigunguAreaCd": "",
+  "indstyCd": ""
+}
+
+###

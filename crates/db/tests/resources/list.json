@@ -1,0 +1,52 @@
+{
+  "TOTAL_COUNT": 38427,
+  "NOW_PAGE": 1,
+  "RESULT": "SUCCESS",
+  "DATA_LIST": [
+    {
+      "vnia_sn": "1071180",
+      "rprsv_nm": "김성국",
+      "hdofc_addr": "경기도 김포시",
+      "bizrno": "5632000760",
+      "cmp_nm": "루키게임즈",
+      "indsty_cd": "63999",
+      "indsty_nm": "그 외 기타 정보 서비스업"
+    },
+    {
+      "vnia_sn": "1104102",
+      "rprsv_nm": "권주용",
+      "hdofc_addr": "경기도 남양주시",
+      "bizrno": "7408102352",
+      "cmp_nm": "주식회사 주드",
+      "indsty_cd": "32029",
+      "indsty_nm": "기타 목재가구 제조업"
+    },
+    {
+      "vnia_sn": "1077757",
+      "rprsv_nm": "신",
+      "hdofc_addr": "서울특별시 은평구",
+      "bizrno": "1018676618",
+      "cmp_nm": "주식회사 공공공간",
+      "indsty_cd": "73202",
+      "indsty_nm": "제품 디자인업"
+    },
+    {
+      "vnia_sn": "1049868",
+      "rprsv_nm": "배정현",
+      "hdofc_addr": "인천광역시 계양구",
+      "bizrno": "1308179942",
+      "cmp_nm": "㈜정진기전",
+      "indsty_cd": "28123",
+      "indsty_nm": "배전반 및 전기 자동제어반 제조업"
+    },
+    {
+      "vnia_sn": "1074520",
+      "rprsv_nm": "신민경",
+      "hdofc_addr": "경기도 김포시",
+      "bizrno": "5498700521",
+      "cmp_nm": "(주)다성피앤에프",
+      "indsty_cd": "22291",
+      "indsty_nm": "플라스틱 접착처리 제품 제조업"
+    }
+  ]
+}

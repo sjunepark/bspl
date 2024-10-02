@@ -1,0 +1,31 @@
+[package]
+name = "db"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bench]]
+name = "libsql"
+harness = false
+
+[dependencies]
+libsql = { workspace = true, features = ["core", "serde"] }
+serde = { workspace = true, features = ["derive"] }
+smes = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+tracing = { workspace = true, features = ["log"] }
+utils = { workspace = true }
+
+
+[dev-dependencies]
+anyhow = { workspace = true }
+criterion = { workspace = true, features = ["async_tokio"] }
+fake = { workspace = true }
+geni = { workspace = true }
+rand = { workspace = true }
+serde_json = { workspace = true }
+tracing-setup = { workspace = true }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage,coverage_nightly)'] }

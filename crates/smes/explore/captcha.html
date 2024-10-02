@@ -1,0 +1,78 @@
+<div style="width: 100%;height: 100%;">
+    <h5 for="captcha" style="text-align: center;margin-bottom: 20px;">아래 숫자를 입력하세요.</h5>
+    <div style="text-align: center;">
+        <img id="captchaImg" title="캡차이미지" src="/venturein/pbntc/captchaImg.do" alt="캡차이미지" style="margin: 3px 8px;"/>
+        <input id="reload" type="button" onclick="javaScript:getImage()" class="common_btn" value="새로고침"/>
+    </div>
+    <div class="" style="text-align: center;">
+        <input id="answer" type="text" value="" onkeyup="javascript:captchaEnterkey();" placeholder="숫자를 입력하세요."
+               style="margin-top: 20px;width: 50%;height: 34px;border: 1px solid #d9d9d9;border-radius: 6px;">
+    </div>
+    <div style="text-align: center;margin-top: 20px;">
+        <input id="check" type="button" class="common_btn submit" value="확인"/>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var rand;
+        $("#check").on("click", function () {
+            var params = {answer: $('#answer').val()};
+            //console.log(params);
+
+            if ("" == params.answer) {
+                alert("자동 감지 숫자를 입력해주세요.");
+                $("#answer").focus();
+                return false;
+            }
+
+            $.ajax({
+                url: '/venturein/pbntc/chkAnswer.do',
+                type: 'post',
+                data: JSON.stringify(params),
+                dataType: "json",
+                contentType: "application/json; charset=UTF-8",
+                success: function (returnData) {
+                    //console.log("return ::: " + JSON.stringify(returnData));
+
+                    if (returnData['result']) {
+                        //alert('입력값이 일치합니다.');
+                        // 성공 코드
+                        if (tempAddParam) {
+                            $(location).attr("href", '/venturein/pbntc/searchVntrCmpDtls?vniaSn=' + tempVniaSn + "&menuId=" + tempMenuId + tempAddParam + "&captcha=" + returnData['ans']);
+                        } else {
+                            $(location).attr("href", '/venturein/pbntc/searchVntrCmpDtls?vniaSn=' + tempVniaSn + "&captcha=" + returnData['ans']);
+                        }
+
+                    } else {
+                        alert('입력값이 일치하지 않습니다.');
+                        getImage();
+                        $('#answer').val('');
+                        $("#answer").focus();
+                    }
+                },
+                error: function (returnData) {
+                    //console.log("return ::: " + JSON.stringify(returnData));
+                    alert("입력값이 일치하지 않습니다.")
+                    getImage();
+                    $('#answer').val('');
+                    $("#answer").focus();
+                }
+            });
+        });
+    });
+
+    function captchaEnterkey() {
+        if (window.event.keyCode == 13) {
+            $("#check").trigger("click");
+
+        }
+    }
+
+    function getImage() {
+        rand = Math.random();
+        var url = '/venturein/pbntc/captchaImg.do?rand=' + rand;
+        document.querySelector('#captchaImg').setAttribute('src', url);
+        $('#answer').val('');
+    }
+
+</script>
