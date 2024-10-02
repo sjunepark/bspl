@@ -2,7 +2,7 @@ use crate::DbError;
 use libsql::params::IntoParams;
 use serde::{Deserialize, Serialize};
 use std::ops::Deref;
-use validator::Validate;
+use validator::{Validate, ValidationError};
 
 pub trait Params {
     fn params(&self) -> impl IntoParams;
@@ -34,7 +34,7 @@ pub struct Company {
     /// 본사주소 (Headquarters Address)
     pub headquarters_address: String,
     /// 사업자번호 (Business Registration Number)
-    #[validate(length(min = 10, max = 10))]
+    #[validate(custom(function = "length_10_or_empty"))]
     pub business_registration_number: String,
     /// 기업명 (Company Name)
     pub company_name: String,
@@ -43,6 +43,14 @@ pub struct Company {
     pub industry_code: String,
     /// 업종 (Industry Name)
     pub industry_name: String,
+}
+
+fn length_10_or_empty(value: &str) -> Result<(), validator::ValidationError> {
+    if value.is_empty() || value.len() == 10 {
+        Ok(())
+    } else {
+        Err(ValidationError::new("invalid_length"))
+    }
 }
 
 impl TryFrom<smes::Company> for Company {
@@ -103,6 +111,8 @@ impl Deref for Companies {
     }
 }
 
+// This implementation is necessary to create fake `Company` structs for tests,
+// such as `().fake::<Company>().`
 #[cfg(test)]
 mod test_impl {
     use super::*;

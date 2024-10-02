@@ -4,8 +4,8 @@ mod types;
 use crate::error::{BuildError, ByteDecodeError, DeserializationError, UnsuccessfulResponseError};
 use crate::ApiError;
 use reqwest::header::{
-    HeaderMap, HeaderValue, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CONTENT_TYPE, ORIGIN,
-    REFERER, USER_AGENT,
+    HeaderMap, HeaderValue, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CONNECTION, CONTENT_LENGTH,
+    CONTENT_TYPE, COOKIE, HOST, ORIGIN, REFERER, USER_AGENT,
 };
 use std::fmt::Debug;
 pub use types::{Company, ListPayload, ListPayloadBuilder, ListResponse};
@@ -109,16 +109,12 @@ impl ListApi {
     }
 
     pub async fn get_total_count(&self) -> Result<usize, ApiError> {
-        let payload = ListPayloadBuilder::default()
-            .pg(1_usize)
-            .page_size(1_usize)
-            .build()
-            .map_err(|e| {
-                ApiError::Build(BuildError {
-                    message: "Failed to build payload",
-                    source: Some(Box::new(e)),
-                })
-            })?;
+        let payload = ListPayloadBuilder::default().build().map_err(|e| {
+            ApiError::Build(BuildError {
+                message: "Failed to build payload",
+                source: Some(Box::new(e)),
+            })
+        })?;
         let total_count = self
             .make_request(&payload)
             .await?
@@ -141,15 +137,22 @@ impl ListApi {
             ACCEPT_LANGUAGE,
             HeaderValue::from_static("en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7,id;q=0.6"),
         );
+        headers.insert(CONNECTION, HeaderValue::from_static("keep-alive"));
+        // headers.insert(CONTENT_LENGTH, HeaderValue::from_static("105"));
         headers.insert(
             CONTENT_TYPE,
             HeaderValue::from_static("application/json; charset=UTF-8"),
         );
+        // headers.insert(COOKIE, HeaderValue::from_static("SMESSESSION=d07ccce1-73c6-4202-9c16-0a60385afe2f; JSESSIONID=1ADA69F76AC0930F59822BFD2A2BC658; __VCAP_ID__=e5ecb9bb-7173-4d57-57c2-360b; SESSION_TTL=20241002152608"));
+        headers.insert(HOST, HeaderValue::from_static("www.smes.go.kr"));
+        headers.insert(ORIGIN, HeaderValue::from_static("https://www.smes.go.kr"));
         headers.insert(
             REFERER,
             HeaderValue::from_static("https://www.smes.go.kr/venturein/pbntc/searchVntrCmp"),
         );
-        headers.insert(ORIGIN, HeaderValue::from_static("https://www.smes.go.kr"));
+        headers.insert("Sec-Fetch-Dest", HeaderValue::from_static("empty"));
+        headers.insert("Sec-Fetch-Mode", HeaderValue::from_static("cors"));
+        headers.insert("Sec-Fetch-Site", HeaderValue::from_static("same-origin"));
         headers.insert(USER_AGENT, HeaderValue::from_static("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"));
         headers.insert(
             "X-Requested-With",

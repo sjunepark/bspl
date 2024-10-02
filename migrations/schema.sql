@@ -4,13 +4,3 @@
 --
 
 CREATE TABLE schema_migrations (id VARCHAR(255) PRIMARY KEY);
-CREATE TABLE company
-(
-    id                           TEXT PRIMARY KEY NOT NULL CHECK ( length(id) = 7 ),
-    representative_name          TEXT             NOT NULL,
-    headquarters_address         TEXT             NOT NULL,
-    business_registration_number TEXT             NOT NULL CHECK ( length(business_registration_number) = 10 ),
-    company_name                 TEXT             NOT NULL,
-    industry_code                TEXT             NOT NULL CHECK ( length(industry_code) = 5 ),
-    industry_name                TEXT             NOT NULL
-);
