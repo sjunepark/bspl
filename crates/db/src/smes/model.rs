@@ -128,7 +128,6 @@ impl Deref for Companies {
 #[cfg(test)]
 mod test_impl {
     use super::*;
-    use chrono::Local;
     use fake::faker::address::ja_jp::CityName;
     use fake::faker::company::ja_jp::{CompanyName, Industry};
     use fake::faker::name::ja_jp::Name;
@@ -139,6 +138,8 @@ mod test_impl {
 
     impl<T> Dummy<T> for Company {
         fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
+            let now = Utc::now().with_timezone(&Asia::Seoul).date_naive();
+
             Company {
                 id: NumberWithFormat(EN, "^#########")
                     .fake::<String>()
@@ -154,26 +155,9 @@ mod test_impl {
                 company_name: CompanyName().fake_with_rng(rng),
                 industry_code: NumberWithFormat(EN, "^####").fake::<String>(),
                 industry_name: Industry().fake_with_rng(rng),
-                create_date: Local::now().naive_local().date(),
-                update_date: Local::now().naive_local().date(),
+                create_date: now,
+                update_date: now,
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-
-    #[test]
-    fn system_should_return_proper_utc_date() {
-        tracing_setup::subscribe();
-        let utc = chrono::Utc::now();
-        let local = chrono::Local::now();
-        let naive_utc = utc.naive_local();
-        let naive_local = local.naive_local();
-        tracing::debug!(?utc, ?naive_utc, ?local, ?naive_local);
-
-        let duration_in_hours = (naive_local - naive_utc).num_hours();
-        assert_eq!(duration_in_hours, 9);
     }
 }
