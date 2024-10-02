@@ -1,4 +1,6 @@
 use crate::DbError;
+use chrono::{NaiveDate, Utc};
+use chrono_tz::Asia;
 use libsql::params::IntoParams;
 use serde::{Deserialize, Serialize};
 use std::ops::Deref;
@@ -21,7 +23,9 @@ pub trait Params {
 ///   business_registration_number: String::from("5632000760"),
 ///   company_name: String::from("루키게임즈"),
 ///   industry_code: String::from("63999"),
-///   industry_name: String::from("그 외 기타 정보 서비스업")
+///   industry_name: String::from("그 외 기타 정보 서비스업"),
+///   create_date: chrono::NaiveDate::from_ymd_opt(2024, 8, 1).unwrap(),
+///   update_date: chrono::NaiveDate::from_ymd_opt(2024, 9, 30).unwrap(),
 /// };
 /// ```
 #[derive(Debug, Serialize, Deserialize, Clone, Validate)]
@@ -43,6 +47,8 @@ pub struct Company {
     pub industry_code: String,
     /// 업종 (Industry Name)
     pub industry_name: String,
+    pub create_date: NaiveDate,
+    pub update_date: NaiveDate,
 }
 
 fn length_10_or_empty(value: &str) -> Result<(), validator::ValidationError> {
@@ -57,6 +63,8 @@ impl TryFrom<smes::Company> for Company {
     type Error = DbError;
 
     fn try_from(value: smes::Company) -> Result<Self, Self::Error> {
+        let now = Utc::now().with_timezone(&Asia::Seoul).date_naive();
+
         let company = Self {
             id: value.vnia_sn.to_string(),
             representative_name: value.rprsv_nm,
@@ -65,6 +73,8 @@ impl TryFrom<smes::Company> for Company {
             company_name: value.cmp_nm,
             industry_code: value.indsty_cd,
             industry_name: value.indsty_nm,
+            create_date: now,
+            update_date: now,
         };
         company.validate()?;
         Ok(company)
@@ -80,7 +90,9 @@ impl Params for Company {
             ":business_registration_number": self.business_registration_number.as_str(),
             ":company_name": self.company_name.as_str(),
             ":industry_code": self.industry_code.as_str(),
-            ":industry_name": self.industry_name.as_str()
+            ":industry_name": self.industry_name.as_str(),
+            ":create_date": self.create_date.to_string(),
+            ":update_date": self.update_date.to_string(),
         }
     }
 }
@@ -141,7 +153,26 @@ mod test_impl {
                 company_name: CompanyName().fake_with_rng(rng),
                 industry_code: NumberWithFormat(EN, "^####").fake::<String>(),
                 industry_name: Industry().fake_with_rng(rng),
+                create_date: Local::now().naive_local().date(),
+                update_date: Local::now().naive_local().date(),
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    fn system_should_return_proper_utc_date() {
+        tracing_setup::subscribe();
+        let utc = chrono::Utc::now();
+        let local = chrono::Local::now();
+        let naive_utc = utc.naive_local();
+        let naive_local = local.naive_local();
+        tracing::debug!(?utc, ?naive_utc, ?local, ?naive_local);
+
+        let duration_in_hours = (naive_local - naive_utc).num_hours();
+        assert_eq!(duration_in_hours, 9);
     }
 }

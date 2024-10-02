@@ -9,6 +9,8 @@ name = "libsql"
 harness = false
 
 [dependencies]
+chrono = { workspace = true, features = ["serde"] }
+chrono-tz = { workspace = true }
 hashbrown = { workspace = true }
 libsql = { workspace = true, features = ["core", "serde"] }
 serde = { workspace = true, features = ["derive"] }

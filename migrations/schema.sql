@@ -4,3 +4,19 @@
 --
 
 CREATE TABLE schema_migrations (id VARCHAR(255) PRIMARY KEY);
+CREATE TABLE company
+(
+    id                           TEXT PRIMARY KEY NOT NULL CHECK ( length(id) = 7 AND id GLOB replace(HEX(ZEROBLOB(7)), '00', '[0-9]') ),
+    representative_name          TEXT             NOT NULL,
+    headquarters_address         TEXT             NOT NULL,
+    business_registration_number TEXT             NOT NULL CHECK (business_registration_number = '' OR
+                                                                  (length(business_registration_number) = 10 AND
+                                                                   business_registration_number GLOB
+                                                                   REPLACE(HEX(ZEROBLOB(10)), '00', '[0-9]'))),
+    company_name                 TEXT             NOT NULL,
+    industry_code                TEXT             NOT NULL CHECK ( length(industry_code) = 5 AND industry_code GLOB
+                                                                                                 replace(HEX(ZEROBLOB(5)), '00', '[0-9]') ),
+    industry_name                TEXT             NOT NULL,
+    create_date                  TEXT             NOT NULL CHECK ( update_date GLOB '2[0-1][0-9][0-9]-[0-9][0-9]-[0-3][0-9]'),
+    update_date                  TEXT             NOT NULL CHECK ( update_date GLOB '2[0-1][0-9][0-9]-[0-9][0-9]-[0-3][0-9]' )
+);

@@ -11,7 +11,9 @@ CREATE TABLE company
     company_name                 TEXT             NOT NULL,
     industry_code                TEXT             NOT NULL CHECK ( length(industry_code) = 5 AND industry_code GLOB
                                                                                                  replace(HEX(ZEROBLOB(5)), '00', '[0-9]') ),
-    industry_name                TEXT             NOT NULL
+    industry_name                TEXT             NOT NULL,
+    create_date                  TEXT             NOT NULL CHECK ( update_date GLOB '2[0-1][0-9][0-9]-[0-9][0-9]-[0-3][0-9]'),
+    update_date                  TEXT             NOT NULL CHECK ( update_date GLOB '2[0-1][0-9][0-9]-[0-9][0-9]-[0-3][0-9]' )
 );
 
 -- Represents a company with its details.
