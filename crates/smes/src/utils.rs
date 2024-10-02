@@ -1,10 +1,45 @@
+use crate::error::UnsuccessfulResponseError;
+use crate::SmesError;
+use reqwest::header::HeaderMap;
+use reqwest::StatusCode;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serializer;
 use std::fmt::Display;
 use std::str::FromStr;
 
-pub fn serialize_number_as_string<S, T>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
+pub(crate) struct ParsedResponse {
+    status: StatusCode,
+    headers: HeaderMap,
+    bytes: bytes::Bytes,
+}
+
+pub(crate) async fn parse_response(
+    response: reqwest::Response,
+) -> Result<ParsedResponse, SmesError> {
+    let status = response.status();
+    let headers = response.headers().clone();
+
+    // Check status code
+    if !response.status().is_success() {
+        return Err(SmesError::UnsuccessfulResponse(UnsuccessfulResponseError {
+            message: "Request returned an unsuccessful status code",
+            status,
+            headers,
+            body: None,
+            source: None,
+        }));
+    };
+
+    let bytes = response.bytes().await.map_err(SmesError::Reqwest)?;
+    Ok(ParsedResponse {
+        status,
+        headers,
+        bytes,
+    })
+}
+
+pub(crate) fn serialize_number_as_string<S, T>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
     T: std::fmt::Display,
@@ -12,7 +47,7 @@ where
     serializer.serialize_str(&value.to_string())
 }
 
-pub fn serialize_optional_number_as_string<S, T>(
+pub(crate) fn serialize_optional_number_as_string<S, T>(
     value: &Option<T>,
     serializer: S,
 ) -> Result<S::Ok, S::Error>
@@ -26,7 +61,7 @@ where
     }
 }
 
-pub fn deserialize_optional_number_from_string<'de, T, D>(
+pub(crate) fn deserialize_optional_number_from_string<'de, T, D>(
     deserializer: D,
 ) -> Result<Option<T>, D::Error>
 where

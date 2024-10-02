@@ -1,32 +1,51 @@
+use crate::api::base::Api;
 use crate::error::{BuildError, ByteDecodeError, DeserializationError, UnsuccessfulResponseError};
-use crate::header::FakeHeader;
-use crate::{ListPayload, ListPayloadBuilder, ListResponse, SmesError};
+use crate::{
+    header_map, impl_default_api, ListPayload, ListPayloadBuilder, ListResponse, SmesError,
+};
+use reqwest::header::{
+    HeaderMap, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CONNECTION, CONTENT_TYPE, HOST, ORIGIN,
+    REFERER, USER_AGENT,
+};
+use reqwest::{Client, Method};
 use std::fmt::Debug;
 
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct ListApi {
-    client: reqwest::Client,
+    client: Client,
     /// The domain, including the protocol of the api
     pub domain: String,
 }
 
-impl ListApi {
-    /// Returns the default instance of the ListApi
-    pub fn new() -> Self {
-        Self::default()
-    }
-}
+impl_default_api!(ListApi);
 
-impl Default for ListApi {
-    fn default() -> Self {
-        Self {
-            client: reqwest::Client::builder()
-                .default_headers(FakeHeader::list_header())
-                .build()
-                .expect("Failed to build reqwest client"),
-            domain: "https://www.smes.go.kr".to_string(),
+impl Api for ListApi {
+    fn headers() -> HeaderMap {
+        header_map! {
+            ACCEPT => "application/json, text/javascript, */*; q=0.01",
+            ACCEPT_ENCODING => "gzip, deflate, br, zstd",
+            ACCEPT_LANGUAGE => "en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7,id;q=0.6",
+            CONNECTION => "keep-alive",
+            CONTENT_TYPE => "application/json; charset=UTF-8",
+            HOST => "www.smes.go.kr",
+            ORIGIN => "https://www.smes.go.kr",
+            REFERER => "https://www.smes.go.kr/venturein/pbntc/searchVntrCmp",
+            "Sec-Fetch-Dest" => "empty",
+            "Sec-Fetch-Mode" => "cors",
+            "Sec-Fetch-Site" => "same-origin",
+            USER_AGENT => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+            "X-Requested-With" => "XMLHttpRequest",
+            "dnt" => "1",
+            "sec-ch-ua" => "\"Google Chrome\";v=\"129\", \"Not=A?Brand\";v=\"8\", \"Chromium\";v=\"129\"",
+            "sec-ch-ua-mobile" => "?0",
+            "sec-ch-ua-platform" => "\"macOS\"",
+            "sec-gpc" => "1"
         }
+    }
+
+    fn client(&self) -> &Client {
+        &self.client
     }
 }
 
@@ -37,42 +56,16 @@ impl ListApi {
     ///   but the api response body contained an invalid result value
     #[tracing::instrument(skip(self))]
     pub async fn get_company_list(&self, payload: &ListPayload) -> Result<ListResponse, SmesError> {
-        // Send request
         let request_response = self
-            .client
-            // www.smes.go.kr/venturein/pbntc/searchVntrCmpAction
-            .post(format!(
-                "{}{}",
-                &self.domain, "/venturein/pbntc/searchVntrCmpAction"
-            ))
-            .headers(FakeHeader::list_header())
-            .json(payload)
-            .send()
-            .await
-            .inspect_err(|e| {
-                tracing::error!(?e, "Failed to send request");
-            })?;
-        tracing::trace!(?request_response, ?self.domain, "Received response");
+            .request(
+                Method::POST,
+                &self.domain,
+                "/venturein/pbntc/searchVntrCmpAction",
+                Some(payload),
+            )
+            .await?;
 
-        // Extract for future use.
-        // This is because reqwest consumes the response when parsing the body.
-        let status = request_response.status();
-        let headers = request_response.headers().clone();
-
-        // Check status code
-        if !request_response.status().is_success() {
-            return Err(SmesError::UnsuccessfulResponse(UnsuccessfulResponseError {
-                message: "Request returned an unsuccessful status code",
-                status,
-                headers,
-                body: None,
-                source: None,
-            }));
-        };
-
-        // Parse the response body
-        let bytes = request_response.bytes().await.map_err(SmesError::Reqwest)?;
-        let text = std::str::from_utf8(&bytes).map_err(|e| {
+        let text = std::str::from_utf8(&request_response.bytes).map_err(|e| {
             SmesError::Conversion(ByteDecodeError {
                 message: "Failed to convert bytes to string",
                 source: Some(Box::new(e)),
@@ -80,20 +73,21 @@ impl ListApi {
         })?;
 
         // Deserialize the request response
-        let response: ListResponse = serde_json::from_slice(&bytes).map_err(|e| {
-            SmesError::Deserialization(DeserializationError {
-                message: "Failed to deserialize response",
-                serialized: text.to_string(),
-                source: Some(Box::new(e)),
-            })
-        })?;
+        let response: ListResponse =
+            serde_json::from_slice(&request_response.bytes).map_err(|e| {
+                SmesError::Deserialization(DeserializationError {
+                    message: "Failed to deserialize response",
+                    serialized: text.to_string(),
+                    source: Some(Box::new(e)),
+                })
+            })?;
 
         // Check if the response returned a successful result
         if !response.is_success() {
             return Err(SmesError::UnsuccessfulResponse(UnsuccessfulResponseError {
                 message: "Response returned an unsuccessful result",
-                status,
-                headers,
+                status: request_response.status,
+                headers: request_response.headers,
                 body: Some(response),
                 source: None,
             }));
