@@ -1,13 +1,13 @@
 -- Write your up sql migration here
 CREATE TABLE company
 (
-    id                           TEXT NOT NULL CHECK ( length(id) = 10 ),
-    representative_name          TEXT NOT NULL,
-    headquarters_address         TEXT NOT NULL,
-    business_registration_number TEXT NOT NULL CHECK ( length(business_registration_number) = 10 ),
-    company_name                 TEXT NOT NULL,
-    industry_code                TEXT NOT NULL CHECK ( length(industry_code) = 5 ),
-    industry_name                TEXT NOT NULL
+    id                           TEXT PRIMARY KEY NOT NULL CHECK ( length(id) = 10 ),
+    representative_name          TEXT             NOT NULL,
+    headquarters_address         TEXT             NOT NULL,
+    business_registration_number TEXT             NOT NULL CHECK ( length(business_registration_number) = 10 ),
+    company_name                 TEXT             NOT NULL,
+    industry_code                TEXT             NOT NULL CHECK ( length(industry_code) = 5 ),
+    industry_name                TEXT             NOT NULL
 );
 
 -- Represents a company with its details.
