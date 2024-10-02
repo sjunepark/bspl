@@ -5,7 +5,7 @@ members = ["crates/db", "crates/smes", "crates/utils", "crates/tracing-setup"]
 name = "bspl"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.70.0"
+rust-version = "1.80.0"
 publish = false
 
 [dependencies]

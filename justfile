@@ -67,3 +67,7 @@ geni-down-local:
 
 backup-db:
     scripts/backup_db.sh
+
+## Others
+git-gc:
+    git gc --prune=now --aggressive
