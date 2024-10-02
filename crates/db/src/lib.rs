@@ -7,4 +7,4 @@ mod test_utils;
 
 pub use db::LibsqlDb;
 pub use error::DbError;
-pub use smes::Company;
+pub use smes::{Companies, Company};

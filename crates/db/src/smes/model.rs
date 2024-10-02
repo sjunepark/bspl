@@ -1,5 +1,8 @@
+use crate::DbError;
 use libsql::params::IntoParams;
 use serde::{Deserialize, Serialize};
+use std::ops::Deref;
+use validator::Validate;
 
 pub trait Params {
     fn params(&self) -> impl IntoParams;
@@ -21,27 +24,32 @@ pub trait Params {
 ///   industry_name: String::from("그 외 기타 정보 서비스업")
 /// };
 /// ```
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Validate)]
 pub struct Company {
     /// 고유번호 (Unique Number)
+    #[validate(length(min = 10, max = 10))]
     pub id: String,
     /// 대표자명 (Representative Name)
     pub representative_name: String,
     /// 본사주소 (Headquarters Address)
     pub headquarters_address: String,
     /// 사업자번호 (Business Registration Number)
+    #[validate(length(min = 10, max = 10))]
     pub business_registration_number: String,
     /// 기업명 (Company Name)
     pub company_name: String,
     /// 업종코드 (Industry Code)
+    #[validate(length(min = 5, max = 5))]
     pub industry_code: String,
     /// 업종 (Industry Name)
     pub industry_name: String,
 }
 
-impl From<smes::Company> for Company {
-    fn from(value: smes::Company) -> Self {
-        Self {
+impl TryFrom<smes::Company> for Company {
+    type Error = DbError;
+
+    fn try_from(value: smes::Company) -> Result<Self, Self::Error> {
+        let company = Self {
             id: value.vnia_sn.to_string(),
             representative_name: value.rprsv_nm,
             headquarters_address: value.hdofc_addr,
@@ -49,7 +57,9 @@ impl From<smes::Company> for Company {
             company_name: value.cmp_nm,
             industry_code: value.indsty_cd,
             industry_name: value.indsty_nm,
-        }
+        };
+        company.validate()?;
+        Ok(company)
     }
 }
 
@@ -64,6 +74,32 @@ impl Params for Company {
             ":industry_code": self.industry_code.as_str(),
             ":industry_name": self.industry_name.as_str()
         }
+    }
+}
+
+pub struct Companies(Vec<Company>);
+
+impl TryFrom<Vec<smes::Company>> for Companies {
+    type Error = DbError;
+
+    fn try_from(value: Vec<smes::Company>) -> Result<Self, Self::Error> {
+        let len = value.len();
+        let companies = value
+            .into_iter()
+            .try_fold(Vec::with_capacity(len), |mut acc, c| {
+                let company = Company::try_from(c)?;
+                acc.push(company);
+                Ok::<Vec<Company>, DbError>(acc)
+            })?;
+        Ok(Self(companies))
+    }
+}
+
+impl Deref for Companies {
+    type Target = Vec<Company>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
