@@ -2,7 +2,7 @@ use crate::ListResponse;
 use utils::impl_error;
 
 #[derive(thiserror::Error, Debug)]
-pub enum ApiError {
+pub enum SmesError {
     #[error("HTTP error: {0}")]
     Reqwest(#[from] reqwest::Error),
     #[error("Deserialization error: {0}")]

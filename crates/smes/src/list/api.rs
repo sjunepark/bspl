@@ -2,7 +2,7 @@ mod header;
 mod types;
 
 use crate::error::{BuildError, ByteDecodeError, DeserializationError, UnsuccessfulResponseError};
-use crate::ApiError;
+use crate::SmesError;
 use reqwest::header::{
     HeaderMap, HeaderValue, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CONNECTION, CONTENT_TYPE,
     HOST, ORIGIN, REFERER, USER_AGENT,
@@ -43,7 +43,7 @@ impl ListApi {
     /// - Request returned a status code of 200,
     ///   but the api response body contained an invalid result value
     #[tracing::instrument(skip(self))]
-    pub async fn make_request(&self, payload: &ListPayload) -> Result<ListResponse, ApiError> {
+    pub async fn make_request(&self, payload: &ListPayload) -> Result<ListResponse, SmesError> {
         // Send request
         let request_response = self
             .client
@@ -68,7 +68,7 @@ impl ListApi {
 
         // Check status code
         if !request_response.status().is_success() {
-            return Err(ApiError::UnsuccessfulResponse(UnsuccessfulResponseError {
+            return Err(SmesError::UnsuccessfulResponse(UnsuccessfulResponseError {
                 message: "Request returned an unsuccessful status code",
                 status,
                 headers,
@@ -78,9 +78,9 @@ impl ListApi {
         };
 
         // Parse the response body
-        let bytes = request_response.bytes().await.map_err(ApiError::Reqwest)?;
+        let bytes = request_response.bytes().await.map_err(SmesError::Reqwest)?;
         let text = std::str::from_utf8(&bytes).map_err(|e| {
-            ApiError::Conversion(ByteDecodeError {
+            SmesError::Conversion(ByteDecodeError {
                 message: "Failed to convert bytes to string",
                 source: Some(Box::new(e)),
             })
@@ -88,7 +88,7 @@ impl ListApi {
 
         // Deserialize the request response
         let response: ListResponse = serde_json::from_slice(&bytes).map_err(|e| {
-            ApiError::Deserialization(DeserializationError {
+            SmesError::Deserialization(DeserializationError {
                 message: "Failed to deserialize response",
                 serialized: text.to_string(),
                 source: Some(Box::new(e)),
@@ -97,7 +97,7 @@ impl ListApi {
 
         // Check if the response returned a successful result
         if !response.is_success() {
-            return Err(ApiError::UnsuccessfulResponse(UnsuccessfulResponseError {
+            return Err(SmesError::UnsuccessfulResponse(UnsuccessfulResponseError {
                 message: "Response returned an unsuccessful result",
                 status,
                 headers,
@@ -108,9 +108,9 @@ impl ListApi {
         Ok(response)
     }
 
-    pub async fn get_total_count(&self) -> Result<usize, ApiError> {
+    pub async fn get_total_count(&self) -> Result<usize, SmesError> {
         let payload = ListPayloadBuilder::default().build().map_err(|e| {
-            ApiError::Build(BuildError {
+            SmesError::Build(BuildError {
                 message: "Failed to build payload",
                 source: Some(Box::new(e)),
             })
@@ -119,7 +119,7 @@ impl ListApi {
             .make_request(&payload)
             .await?
             .total_count
-            .ok_or(ApiError::MissingExpectedField("total_count".to_string()))?;
+            .ok_or(SmesError::MissingExpectedField("total_count".to_string()))?;
         Ok(total_count)
     }
 
