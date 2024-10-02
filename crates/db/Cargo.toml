@@ -9,6 +9,7 @@ name = "libsql"
 harness = false
 
 [dependencies]
+hashbrown = { workspace = true }
 libsql = { workspace = true, features = ["core", "serde"] }
 serde = { workspace = true, features = ["derive"] }
 smes = { workspace = true }
