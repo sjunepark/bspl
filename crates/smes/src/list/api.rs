@@ -3,10 +3,6 @@ mod types;
 
 use crate::error::{BuildError, ByteDecodeError, DeserializationError, UnsuccessfulResponseError};
 use crate::SmesError;
-use reqwest::header::{
-    HeaderMap, HeaderValue, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CONNECTION, CONTENT_TYPE,
-    HOST, ORIGIN, REFERER, USER_AGENT,
-};
 use std::fmt::Debug;
 pub use types::{Company, ListPayload, ListPayloadBuilder, ListResponse};
 
@@ -52,7 +48,7 @@ impl ListApi {
                 "{}{}",
                 &self.domain, "/venturein/pbntc/searchVntrCmpAction"
             ))
-            .headers(self.fake_header())
+            .headers(header::Fake::default().header().to_owned())
             .json(payload)
             .send()
             .await
@@ -121,53 +117,6 @@ impl ListApi {
             .total_count
             .ok_or(SmesError::MissingExpectedField("total_count".to_string()))?;
         Ok(total_count)
-    }
-
-    fn fake_header(&self) -> HeaderMap {
-        let mut headers = HeaderMap::new();
-        headers.insert(
-            ACCEPT,
-            HeaderValue::from_static("application/json, text/javascript, */*; q=0.01"),
-        );
-        headers.insert(
-            ACCEPT_ENCODING,
-            HeaderValue::from_static("gzip, deflate, br, zstd"),
-        );
-        headers.insert(
-            ACCEPT_LANGUAGE,
-            HeaderValue::from_static("en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7,id;q=0.6"),
-        );
-        headers.insert(CONNECTION, HeaderValue::from_static("keep-alive"));
-        headers.insert(
-            CONTENT_TYPE,
-            HeaderValue::from_static("application/json; charset=UTF-8"),
-        );
-        headers.insert(HOST, HeaderValue::from_static("www.smes.go.kr"));
-        headers.insert(ORIGIN, HeaderValue::from_static("https://www.smes.go.kr"));
-        headers.insert(
-            REFERER,
-            HeaderValue::from_static("https://www.smes.go.kr/venturein/pbntc/searchVntrCmp"),
-        );
-        headers.insert("Sec-Fetch-Dest", HeaderValue::from_static("empty"));
-        headers.insert("Sec-Fetch-Mode", HeaderValue::from_static("cors"));
-        headers.insert("Sec-Fetch-Site", HeaderValue::from_static("same-origin"));
-        headers.insert(USER_AGENT, HeaderValue::from_static("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"));
-        headers.insert(
-            "X-Requested-With",
-            HeaderValue::from_static("XMLHttpRequest"),
-        );
-        headers.insert("dnt", HeaderValue::from_static("1"));
-        headers.insert(
-            "sec-ch-ua",
-            HeaderValue::from_static(
-                "\"Google Chrome\";v=\"129\", \"Not=A?Brand\";v=\"8\", \"Chromium\";v=\"129\"",
-            ),
-        );
-        headers.insert("sec-ch-ua-mobile", HeaderValue::from_static("?0"));
-        headers.insert("sec-ch-ua-platform", HeaderValue::from_static("\"macOS\""));
-        headers.insert("sec-gpc", HeaderValue::from_static("1"));
-
-        headers
     }
 }
 

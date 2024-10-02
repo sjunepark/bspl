@@ -37,11 +37,19 @@ impl Default for Fake {
             ACCEPT_LANGUAGE => "en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7,id;q=0.6",
             CONNECTION => "keep-alive",
             CONTENT_TYPE => "application/json; charset=UTF-8",
-            // COOKIE => "SMESSESSION=e7743010-1a6f-403c-8d3b-2d3e59b9375f; __VCAP_ID__=c00e9753-eb00-4f2f-7481-36a2; JSESSIONID=832C2AE92673E8C0AAB9EE2FEC56A7EB; JSESSIONID=NDpNEVGmNR548GCiwtdyX1jeKBMdddpezQGd8lx3RbPf4fJuz64x18RPyk6lqeNl.VElQQS9zbWVzXzI=; SESSION_TTL=20240915213047",
             HOST => "www.smes.go.kr",
             ORIGIN => "https://www.smes.go.kr",
             REFERER => "https://www.smes.go.kr/venturein/pbntc/searchVntrCmp",
-            USER_AGENT => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+            "Sec-Fetch-Dest" => "empty",
+            "Sec-Fetch-Mode" => "cors",
+            "Sec-Fetch-Site" => "same-origin",
+            USER_AGENT => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+            "X-Requested-With" => "XMLHttpRequest",
+            "dnt" => "1",
+            "sec-ch-ua" => "\"Google Chrome\";v=\"129\", \"Not=A?Brand\";v=\"8\", \"Chromium\";v=\"129\"",
+            "sec-ch-ua-mobile" => "?0",
+            "sec-ch-ua-platform" => "\"macOS\"",
+            "sec-gpc" => "1"
         }
     }
 }
