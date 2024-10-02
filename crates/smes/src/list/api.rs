@@ -263,7 +263,7 @@ mod tests {
         let test_id = utils::function_id!();
         tracing_setup::subscribe();
         let allow_external_api_call: bool = std::env::var("GOLDRUST_ALLOW_EXTERNAL_API_CALL")
-            .expect("Failed to get GOLDRUST_ALLOW_EXTERNAL_API_CALL")
+            .unwrap_or("false".to_string())
             .parse()
             .expect("Failed to parse GOLDRUST_ALLOW_EXTERNAL_API_CALL to bool");
 
