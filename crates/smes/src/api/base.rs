@@ -63,6 +63,7 @@ pub(crate) trait Api: Default {
         // headers can be modified with the `header` method on the request builder
         let mut builder = self
             .client()
+            // No need to use `.version(Version::HTTP_11)` as it's the default
             .request(method, format!("{}{}", domain, path))
             .headers(headers);
 
