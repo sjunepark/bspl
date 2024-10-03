@@ -1,9 +1,8 @@
 use crate::api::base::Api;
-use crate::SmesError;
-use image::DynamicImage;
-
 use crate::api::header::HeaderMapExt;
-use reqwest::header::{HeaderMap, HeaderValue, SET_COOKIE};
+use crate::api::model::Captcha;
+use crate::SmesError;
+use reqwest::header::{HeaderMap, SET_COOKIE};
 use reqwest::{Client, Method};
 
 pub struct BsplApi {
@@ -55,24 +54,6 @@ impl BsplApi {
             nopecha_id: None,
             answer: None,
         })
-    }
-}
-
-#[derive(Clone)]
-pub struct Captcha {
-    pub image: DynamicImage,
-    pub cookies: Vec<HeaderValue>,
-    pub nopecha_id: Option<String>,
-    pub answer: Option<String>,
-}
-
-impl std::fmt::Debug for Captcha {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Captcha")
-            .field("cookies", &self.cookies)
-            .field("nopecha_id", &self.nopecha_id)
-            .field("answer", &self.answer)
-            .finish()
     }
 }
 

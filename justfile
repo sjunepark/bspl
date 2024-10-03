@@ -54,7 +54,7 @@ bench name="":
 
 cov:
     clear
-    rustup run nightly cargo llvm-cov nextest --open --workspace --all-features --all-targets --locked
+    rustup run nightly cargo llvm-cov nextest --open --workspace --all-features --lib --locked
 
 lint:
     clear

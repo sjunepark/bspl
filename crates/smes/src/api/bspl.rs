@@ -1,3 +1,3 @@
 mod api;
 
-pub use api::{BsplApi, Captcha};
+pub use api::BsplApi;

@@ -1,8 +1,9 @@
 // todo: clean up tracing
 
 use crate::api::base::ParsedResponse;
+use crate::api::model::Captcha;
 use crate::error::{ExternalApiError, UnsuccessfulResponseError};
-use crate::{Captcha, SmesError};
+use crate::SmesError;
 use base64::engine::general_purpose;
 use base64::Engine;
 use image::DynamicImage;
