@@ -156,6 +156,10 @@ mod tests {
         let mock_server = wiremock::MockServer::start()
             .instrument(tracing::info_span!("test", ?test_id))
             .await;
+
+        if matches!(goldrust.response_source, ResponseSource::External) {
+            std::env::set_var("NOPECHA_KEY", "test");
+        }
         let mut api = NopeChaApi::default();
 
         match goldrust.response_source {
