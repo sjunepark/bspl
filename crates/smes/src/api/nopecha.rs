@@ -157,7 +157,7 @@ mod tests {
             .instrument(tracing::info_span!("test", ?test_id))
             .await;
 
-        if matches!(goldrust.response_source, ResponseSource::External) {
+        if matches!(goldrust.response_source, ResponseSource::Local) {
             std::env::set_var("NOPECHA_KEY", "test");
         }
         let mut api = NopeChaApi::default();
