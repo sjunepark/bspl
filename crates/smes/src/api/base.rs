@@ -2,7 +2,6 @@ use crate::error::UnsuccessfulResponseError;
 use crate::SmesError;
 use reqwest::header::HeaderMap;
 use reqwest::StatusCode;
-use serde::Serialize;
 
 pub(crate) struct ParsedResponse {
     pub(crate) status: StatusCode,
@@ -19,13 +18,13 @@ pub(crate) trait Api: Default {
     /// * `payload` - The payload to send with the request.
     ///
     /// Should be serializable to JSON
-    async fn request<P: Serialize>(
+    async fn request(
         &self,
         method: reqwest::Method,
         domain: &str,
         path: &str,
         headers: HeaderMap,
-        payload: Option<&P>,
+        payload: Option<serde_json::Value>,
     ) -> Result<ParsedResponse, SmesError> {
         // Headers are set in the client with `default_headers`
         // If additional headers are necessary,
@@ -36,7 +35,7 @@ pub(crate) trait Api: Default {
             .headers(headers);
 
         if let Some(payload) = payload {
-            builder = builder.json(payload);
+            builder = builder.json(&payload);
         }
 
         let response = builder.send().await?;
@@ -66,19 +65,5 @@ pub(crate) trait Api: Default {
             headers,
             bytes,
         })
-    }
-}
-
-/// This struct is used when a request does not require a payload,
-/// to solve type inference issues.
-pub(crate) struct NoPayload;
-
-impl Serialize for NoPayload {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let map: std::collections::HashMap<&str, &str> = std::collections::HashMap::new();
-        map.serialize(serializer)
     }
 }

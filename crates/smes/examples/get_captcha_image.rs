@@ -12,9 +12,5 @@ async fn main() {
     let width = captcha_image.image.width();
     let height = captcha_image.image.height();
 
-    assert!(!captcha_image.id.is_empty());
-    assert!(width > 0);
-    assert!(height > 0);
-
     tracing::info!(?width, ?height, "Received captcha image");
 }

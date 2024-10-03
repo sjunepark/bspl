@@ -49,14 +49,14 @@ impl ListApi {
                 &self.domain,
                 "/venturein/pbntc/searchVntrCmpAction",
                 HeaderMap::with_list(),
-                Some(payload),
+                Some(serde_json::to_value(payload)?),
             )
             .await?;
 
         let text = std::str::from_utf8(&request_response.bytes).map_err(|e| {
             SmesError::Conversion(ByteDecodeError {
                 message: "Failed to convert bytes to string",
-                source: Some(Box::new(e)),
+                source: Some(e.into()),
             })
         })?;
 
@@ -66,7 +66,7 @@ impl ListApi {
                 SmesError::Deserialization(DeserializationError {
                     message: "Failed to deserialize response",
                     serialized: text.to_string(),
-                    source: Some(Box::new(e)),
+                    source: Some(e.into()),
                 })
             })?;
 
@@ -87,7 +87,7 @@ impl ListApi {
         let payload = ListPayloadBuilder::default().build().map_err(|e| {
             SmesError::Build(BuildError {
                 message: "Failed to build payload",
-                source: Some(Box::new(e)),
+                source: Some(e.into()),
             })
         })?;
         let total_count = self
