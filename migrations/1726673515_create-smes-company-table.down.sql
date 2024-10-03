@@ -1,2 +1,2 @@
 -- Write your down sql migration here
-DROP TABLE company;
+DROP TABLE smes_company;

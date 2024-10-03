@@ -4,7 +4,7 @@ use serde::Serializer;
 use std::fmt::Display;
 use std::str::FromStr;
 
-pub fn serialize_number_as_string<S, T>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
+pub(crate) fn serialize_number_as_string<S, T>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
     T: std::fmt::Display,
@@ -12,7 +12,7 @@ where
     serializer.serialize_str(&value.to_string())
 }
 
-pub fn serialize_optional_number_as_string<S, T>(
+pub(crate) fn serialize_optional_number_as_string<S, T>(
     value: &Option<T>,
     serializer: S,
 ) -> Result<S::Ok, S::Error>
@@ -26,7 +26,7 @@ where
     }
 }
 
-pub fn deserialize_optional_number_from_string<'de, T, D>(
+pub(crate) fn deserialize_optional_number_from_string<'de, T, D>(
     deserializer: D,
 ) -> Result<Option<T>, D::Error>
 where

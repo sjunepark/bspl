@@ -15,7 +15,7 @@ async fn main() {
     let api = ListApi::new();
 
     let total_count = api
-        .get_total_count()
+        .get_company_list_count()
         .await
         .expect("Failed to get total count");
 
@@ -25,7 +25,7 @@ async fn main() {
         .expect("Failed to build payload");
 
     let response = api
-        .make_request(&payload)
+        .get_company_list(&payload)
         .await
         .expect("Failed to make request");
 

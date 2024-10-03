@@ -1314,14 +1314,16 @@ checksum = "d2fabcfbdc87f4758337ca535fb41a6d701b65693ce38287d856d1674551ec9b"
 
 [[package]]
 name = "goldrust"
-version = "0.1.7"
+version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ea606176a09426e598e00ca1c01198df7167744adb90298d9e84b8e4db924ea"
+checksum = "c22cf3933d583a8c02d6a2a1d5e62bdc9ca38eed4e54007fe281582e05ab2df5"
 dependencies = [
  "derive_more",
+ "image",
  "serde",
  "serde_json",
  "static_assertions",
+ "thiserror",
  "tracing",
 ]
 
@@ -3340,6 +3342,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
+ "bytes",
  "derive_builder",
  "derive_more",
  "goldrust",

@@ -41,23 +41,31 @@ sec-ch-ua-mobile: ?0
 sec-ch-ua-platform: "macOS"
 sec-gpc: 1
 
+#Set-Cookie: SESSION_TTL=20241003172138; Max-Age=1800; Expires=Thu, 03-Oct-2024 08:21:38 GMT; Path=/; Secure
+#Set-Cookie: SMESSESSION=52631aca-0a20-4edc-bcce-3984f073a630; Path=/venturein/; HttpOnly
+#Set-Cookie: __VCAP_ID__=e5ecb9bb-7173-4d57-57c2-360b; Path=/venturein; HttpOnly
+
+
+
 ### Submit the answer
-GET /venturein/pbntc/searchVntrCmpDtls?vniaSn=1074136&captcha=559240 HTTP/1.1
+GET /venturein/pbntc/searchVntrCmpDtls?vniaSn=1097842&captcha=756706 HTTP/1.1
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
 Accept-Encoding: gzip, deflate, br, zstd
 Accept-Language: en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7,id;q=0.6
+Cache-Control: no-cache
 Connection: keep-alive
-Cookie: SMESSESSION=74549bff-445d-41c1-8f2d-ba882218a908; __VCAP_ID__=b5e40f43-3dd1-40a5-74c3-a50a; JSESSIONID=637248DF433853AE8D56BD35C45AB6B4; SESSION_TTL=20240916182822
+Cookie: SMESSESSION=e99f99ed-5ae6-4abf-af41-d9b6b521dfcf; __VCAP_ID__=3ea8c14f-43d3-4804-5713-19f7; JSESSIONID=A57C9F5155253AE853EA1A509F452533; SESSION_TTL=20241002214917
 Host: www.smes.go.kr
+Pragma: no-cache
 Referer: https://www.smes.go.kr/venturein/pbntc/searchVntrCmp
 Sec-Fetch-Dest: document
 Sec-Fetch-Mode: navigate
 Sec-Fetch-Site: same-origin
 Sec-Fetch-User: ?1
 Upgrade-Insecure-Requests: 1
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36
 dnt: 1
-sec-ch-ua: "Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"
+sec-ch-ua: "Google Chrome";v="129", "Not=A?Brand";v="8", "Chromium";v="129"
 sec-ch-ua-mobile: ?0
 sec-ch-ua-platform: "macOS"
 sec-gpc: 1

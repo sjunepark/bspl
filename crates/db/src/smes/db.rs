@@ -5,7 +5,10 @@ use serde::Deserialize;
 impl LibsqlDb {
     #[tracing::instrument(skip(self))]
     pub async fn get_companies(&self) -> Result<Vec<Company>, DbError> {
-        let mut rows = self.connection.query("SELECT * FROM Company", ()).await?;
+        let mut rows = self
+            .connection
+            .query("SELECT * from smes_company", ())
+            .await?;
         let mut companies = Vec::new();
 
         while let Some(row) = rows.next().await? {
@@ -18,7 +21,10 @@ impl LibsqlDb {
 
     #[tracing::instrument(skip(self))]
     pub async fn get_company_ids(&self) -> Result<hashbrown::HashSet<String>, DbError> {
-        let mut rows = self.connection.query("SELECT id FROM Company", ()).await?;
+        let mut rows = self
+            .connection
+            .query("SELECT id from smes_company", ())
+            .await?;
         let mut company_ids = hashbrown::HashSet::new();
 
         #[derive(Deserialize)]
@@ -39,7 +45,7 @@ impl LibsqlDb {
         let tx = self.connection.transaction().await?;
         let mut stmt = tx
             .prepare(
-                "INSERT INTO company (id,
+                "INSERT into smes_company (id,
                      representative_name,
                      headquarters_address,
                      business_registration_number,
@@ -74,7 +80,7 @@ VALUES (:id,
         let tx = self.connection.transaction().await?;
         let mut stmt = tx
             .prepare(
-                "INSERT INTO company (id,
+                "INSERT into smes_company (id,
                      representative_name,
                      headquarters_address,
                      business_registration_number,

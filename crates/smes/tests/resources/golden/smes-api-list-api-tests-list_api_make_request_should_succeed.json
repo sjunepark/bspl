@@ -1,0 +1,277 @@
+{
+  "DATA_LIST": [
+    {
+      "bizrno": "5632000760",
+      "cmp_nm": "루키게임즈",
+      "hdofc_addr": "경기도 김포시",
+      "indsty_cd": "63999",
+      "indsty_nm": "그 외 기타 정보 서비스업",
+      "rprsv_nm": "김성국",
+      "vnia_sn": 1071180
+    },
+    {
+      "bizrno": "7408102352",
+      "cmp_nm": "주식회사 주드",
+      "hdofc_addr": "경기도 남양주시",
+      "indsty_cd": "32029",
+      "indsty_nm": "기타 목재가구 제조업",
+      "rprsv_nm": "권주용",
+      "vnia_sn": 1104102
+    },
+    {
+      "bizrno": "1018676618",
+      "cmp_nm": "주식회사 공공공간",
+      "hdofc_addr": "서울특별시 은평구",
+      "indsty_cd": "73202",
+      "indsty_nm": "제품 디자인업",
+      "rprsv_nm": "신윤예",
+      "vnia_sn": 1077757
+    },
+    {
+      "bizrno": "1308179942",
+      "cmp_nm": "㈜정진기전",
+      "hdofc_addr": "인천광역시 계양구",
+      "indsty_cd": "28123",
+      "indsty_nm": "배전반 및 전기 자동제어반 제조업",
+      "rprsv_nm": "배정현",
+      "vnia_sn": 1049868
+    },
+    {
+      "bizrno": "2348105397",
+      "cmp_nm": "(주)다성피앤에프",
+      "hdofc_addr": "경기도 김포시",
+      "indsty_cd": "22291",
+      "indsty_nm": "플라스틱 접착처리 제품 제조업",
+      "rprsv_nm": "신민경",
+      "vnia_sn": 1074520
+    },
+    {
+      "bizrno": "2208181396",
+      "cmp_nm": "(주)공공칠월드",
+      "hdofc_addr": "경기 평택시",
+      "indsty_cd": "26429",
+      "indsty_nm": "기타 무선 통신장비 제조업",
+      "rprsv_nm": "성준기",
+      "vnia_sn": 1112487
+    },
+    {
+      "bizrno": "6208142744",
+      "cmp_nm": "(주)대일산업",
+      "hdofc_addr": "울산 북구",
+      "indsty_cd": "30399",
+      "indsty_nm": "그 외 자동차용 신품 부품 제조업",
+      "rprsv_nm": "김명주",
+      "vnia_sn": 1107135
+    },
+    {
+      "bizrno": "7868100710",
+      "cmp_nm": "주식회사 디딤돌",
+      "hdofc_addr": "전라북도 완주군",
+      "indsty_cd": "25112",
+      "indsty_nm": "구조용 금속 판제품 및 공작물 제조업",
+      "rprsv_nm": "한정권",
+      "vnia_sn": 1074136
+    },
+    {
+      "bizrno": "5198100594",
+      "cmp_nm": "주식회사 인큐시스",
+      "hdofc_addr": "경기도 하남시",
+      "indsty_cd": "58221",
+      "indsty_nm": "시스템 소프트웨어 개발 및 공급업",
+      "rprsv_nm": "이진욱, 허진석",
+      "vnia_sn": 1066081
+    },
+    {
+      "bizrno": "2278602683",
+      "cmp_nm": "주식회사 제로원리퍼블릭",
+      "hdofc_addr": "서울특별시 종로구",
+      "indsty_cd": "58222",
+      "indsty_nm": "응용 소프트웨어 개발 및 공급업",
+      "rprsv_nm": "김용현, 김규리",
+      "vnia_sn": 1113680
+    },
+    {
+      "bizrno": "5158155699",
+      "cmp_nm": "㈜블루브릿지글로벌",
+      "hdofc_addr": "서울특별시 강남구",
+      "indsty_cd": "63999",
+      "indsty_nm": "그 외 기타 정보 서비스업",
+      "rprsv_nm": "이정석",
+      "vnia_sn": 1062952
+    },
+    {
+      "bizrno": "2348700939",
+      "cmp_nm": "(주)선진에너지",
+      "hdofc_addr": "경기도 화성시",
+      "indsty_cd": "38312",
+      "indsty_nm": "금속류 원료 재생업",
+      "rprsv_nm": "조정훈",
+      "vnia_sn": 1097842
+    },
+    {
+      "bizrno": "4378101501",
+      "cmp_nm": "주식회사 바이오리올로직스",
+      "hdofc_addr": "전북특별자치도 전주시",
+      "indsty_cd": "27199",
+      "indsty_nm": "그 외 기타 의료용 기기 제조업",
+      "rprsv_nm": "이동환",
+      "vnia_sn": 1118552
+    },
+    {
+      "bizrno": "7928701583",
+      "cmp_nm": "(주)에이스쿨링",
+      "hdofc_addr": "경기도 파주시",
+      "indsty_cd": "33999",
+      "indsty_nm": "그 외 기타 달리 분류되지 않은 제품 제조업",
+      "rprsv_nm": "김영상",
+      "vnia_sn": 1065357
+    },
+    {
+      "bizrno": "3978602264",
+      "cmp_nm": "인천미래산업(주)",
+      "hdofc_addr": "경기 김포시",
+      "indsty_cd": "22299",
+      "indsty_nm": "그 외 기타 플라스틱 제품 제조업",
+      "rprsv_nm": "신은경",
+      "vnia_sn": 1122340
+    },
+    {
+      "bizrno": "8558102222",
+      "cmp_nm": "주식회사 엘에스에스엠",
+      "hdofc_addr": "경기도 안산시",
+      "indsty_cd": "23999",
+      "indsty_nm": "그 외 기타 분류 안된 비금속 광물제품 제조업",
+      "rprsv_nm": "안희석",
+      "vnia_sn": 1038994
+    },
+    {
+      "bizrno": "1268654253",
+      "cmp_nm": "주식회사 이시스비젼",
+      "hdofc_addr": "경기도 이천시",
+      "indsty_cd": "27301",
+      "indsty_nm": "광학렌즈 및 광학요소 제조업",
+      "rprsv_nm": "이기면",
+      "vnia_sn": 1063040
+    },
+    {
+      "bizrno": "8798802362",
+      "cmp_nm": "한국기후기술(주)",
+      "hdofc_addr": "경기도 안양시",
+      "indsty_cd": "70129",
+      "indsty_nm": "기타 공학 연구개발업",
+      "rprsv_nm": "김영만",
+      "vnia_sn": 1077914
+    },
+    {
+      "bizrno": "6778101905",
+      "cmp_nm": "주식회사 부산육가공센터",
+      "hdofc_addr": "부산광역시 기장군",
+      "indsty_cd": "10121",
+      "indsty_nm": "가금류 가공 및 저장 처리업",
+      "rprsv_nm": "김신동",
+      "vnia_sn": 1124797
+    },
+    {
+      "bizrno": "5038127846",
+      "cmp_nm": "태경산업㈜",
+      "hdofc_addr": "대구광역시 달서구",
+      "indsty_cd": "22192",
+      "indsty_nm": "산업용 그 외 비경화 고무제품 제조업",
+      "rprsv_nm": "김동찬",
+      "vnia_sn": 1119565
+    },
+    {
+      "bizrno": "5408700208",
+      "cmp_nm": "주식회사 덴플렉스 (Denflex Co., Ltd.)",
+      "hdofc_addr": "서울특별시 구로구",
+      "indsty_cd": "27199",
+      "indsty_nm": "그 외 기타 의료용 기기 제조업",
+      "rprsv_nm": "김형우",
+      "vnia_sn": 1081050
+    },
+    {
+      "bizrno": "6028700689",
+      "cmp_nm": "주식회사 한국전자투표",
+      "hdofc_addr": "서울특별시 영등포구",
+      "indsty_cd": "58221",
+      "indsty_nm": "시스템 소프트웨어 개발 및 공급업",
+      "rprsv_nm": "박재영",
+      "vnia_sn": 1082252
+    },
+    {
+      "bizrno": "5112631212",
+      "cmp_nm": "태경 티에스(TS)",
+      "hdofc_addr": "인천광역시 서구",
+      "indsty_cd": "25924",
+      "indsty_nm": "절삭가공 및 유사처리업",
+      "rprsv_nm": "김영호",
+      "vnia_sn": 1066341
+    },
+    {
+      "bizrno": "1208150104",
+      "cmp_nm": "한국방진방음(주)",
+      "hdofc_addr": "서울특별시 영등포구",
+      "indsty_cd": "25112",
+      "indsty_nm": "구조용 금속 판제품 및 공작물 제조업",
+      "rprsv_nm": "임칠호",
+      "vnia_sn": 1116040
+    },
+    {
+      "bizrno": "4103157664",
+      "cmp_nm": "리바랩",
+      "hdofc_addr": "광주광역시 동구",
+      "indsty_cd": "58222",
+      "indsty_nm": "응용 소프트웨어 개발 및 공급업",
+      "rprsv_nm": "김영철",
+      "vnia_sn": 1035895
+    },
+    {
+      "bizrno": "6098607712",
+      "cmp_nm": "베스트에프에이(주)",
+      "hdofc_addr": "경상남도 창원시",
+      "indsty_cd": "29199",
+      "indsty_nm": "그 외 기타 일반목적용 기계 제조업",
+      "rprsv_nm": "김유찬",
+      "vnia_sn": 1117355
+    },
+    {
+      "bizrno": "4458701033",
+      "cmp_nm": "주식회사 폰누리",
+      "hdofc_addr": "서울특별시 중랑구",
+      "indsty_cd": "15129",
+      "indsty_nm": "가방 및 기타 보호용 케이스 제조업",
+      "rprsv_nm": "김성호",
+      "vnia_sn": 1082766
+    },
+    {
+      "bizrno": "6548701490",
+      "cmp_nm": "주식회사 에스알팜",
+      "hdofc_addr": "대전광역시 대덕구",
+      "indsty_cd": "47811",
+      "indsty_nm": "의약품 및 의료용품 소매업",
+      "rprsv_nm": "한대수",
+      "vnia_sn": 1057328
+    },
+    {
+      "bizrno": "5508102725",
+      "cmp_nm": "주식회사 티엘디",
+      "hdofc_addr": "경상남도 김해시",
+      "indsty_cd": "13993",
+      "indsty_nm": "특수사 및 코드직물 제조업",
+      "rprsv_nm": "이상현",
+      "vnia_sn": 1107294
+    },
+    {
+      "bizrno": "3968100818",
+      "cmp_nm": "주식회사 에이치에스에이디씨",
+      "hdofc_addr": "인천광역시 남동구",
+      "indsty_cd": "26429",
+      "indsty_nm": "기타 무선 통신장비 제조업",
+      "rprsv_nm": "이유신",
+      "vnia_sn": 1072859
+    }
+  ],
+  "NOW_PAGE": "1",
+  "RESULT": "SUCCESS",
+  "TOTAL_COUNT": "38449"
+}

@@ -2,19 +2,21 @@ use crate::ListResponse;
 use utils::impl_error;
 
 #[derive(thiserror::Error, Debug)]
-pub enum ApiError {
-    #[error("HTTP error: {0}")]
-    Reqwest(#[from] reqwest::Error),
-    #[error("Deserialization error: {0}")]
-    Deserialization(#[from] DeserializationError),
-    #[error("Unsuccessful response error: {0}")]
-    UnsuccessfulResponse(#[from] UnsuccessfulResponseError),
-    #[error("Conversion error: {0}")]
-    Conversion(#[from] ByteDecodeError),
-    #[error("Missing expected field: {0}")]
-    MissingExpectedField(String),
+pub enum SmesError {
     #[error("Build error: {0}")]
     Build(#[from] BuildError),
+    #[error("Conversion error: {0}")]
+    Conversion(#[from] ByteDecodeError),
+    #[error("Deserialization error: {0}")]
+    Deserialization(#[from] DeserializationError),
+    #[error("Image error: {0}")]
+    Image(#[from] image::ImageError),
+    #[error("Missing expected field: {0}")]
+    MissingExpectedField(String),
+    #[error("HTTP error: {0}")]
+    Reqwest(#[from] reqwest::Error),
+    #[error("Unsuccessful response error: {0}")]
+    UnsuccessfulResponse(#[from] UnsuccessfulResponseError),
 }
 
 #[derive(Debug)]

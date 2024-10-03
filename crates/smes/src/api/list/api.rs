@@ -1,35 +1,30 @@
-mod header;
-mod types;
-
+use crate::api::base::Api;
+use crate::api::header::HeaderMapExt;
 use crate::error::{BuildError, ByteDecodeError, DeserializationError, UnsuccessfulResponseError};
-use crate::ApiError;
-use reqwest::header::{
-    HeaderMap, HeaderValue, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CONNECTION, CONTENT_TYPE,
-    HOST, ORIGIN, REFERER, USER_AGENT,
-};
+use crate::{ListPayload, ListPayloadBuilder, ListResponse, SmesError};
+use reqwest::header::HeaderMap;
+use reqwest::{Client, Method};
 use std::fmt::Debug;
-pub use types::{Company, ListPayload, ListPayloadBuilder, ListResponse};
 
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct ListApi {
-    client: reqwest::Client,
+    client: Client,
     /// The domain, including the protocol of the api
     pub domain: String,
 }
 
-impl ListApi {
-    /// Returns the default instance of the ListApi
-    pub fn new() -> Self {
-        Self::default()
+impl Api for ListApi {
+    fn client(&self) -> &Client {
+        &self.client
     }
 }
 
 impl Default for ListApi {
     fn default() -> Self {
         Self {
-            client: reqwest::Client::builder()
-                .default_headers(header::Fake::default().header().to_owned())
+            client: Client::builder()
+                .default_headers(HeaderMap::with_list())
                 .build()
                 .expect("Failed to build reqwest client"),
             domain: "https://www.smes.go.kr".to_string(),
@@ -38,69 +33,49 @@ impl Default for ListApi {
 }
 
 impl ListApi {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     /// Returns an error in the following cases:
     /// - Request returned a status code other than 200
     /// - Request returned a status code of 200,
     ///   but the api response body contained an invalid result value
     #[tracing::instrument(skip(self))]
-    pub async fn make_request(&self, payload: &ListPayload) -> Result<ListResponse, ApiError> {
-        // Send request
+    pub async fn get_company_list(&self, payload: &ListPayload) -> Result<ListResponse, SmesError> {
         let request_response = self
-            .client
-            // www.smes.go.kr/venturein/pbntc/searchVntrCmpAction
-            .post(format!(
-                "{}{}",
-                &self.domain, "/venturein/pbntc/searchVntrCmpAction"
-            ))
-            .headers(self.fake_header())
-            .json(payload)
-            .send()
-            .await
-            .inspect_err(|e| {
-                tracing::error!(?e, "Failed to send request");
-            })?;
-        tracing::trace!(?request_response, ?self.domain, "Received response");
+            .request(
+                Method::POST,
+                &self.domain,
+                "/venturein/pbntc/searchVntrCmpAction",
+                HeaderMap::with_list(),
+                Some(payload),
+            )
+            .await?;
 
-        // Extract for future use.
-        // This is because reqwest consumes the response when parsing the body.
-        let status = request_response.status();
-        let headers = request_response.headers().clone();
-
-        // Check status code
-        if !request_response.status().is_success() {
-            return Err(ApiError::UnsuccessfulResponse(UnsuccessfulResponseError {
-                message: "Request returned an unsuccessful status code",
-                status,
-                headers,
-                body: None,
-                source: None,
-            }));
-        };
-
-        // Parse the response body
-        let bytes = request_response.bytes().await.map_err(ApiError::Reqwest)?;
-        let text = std::str::from_utf8(&bytes).map_err(|e| {
-            ApiError::Conversion(ByteDecodeError {
+        let text = std::str::from_utf8(&request_response.bytes).map_err(|e| {
+            SmesError::Conversion(ByteDecodeError {
                 message: "Failed to convert bytes to string",
                 source: Some(Box::new(e)),
             })
         })?;
 
         // Deserialize the request response
-        let response: ListResponse = serde_json::from_slice(&bytes).map_err(|e| {
-            ApiError::Deserialization(DeserializationError {
-                message: "Failed to deserialize response",
-                serialized: text.to_string(),
-                source: Some(Box::new(e)),
-            })
-        })?;
+        let response: ListResponse =
+            serde_json::from_slice(&request_response.bytes).map_err(|e| {
+                SmesError::Deserialization(DeserializationError {
+                    message: "Failed to deserialize response",
+                    serialized: text.to_string(),
+                    source: Some(Box::new(e)),
+                })
+            })?;
 
         // Check if the response returned a successful result
         if !response.is_success() {
-            return Err(ApiError::UnsuccessfulResponse(UnsuccessfulResponseError {
+            return Err(SmesError::UnsuccessfulResponse(UnsuccessfulResponseError {
                 message: "Response returned an unsuccessful result",
-                status,
-                headers,
+                status: request_response.status,
+                headers: request_response.headers,
                 body: Some(response),
                 source: None,
             }));
@@ -108,75 +83,26 @@ impl ListApi {
         Ok(response)
     }
 
-    pub async fn get_total_count(&self) -> Result<usize, ApiError> {
+    pub async fn get_company_list_count(&self) -> Result<usize, SmesError> {
         let payload = ListPayloadBuilder::default().build().map_err(|e| {
-            ApiError::Build(BuildError {
+            SmesError::Build(BuildError {
                 message: "Failed to build payload",
                 source: Some(Box::new(e)),
             })
         })?;
         let total_count = self
-            .make_request(&payload)
+            .get_company_list(&payload)
             .await?
             .total_count
-            .ok_or(ApiError::MissingExpectedField("total_count".to_string()))?;
+            .ok_or(SmesError::MissingExpectedField("total_count".to_string()))?;
         Ok(total_count)
-    }
-
-    fn fake_header(&self) -> HeaderMap {
-        let mut headers = HeaderMap::new();
-        headers.insert(
-            ACCEPT,
-            HeaderValue::from_static("application/json, text/javascript, */*; q=0.01"),
-        );
-        headers.insert(
-            ACCEPT_ENCODING,
-            HeaderValue::from_static("gzip, deflate, br, zstd"),
-        );
-        headers.insert(
-            ACCEPT_LANGUAGE,
-            HeaderValue::from_static("en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7,id;q=0.6"),
-        );
-        headers.insert(CONNECTION, HeaderValue::from_static("keep-alive"));
-        headers.insert(
-            CONTENT_TYPE,
-            HeaderValue::from_static("application/json; charset=UTF-8"),
-        );
-        headers.insert(HOST, HeaderValue::from_static("www.smes.go.kr"));
-        headers.insert(ORIGIN, HeaderValue::from_static("https://www.smes.go.kr"));
-        headers.insert(
-            REFERER,
-            HeaderValue::from_static("https://www.smes.go.kr/venturein/pbntc/searchVntrCmp"),
-        );
-        headers.insert("Sec-Fetch-Dest", HeaderValue::from_static("empty"));
-        headers.insert("Sec-Fetch-Mode", HeaderValue::from_static("cors"));
-        headers.insert("Sec-Fetch-Site", HeaderValue::from_static("same-origin"));
-        headers.insert(USER_AGENT, HeaderValue::from_static("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"));
-        headers.insert(
-            "X-Requested-With",
-            HeaderValue::from_static("XMLHttpRequest"),
-        );
-        headers.insert("dnt", HeaderValue::from_static("1"));
-        headers.insert(
-            "sec-ch-ua",
-            HeaderValue::from_static(
-                "\"Google Chrome\";v=\"129\", \"Not=A?Brand\";v=\"8\", \"Chromium\";v=\"129\"",
-            ),
-        );
-        headers.insert("sec-ch-ua-mobile", HeaderValue::from_static("?0"));
-        headers.insert("sec-ch-ua-platform", HeaderValue::from_static("\"macOS\""));
-        headers.insert("sec-gpc", HeaderValue::from_static("1"));
-
-        headers
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::list::api::types::ListPayloadBuilder;
-    use crate::list::api::ListApi;
-    use crate::ListResponse;
-    use goldrust::{goldrust, Goldrust, ResponseSource};
+    use crate::{ListApi, ListPayloadBuilder, ListResponse};
+    use goldrust::{goldrust, Content, Goldrust, ResponseSource};
     use tracing::Instrument;
     use wiremock::matchers::{method, path};
     use wiremock::{Mock, ResponseTemplate};
@@ -186,7 +112,7 @@ mod tests {
         // region: Arrange
         let test_id = utils::function_id!();
         tracing_setup::subscribe();
-        let mut goldrust = goldrust!();
+        let mut goldrust = goldrust!("json");
 
         let mock_server = wiremock::MockServer::start()
             .instrument(tracing::info_span!("test", ?test_id))
@@ -227,7 +153,7 @@ mod tests {
 
         // region: Act
         let response = api
-            .make_request(&payload)
+            .get_company_list(&payload)
             .instrument(tracing::info_span!("test", ?test_id))
             .await
             .inspect_err(|e| {
@@ -247,7 +173,9 @@ mod tests {
 
         // region: Cleanup
         goldrust
-            .save(response)
+            .save(Content::Json(
+                serde_json::to_value(response).expect("Failed to convert to serde_json::Value"),
+            ))
             .inspect_err(|e| {
                 tracing::error!(?e, "Failed to save response");
             })
@@ -294,7 +222,7 @@ mod tests {
         // endregion: Arrange
 
         let total_count = api
-            .get_total_count()
+            .get_company_list_count()
             .await
             .expect("Failed to get total count");
 

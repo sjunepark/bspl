@@ -1,5 +1,5 @@
 -- Write your up sql migration here
-CREATE TABLE company
+CREATE TABLE smes_company
 (
     id                           TEXT PRIMARY KEY NOT NULL CHECK ( length(id) = 7 AND id GLOB replace(HEX(ZEROBLOB(7)), '00', '[0-9]') ),
     representative_name          TEXT             NOT NULL,
