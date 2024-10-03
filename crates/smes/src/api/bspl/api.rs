@@ -1,9 +1,9 @@
-use crate::api::base::{Api, NoPayload};
+use crate::api::base::Api;
 use crate::SmesError;
 use image::DynamicImage;
 
 use crate::api::header::HeaderMapExt;
-use reqwest::header::HeaderMap;
+use reqwest::header::{HeaderMap, HeaderValue, SET_COOKIE};
 use reqwest::{Client, Method};
 
 pub struct BsplApi {
@@ -30,8 +30,8 @@ impl Default for BsplApi {
 
 impl BsplApi {
     pub async fn get_captcha_image(&self) -> Result<CaptchaImage, SmesError> {
-        let request_response = self
-            .request::<NoPayload>(
+        let response = self
+            .request(
                 Method::GET,
                 &self.domain,
                 "/venturein/pbntc/captchaImg.do",
@@ -40,12 +40,18 @@ impl BsplApi {
             )
             .await?;
 
-        let image = image::load_from_memory(&request_response.bytes)?;
+        let image = image::load_from_memory(&response.bytes)?;
+        let cookies = response
+            .headers
+            .get_all(SET_COOKIE)
+            .iter()
+            .cloned()
+            .collect();
 
         // todo: implement id
         Ok(CaptchaImage {
-            id: "hi".to_string(),
             image,
+            cookies,
             answer: None,
         })
     }
@@ -53,8 +59,8 @@ impl BsplApi {
 
 #[derive(Debug)]
 pub struct CaptchaImage {
-    pub id: String,
     pub image: DynamicImage,
+    pub cookies: Vec<HeaderValue>,
     pub answer: Option<String>,
 }
 
@@ -66,7 +72,7 @@ mod tests {
     use wiremock::Mock;
 
     #[tokio::test]
-    async fn get_captcha_image_should_get_vaild_image() {
+    async fn get_captcha_image_should_get_valid_image() {
         // region: Arrange
         let test_id = utils::function_id!();
         tracing_setup::subscribe();
@@ -84,7 +90,14 @@ mod tests {
 
                 Mock::given(wiremock::matchers::method("GET"))
                     .and(wiremock::matchers::path("/venturein/pbntc/captchaImg.do"))
-                    .respond_with(wiremock::ResponseTemplate::new(200).set_body_bytes(golden_file))
+                    .respond_with(
+                        wiremock::ResponseTemplate::new(200)
+                            .set_body_bytes(golden_file)
+                            .append_header(
+                                "Set-Cookie",
+                                "SESSION_TTL=20241003172138; Max-Age=1800",
+                            ),
+                    )
                     .expect(1)
                     .mount(&mock_server)
                     .instrument(tracing::info_span!("test", ?test_id))
@@ -101,8 +114,16 @@ mod tests {
         // endregion: Act
 
         // region Assert
-        assert_eq!(captcha_image.id, "hi");
-        tracing::trace!(?captcha_image.image, "Captcha image");
+        let width = captcha_image.image.width();
+        let height = captcha_image.image.height();
+        assert!(width > 0);
+        assert!(height > 0);
+
+        // There should be cookies to map future answers to the captcha image
+        assert!(!captcha_image.cookies.is_empty());
+
+        // There should be no answer to the captcha image
+        assert!(captcha_image.answer.is_none());
         // endregion: Assert
 
         // region: Cleanup

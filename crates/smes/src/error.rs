@@ -17,7 +17,26 @@ pub enum SmesError {
     Reqwest(#[from] reqwest::Error),
     #[error("Unsuccessful response error: {0}")]
     UnsuccessfulResponse(#[from] UnsuccessfulResponseError),
+    #[error("External API error: {0}")]
+    ExternalApi(#[from] ExternalApiError),
+    #[error("Serde JSON error: {0}")]
+    SerdeJson(#[from] serde_json::Error),
 }
+
+#[derive(Debug)]
+pub struct ExternalApiError {
+    pub source: Option<Box<dyn std::error::Error>>,
+    pub message: &'static str,
+}
+
+#[cfg_attr(coverage_nightly, coverage(off))]
+impl std::fmt::Display for ExternalApiError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "External API error: {}", self.message)
+    }
+}
+
+impl_error!(ExternalApiError);
 
 #[derive(Debug)]
 pub struct BuildError {
