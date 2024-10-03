@@ -115,7 +115,9 @@ jobs:
         # Use nextest as default.
         # You can use `--codecov` to use region coverage, but [the way Codecov shows region/branch coverage is not very good.](https://github.com/taiki-e/cargo-llvm-cov/pull/255#issuecomment-1513318191)
       - name: cargo llvm-cov nextest
-        run: cargo llvm-cov nextest --locked --workspace --all-features --lcov --output-path lcov.info
+        # Test only library unit tests, as it's assumed that most of the logic is in the library.
+        # Modify it to `--all-targets`, etc. if you also want to test binaries.
+        run: cargo llvm-cov nextest --workspace --all-features --lib --lcov --locked --output-path lcov.info
       - name: Record Rust version
         run: echo "RUST=$(rustc --version)" >> "$GITHUB_ENV"
       - name: Upload to codecov.io

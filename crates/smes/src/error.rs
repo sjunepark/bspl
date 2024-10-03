@@ -1,4 +1,4 @@
-use crate::ListResponse;
+use std::str::Utf8Error;
 use utils::impl_error;
 
 #[derive(thiserror::Error, Debug)]
@@ -6,21 +6,21 @@ pub enum SmesError {
     #[error("Build error: {0}")]
     Build(#[from] BuildError),
     #[error("Conversion error: {0}")]
-    Conversion(#[from] ByteDecodeError),
+    Conversion(#[from] Utf8Error),
     #[error("Deserialization error: {0}")]
     Deserialization(#[from] DeserializationError),
+    #[error("External API error: {0}")]
+    ExternalApi(#[from] ExternalApiError),
     #[error("Image error: {0}")]
     Image(#[from] image::ImageError),
     #[error("Missing expected field: {0}")]
     MissingExpectedField(String),
     #[error("HTTP error: {0}")]
     Reqwest(#[from] reqwest::Error),
-    #[error("Unsuccessful response error: {0}")]
-    UnsuccessfulResponse(#[from] UnsuccessfulResponseError),
-    #[error("External API error: {0}")]
-    ExternalApi(#[from] ExternalApiError),
     #[error("Serde JSON error: {0}")]
     SerdeJson(#[from] serde_json::Error),
+    #[error("Unsuccessful response error: {0}")]
+    UnsuccessfulResponse(#[from] UnsuccessfulResponseError),
 }
 
 #[derive(Debug)]
@@ -75,7 +75,7 @@ pub struct UnsuccessfulResponseError {
     pub message: &'static str,
     pub status: reqwest::StatusCode,
     pub headers: reqwest::header::HeaderMap,
-    pub body: Option<ListResponse>,
+    pub body: String,
 }
 
 #[cfg_attr(coverage_nightly, coverage(off))]
@@ -90,18 +90,3 @@ impl std::fmt::Display for UnsuccessfulResponseError {
 }
 
 impl_error!(UnsuccessfulResponseError);
-
-#[derive(Debug)]
-pub struct ByteDecodeError {
-    pub source: Option<Box<dyn std::error::Error>>,
-    pub message: &'static str,
-}
-
-#[cfg_attr(coverage_nightly, coverage(off))]
-impl std::fmt::Display for ByteDecodeError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Conversion error: {}", self.message)
-    }
-}
-
-impl_error!(ByteDecodeError);

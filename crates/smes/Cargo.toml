@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-anyhow = { workspace = true }
+backon = { workspace = true }
 base64 = { workspace = true }
 bytes = { workspace = true }
 derive_builder = { workspace = true }
@@ -19,6 +19,7 @@ thiserror = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true, features = ["log"] }
 utils = { workspace = true }
+log = "0.4.22"
 
 [dev-dependencies]
 goldrust = { workspace = true, features = ["image"] }

@@ -161,3 +161,43 @@ mod test_impl {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn company_try_from_should_fail_for_invalid_field_values() {
+        let company = smes::Company {
+            vnia_sn: 1071180,
+            rprsv_nm: "김성국".to_string(),
+            hdofc_addr: "경기도 김포시".to_string(),
+            bizrno: "5632000760".to_string(),
+            cmp_nm: "루키게임즈".to_string(),
+            indsty_cd: "63999".to_string(),
+            indsty_nm: "그 외 기타 정보 서비스업".to_string(),
+        };
+
+        let invalid_id = 123456_usize;
+        let invalid_business_registration_number = "123456789";
+        let invalid_industry_code = "1234";
+
+        let invalid_id_company = smes::Company {
+            vnia_sn: invalid_id,
+            ..company.clone()
+        };
+        assert!(Company::try_from(invalid_id_company).is_err());
+
+        let invalid_business_registration_number_company = smes::Company {
+            bizrno: invalid_business_registration_number.to_string(),
+            ..company.clone()
+        };
+        assert!(Company::try_from(invalid_business_registration_number_company).is_err());
+
+        let invalid_industry_code_company = smes::Company {
+            indsty_cd: invalid_industry_code.to_string(),
+            ..company
+        };
+        assert!(Company::try_from(invalid_industry_code_company).is_err());
+    }
+}

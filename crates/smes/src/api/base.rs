@@ -9,6 +9,38 @@ pub(crate) struct ParsedResponse {
     pub(crate) bytes: bytes::Bytes,
 }
 
+impl ParsedResponse {
+    pub(crate) async fn with_reqwest_response(
+        response: reqwest::Response,
+    ) -> Result<Self, SmesError> {
+        // Extract for future use.
+        // This is because reqwest consumes the response when parsing the body.
+        let status = response.status();
+        let headers = response.headers().clone();
+        let bytes = response.bytes().await.map_err(SmesError::Reqwest)?;
+
+        // Convert to string for error handling
+        let body = std::str::from_utf8(&bytes).unwrap_or("Failed to decode bytes body");
+
+        // Check status code
+        if !status.is_success() {
+            return Err(SmesError::UnsuccessfulResponse(UnsuccessfulResponseError {
+                message: "Request returned an unsuccessful status code",
+                status,
+                headers,
+                body: body.to_string(),
+                source: None,
+            }));
+        };
+
+        Ok(ParsedResponse {
+            status,
+            headers,
+            bytes,
+        })
+    }
+}
+
 pub(crate) trait Api: Default {
     fn client(&self) -> &reqwest::Client;
 
@@ -41,29 +73,6 @@ pub(crate) trait Api: Default {
         let response = builder.send().await?;
         tracing::trace!(?response, ?domain, "Received response");
 
-        // Extract for future use.
-        // This is because reqwest consumes the response when parsing the body.
-        let status = response.status();
-        let headers = response.headers().clone();
-
-        // Check status code
-        if !response.status().is_success() {
-            return Err(SmesError::UnsuccessfulResponse(UnsuccessfulResponseError {
-                message: "Request returned an unsuccessful status code",
-                status,
-                headers,
-                body: None,
-                source: None,
-            }));
-        };
-
-        // Parse the response body
-        let bytes = response.bytes().await.map_err(SmesError::Reqwest)?;
-
-        Ok(ParsedResponse {
-            status,
-            headers,
-            bytes,
-        })
+        ParsedResponse::with_reqwest_response(response).await
     }
 }

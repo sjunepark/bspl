@@ -1,9 +1,8 @@
 use crate::api::base::Api;
-use crate::SmesError;
-use image::DynamicImage;
-
 use crate::api::header::HeaderMapExt;
-use reqwest::header::{HeaderMap, HeaderValue, SET_COOKIE};
+use crate::api::model::Captcha;
+use crate::SmesError;
+use reqwest::header::{HeaderMap, SET_COOKIE};
 use reqwest::{Client, Method};
 
 pub struct BsplApi {
@@ -29,7 +28,7 @@ impl Default for BsplApi {
 }
 
 impl BsplApi {
-    pub async fn get_captcha_image(&self) -> Result<CaptchaImage, SmesError> {
+    pub async fn get_captcha_image(&self) -> Result<Captcha, SmesError> {
         let response = self
             .request(
                 Method::GET,
@@ -49,19 +48,13 @@ impl BsplApi {
             .collect();
 
         // todo: implement id
-        Ok(CaptchaImage {
+        Ok(Captcha {
             image,
             cookies,
+            nopecha_id: None,
             answer: None,
         })
     }
-}
-
-#[derive(Debug)]
-pub struct CaptchaImage {
-    pub image: DynamicImage,
-    pub cookies: Vec<HeaderValue>,
-    pub answer: Option<String>,
 }
 
 #[cfg(test)]

@@ -12,7 +12,7 @@ run bin="":
 # Watch
 
 watch:
-     {{watch_base}} -x "c --workspace --all-features"
+     {{watch_base}} -x "c --workspace --all-features --all-targets"
 
 watch-test name="":
     {{watch_base}} -s "just test {{name}}"
@@ -54,7 +54,11 @@ bench name="":
 
 cov:
     clear
-    rustup run nightly cargo llvm-cov nextest --open --workspace --all-features --all-targets --locked
+    rustup run nightly cargo llvm-cov nextest --open --workspace --all-features --lib --locked
+
+lint:
+    clear
+    cargo clippy --workspace --all-features --all-targets --locked
 
 ## DB
 turso-dev:
