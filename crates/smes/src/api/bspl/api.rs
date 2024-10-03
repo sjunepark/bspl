@@ -6,7 +6,7 @@ use crate::api::header::HeaderMapExt;
 use reqwest::header::HeaderMap;
 use reqwest::{Client, Method};
 
-struct BsplApi {
+pub struct BsplApi {
     client: Client,
     pub domain: String,
 }
@@ -29,7 +29,7 @@ impl Default for BsplApi {
 }
 
 impl BsplApi {
-    async fn get_captcha_image(&self) -> Result<CaptchaImage, SmesError> {
+    pub async fn get_captcha_image(&self) -> Result<CaptchaImage, SmesError> {
         let request_response = self
             .request::<NoPayload>(
                 Method::GET,
@@ -52,10 +52,10 @@ impl BsplApi {
 }
 
 #[derive(Debug)]
-struct CaptchaImage {
-    id: String,
-    image: DynamicImage,
-    answer: Option<String>,
+pub struct CaptchaImage {
+    pub id: String,
+    pub image: DynamicImage,
+    pub answer: Option<String>,
 }
 
 #[cfg(test)]
