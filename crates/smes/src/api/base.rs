@@ -10,7 +10,9 @@ pub(crate) struct ParsedResponse {
 }
 
 impl ParsedResponse {
-    async fn with_reqwest_response(response: reqwest::Response) -> Result<Self, SmesError> {
+    pub(crate) async fn with_reqwest_response(
+        response: reqwest::Response,
+    ) -> Result<Self, SmesError> {
         // Extract for future use.
         // This is because reqwest consumes the response when parsing the body.
         let status = response.status();

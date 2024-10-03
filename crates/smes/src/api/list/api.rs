@@ -1,6 +1,6 @@
 use crate::api::base::Api;
 use crate::api::header::HeaderMapExt;
-use crate::error::{BuildError, ByteDecodeError, DeserializationError, UnsuccessfulResponseError};
+use crate::error::{BuildError, DeserializationError, UnsuccessfulResponseError};
 use crate::{ListPayload, ListPayloadBuilder, ListResponse, SmesError};
 use reqwest::header::HeaderMap;
 use reqwest::{Client, Method};
@@ -53,17 +53,13 @@ impl ListApi {
             )
             .await?;
 
-        let text = std::str::from_utf8(&request_response.bytes).map_err(|e| {
-            SmesError::Conversion(ByteDecodeError {
-                message: "Failed to convert bytes to string",
-                source: Some(e.into()),
-            })
-        })?;
+        let text =
+            std::str::from_utf8(&request_response.bytes).unwrap_or("Failed to decode bytes body");
 
         // Deserialize the request response
         let response: ListResponse =
             serde_json::from_slice(&request_response.bytes).map_err(|e| {
-                SmesError::Deserialization(DeserializationError {
+                Into::<SmesError>::into(DeserializationError {
                     message: "Failed to deserialize response",
                     serialized: text.to_string(),
                     source: Some(e.into()),
@@ -72,17 +68,18 @@ impl ListApi {
 
         // Check if the response returned a successful result
         if !response.is_success() {
-            return Err(SmesError::UnsuccessfulResponse(UnsuccessfulResponseError {
+            return Err(Into::<SmesError>::into(UnsuccessfulResponseError {
                 message: "Response returned an unsuccessful result",
                 status: request_response.status,
                 headers: request_response.headers,
-                body: Some(response),
+                body: text.to_string(),
                 source: None,
             }));
         }
         Ok(response)
     }
 
+    #[tracing::instrument(skip(self))]
     pub async fn get_company_list_count(&self) -> Result<usize, SmesError> {
         let payload = ListPayloadBuilder::default().build().map_err(|e| {
             SmesError::Build(BuildError {

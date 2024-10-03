@@ -29,7 +29,7 @@ impl Default for BsplApi {
 }
 
 impl BsplApi {
-    pub async fn get_captcha_image(&self) -> Result<CaptchaImage, SmesError> {
+    pub async fn get_captcha_image(&self) -> Result<Captcha, SmesError> {
         let response = self
             .request(
                 Method::GET,
@@ -49,19 +49,31 @@ impl BsplApi {
             .collect();
 
         // todo: implement id
-        Ok(CaptchaImage {
+        Ok(Captcha {
             image,
             cookies,
+            nopecha_id: None,
             answer: None,
         })
     }
 }
 
-#[derive(Debug)]
-pub struct CaptchaImage {
+#[derive(Clone)]
+pub struct Captcha {
     pub image: DynamicImage,
     pub cookies: Vec<HeaderValue>,
+    pub nopecha_id: Option<String>,
     pub answer: Option<String>,
+}
+
+impl std::fmt::Debug for Captcha {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Captcha")
+            .field("cookies", &self.cookies)
+            .field("nopecha_id", &self.nopecha_id)
+            .field("answer", &self.answer)
+            .finish()
+    }
 }
 
 #[cfg(test)]
