@@ -21,7 +21,7 @@ tracing = { workspace = true, features = ["log"] }
 utils = { workspace = true }
 
 [dev-dependencies]
-goldrust = { workspace = true }
+goldrust = { workspace = true, features = ["image"] }
 tracing-setup = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 wiremock = { workspace = true }

@@ -1,51 +1,114 @@
-use crate::api::base::Api;
-use crate::{header_map, impl_default_api};
+use crate::api::base::{Api, NoPayload};
+use crate::SmesError;
 use image::DynamicImage;
-use reqwest::header::{
-    HeaderMap, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CONNECTION, HOST, PRAGMA, REFERER,
-    USER_AGENT,
-};
 
-use reqwest::Client;
+use crate::api::header::HeaderMapExt;
+use reqwest::header::HeaderMap;
+use reqwest::{Client, Method};
 
 struct BsplApi {
     client: Client,
     pub domain: String,
 }
 
-impl_default_api!(BsplApi);
-
 impl Api for BsplApi {
-    fn headers() -> HeaderMap {
-        header_map!(
-            ACCEPT => "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-            ACCEPT_ENCODING => "gzip, deflate, br, zstd",
-            ACCEPT_LANGUAGE => "en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7,id;q=0.6",
-            CONNECTION => "keep-alive",
-            HOST => "www.smes.go.kr",
-            PRAGMA => "no-cache",
-            REFERER => "https://www.smes.go.kr/venturein/pbntc/searchVntrCmp",
-            "Sec-Fetch-Dest" => "image",
-            "Sec-Fetch-Mode" => "no-cors",
-            "Sec-Fetch-Site" => "same-origin",
-            USER_AGENT => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
-            "dnt" => "1",
-            "sec-ch-ua" => "\"Google Chrome\";v=\"129\", \"Not=A?Brand\";v=\"8\", \"Chromium\";v=\"129\"",
-            "sec-ch-ua-mobile" => "?0",
-            "sec-ch-ua-platform" => "\"macOS\"",
-            "sec-gpc" => "1"
-        )
-    }
-
     fn client(&self) -> &Client {
-        todo!()
+        &self.client
     }
 }
 
-impl BsplApi {}
+impl Default for BsplApi {
+    fn default() -> Self {
+        Self {
+            client: Client::builder()
+                .build()
+                .expect("Failed to build reqwest client"),
+            domain: "https://www.smes.go.kr".to_string(),
+        }
+    }
+}
 
+impl BsplApi {
+    async fn get_captcha_image(&self) -> Result<CaptchaImage, SmesError> {
+        let request_response = self
+            .request::<NoPayload>(
+                Method::GET,
+                &self.domain,
+                "/venturein/pbntc/captchaImg.do",
+                HeaderMap::with_bspl_captcha(),
+                None,
+            )
+            .await?;
+
+        let image = image::load_from_memory(&request_response.bytes)?;
+
+        // todo: implement id
+        Ok(CaptchaImage {
+            id: "hi".to_string(),
+            image,
+            answer: None,
+        })
+    }
+}
+
+#[derive(Debug)]
 struct CaptchaImage {
     id: String,
     image: DynamicImage,
-    answer: String,
+    answer: Option<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use goldrust::{goldrust, Content, Goldrust, ResponseSource};
+    use tracing::Instrument;
+    use wiremock::Mock;
+
+    #[tokio::test]
+    async fn get_captcha_image_should_get_vaild_image() {
+        // region: Arrange
+        let test_id = utils::function_id!();
+        tracing_setup::subscribe();
+        let mut goldrust = goldrust!("png");
+
+        let mock_server = wiremock::MockServer::start()
+            .instrument(tracing::info_span!("test", ?test_id))
+            .await;
+        let mut api = BsplApi::default();
+
+        match goldrust.response_source {
+            ResponseSource::Local => {
+                let golden_file =
+                    std::fs::read(&goldrust.golden_file_path).expect("Failed to read golden file");
+
+                Mock::given(wiremock::matchers::method("GET"))
+                    .and(wiremock::matchers::path("/venturein/pbntc/captchaImg.do"))
+                    .respond_with(wiremock::ResponseTemplate::new(200).set_body_bytes(golden_file))
+                    .expect(1)
+                    .mount(&mock_server)
+                    .instrument(tracing::info_span!("test", ?test_id))
+                    .await;
+
+                api.domain = mock_server.uri();
+            }
+            ResponseSource::External => {}
+        }
+        // endregion: Arrange
+
+        // region: Act
+        let captcha_image = api.get_captcha_image().await.unwrap();
+        // endregion: Act
+
+        // region Assert
+        assert_eq!(captcha_image.id, "hi");
+        tracing::trace!(?captcha_image.image, "Captcha image");
+        // endregion: Assert
+
+        // region: Cleanup
+        goldrust
+            .save(Content::Image(captcha_image.image))
+            .expect("Failed to save image");
+        // endregion: Cleanup
+    }
 }

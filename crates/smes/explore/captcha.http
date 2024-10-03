@@ -41,6 +41,12 @@ sec-ch-ua-mobile: ?0
 sec-ch-ua-platform: "macOS"
 sec-gpc: 1
 
+#Set-Cookie: SESSION_TTL=20241003172138; Max-Age=1800; Expires=Thu, 03-Oct-2024 08:21:38 GMT; Path=/; Secure
+#Set-Cookie: SMESSESSION=52631aca-0a20-4edc-bcce-3984f073a630; Path=/venturein/; HttpOnly
+#Set-Cookie: __VCAP_ID__=e5ecb9bb-7173-4d57-57c2-360b; Path=/venturein; HttpOnly
+
+
+
 ### Submit the answer
 GET /venturein/pbntc/searchVntrCmpDtls?vniaSn=1097842&captcha=756706 HTTP/1.1
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7

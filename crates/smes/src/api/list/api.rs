@@ -1,12 +1,8 @@
 use crate::api::base::Api;
+use crate::api::header::HeaderMapExt;
 use crate::error::{BuildError, ByteDecodeError, DeserializationError, UnsuccessfulResponseError};
-use crate::{
-    header_map, impl_default_api, ListPayload, ListPayloadBuilder, ListResponse, SmesError,
-};
-use reqwest::header::{
-    HeaderMap, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CONNECTION, CONTENT_TYPE, HOST, ORIGIN,
-    REFERER, USER_AGENT,
-};
+use crate::{ListPayload, ListPayloadBuilder, ListResponse, SmesError};
+use reqwest::header::HeaderMap;
 use reqwest::{Client, Method};
 use std::fmt::Debug;
 
@@ -18,38 +14,29 @@ pub struct ListApi {
     pub domain: String,
 }
 
-impl_default_api!(ListApi);
-
 impl Api for ListApi {
-    fn headers() -> HeaderMap {
-        header_map! {
-            ACCEPT => "application/json, text/javascript, */*; q=0.01",
-            ACCEPT_ENCODING => "gzip, deflate, br, zstd",
-            ACCEPT_LANGUAGE => "en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7,id;q=0.6",
-            CONNECTION => "keep-alive",
-            CONTENT_TYPE => "application/json; charset=UTF-8",
-            HOST => "www.smes.go.kr",
-            ORIGIN => "https://www.smes.go.kr",
-            REFERER => "https://www.smes.go.kr/venturein/pbntc/searchVntrCmp",
-            "Sec-Fetch-Dest" => "empty",
-            "Sec-Fetch-Mode" => "cors",
-            "Sec-Fetch-Site" => "same-origin",
-            USER_AGENT => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
-            "X-Requested-With" => "XMLHttpRequest",
-            "dnt" => "1",
-            "sec-ch-ua" => "\"Google Chrome\";v=\"129\", \"Not=A?Brand\";v=\"8\", \"Chromium\";v=\"129\"",
-            "sec-ch-ua-mobile" => "?0",
-            "sec-ch-ua-platform" => "\"macOS\"",
-            "sec-gpc" => "1"
-        }
-    }
-
     fn client(&self) -> &Client {
         &self.client
     }
 }
 
+impl Default for ListApi {
+    fn default() -> Self {
+        Self {
+            client: Client::builder()
+                .default_headers(HeaderMap::with_list())
+                .build()
+                .expect("Failed to build reqwest client"),
+            domain: "https://www.smes.go.kr".to_string(),
+        }
+    }
+}
+
 impl ListApi {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     /// Returns an error in the following cases:
     /// - Request returned a status code other than 200
     /// - Request returned a status code of 200,
@@ -61,6 +48,7 @@ impl ListApi {
                 Method::POST,
                 &self.domain,
                 "/venturein/pbntc/searchVntrCmpAction",
+                HeaderMap::with_list(),
                 Some(payload),
             )
             .await?;
@@ -114,7 +102,7 @@ impl ListApi {
 #[cfg(test)]
 mod tests {
     use crate::{ListApi, ListPayloadBuilder, ListResponse};
-    use goldrust::{goldrust, Goldrust, ResponseSource};
+    use goldrust::{goldrust, Content, Goldrust, ResponseSource};
     use tracing::Instrument;
     use wiremock::matchers::{method, path};
     use wiremock::{Mock, ResponseTemplate};
@@ -124,7 +112,7 @@ mod tests {
         // region: Arrange
         let test_id = utils::function_id!();
         tracing_setup::subscribe();
-        let mut goldrust = goldrust!();
+        let mut goldrust = goldrust!("json");
 
         let mock_server = wiremock::MockServer::start()
             .instrument(tracing::info_span!("test", ?test_id))
@@ -185,7 +173,9 @@ mod tests {
 
         // region: Cleanup
         goldrust
-            .save(response)
+            .save(Content::Json(
+                serde_json::to_value(response).expect("Failed to convert to serde_json::Value"),
+            ))
             .inspect_err(|e| {
                 tracing::error!(?e, "Failed to save response");
             })
