@@ -1,8 +1,8 @@
 #![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
-mod api;
+pub mod api;
 mod error;
 mod utils;
 
-pub use api::{BsplApi, Company, ListApi, ListPayload, ListPayloadBuilder, ListResponse};
+pub use api::{BsplApi, Company, ListApi, ListPayload, ListPayloadBuilder, ListResponse, VniaSn};
 pub use error::SmesError;

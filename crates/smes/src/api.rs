@@ -6,4 +6,5 @@ mod model;
 mod nopecha;
 
 pub use bspl::BsplApi;
-pub use list::{Company, ListApi, ListPayload, ListPayloadBuilder, ListResponse};
+pub use list::{ListApi, ListPayload, ListPayloadBuilder, ListResponse};
+pub use model::{Company, VniaSn};

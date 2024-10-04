@@ -1,11 +1,12 @@
 // todo: clean up tracing
 
 use crate::api::base::ParsedResponse;
-use crate::api::model::Captcha;
+use crate::api::model::{Captcha, Solved, Submitted, Unsubmitted};
 use crate::error::{ExternalApiError, UnsuccessfulResponseError};
 use crate::SmesError;
 use base64::engine::general_purpose;
 use base64::Engine;
+use crossbeam_channel::Receiver;
 use image::DynamicImage;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -33,12 +34,22 @@ impl Default for NopeChaApi {
 }
 
 impl NopeChaApi {
+    pub(crate) async fn submit_challenges(
+        &self,
+        captchas: Receiver<Result<Captcha<Unsubmitted>, SmesError>>,
+    ) -> Receiver<Result<Captcha<Submitted>, SmesError>> {
+        unimplemented!();
+    }
+
     /// * `image_data` - Image data encoded in base64
-    #[tracing::instrument(skip(self))]
     /// Submit a captcha and get a captcha with a `nopecha_id`.
     /// The `nopecha_id` should be later submitted to get the answer.
-    async fn submit_challenge(&self, mut captcha: Captcha) -> Result<Captcha, SmesError> {
-        let image = image_to_base64(&captcha.image)?;
+    #[tracing::instrument(skip(self))]
+    async fn submit_challenge(
+        &self,
+        mut captcha: Captcha<Unsubmitted>,
+    ) -> Result<Captcha<Submitted>, SmesError> {
+        let image = image_to_base64(&captcha.image())?;
 
         let payload = json!({
             "key": self.api_key,
@@ -55,16 +66,18 @@ impl NopeChaApi {
         let response = ParsedResponse::with_reqwest_response(response).await?;
 
         let answer: ChallengeAnswer = serde_json::from_slice(&response.bytes)?;
-
-        captcha.nopecha_id = Some(answer.data);
-        Ok(captcha)
+        let nopecha_id = answer.data;
+        Ok(captcha.submit(&nopecha_id))
     }
 
     #[tracing::instrument(skip(self))]
-    async fn get_answer(&self, mut captcha: Captcha) -> Result<Captcha, SmesError> {
+    async fn get_answer(
+        &self,
+        mut captcha: Captcha<Submitted>,
+    ) -> Result<Captcha<Solved>, SmesError> {
         let payload = json!({
             "key": self.api_key,
-            "id": captcha.nopecha_id,
+            "id": captcha.nopecha_id(),
         });
 
         let response = self
@@ -110,8 +123,7 @@ impl NopeChaApi {
                     .into());
                 }
 
-                captcha.answer = Some(answer);
-                captcha
+                captcha.solve(answer)
             }),
             ApiResponse::Error(error) => Err(UnsuccessfulResponseError {
                 message: "Nopecha API returned an error",
@@ -142,6 +154,7 @@ fn image_to_base64(image: &DynamicImage) -> Result<String, SmesError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::api::model::Captcha;
     use backon::{ConstantBuilder, Retryable};
     use goldrust::{goldrust, Content, Goldrust, ResponseSource};
     use tracing::Instrument;
@@ -194,11 +207,13 @@ mod tests {
             .await
             .expect("Failed to submit captcha");
 
-        let nopecha_id = captcha.nopecha_id.to_owned().expect("No nopecha_id");
+        let nopecha_id = captcha.nopecha_id();
         // endregion: Act
 
         // region: Cleanup
-        let challenge_answer = ChallengeAnswer { data: nopecha_id };
+        let challenge_answer = ChallengeAnswer {
+            data: nopecha_id.to_string(),
+        };
         goldrust
             .save(Content::Json(
                 serde_json::to_value(&challenge_answer).expect("Failed to serialize"),
@@ -250,21 +265,16 @@ mod tests {
         .await
         .expect("Failed to get answer");
 
-        assert_eq!(result.answer.as_ref().expect("No answer"), "160665");
+        assert_eq!(result.answer(), "160665");
     }
 
-    fn get_local_captcha() -> Captcha {
+    fn get_local_captcha() -> Captcha<Unsubmitted> {
         let captcha_path = concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/resources/captcha/160665.png"
         );
         let captcha_image = image::open(captcha_path).expect("Failed to load image");
 
-        Captcha {
-            image: captcha_image,
-            cookies: vec![],
-            nopecha_id: None,
-            answer: None,
-        }
+        Captcha::new(captcha_image, vec![])
     }
 }
