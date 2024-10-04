@@ -1,8 +1,7 @@
 use crate::api::base::Api;
 use crate::api::header::HeaderMapExt;
-use crate::api::model::{Captcha, Html, Solved, Submitted, Unsubmitted};
-use crate::api::nopecha::NopeChaApi;
-use crate::{SmesError, VniaSn};
+use crate::api::model::{Captcha, Html, Unsubmitted};
+use crate::SmesError;
 use reqwest::header::{HeaderMap, HeaderValue, SET_COOKIE};
 use reqwest::{Client, Method};
 
@@ -29,89 +28,12 @@ impl Default for BsplApi {
 }
 
 impl BsplApi {
-    /// The entry point of getting the bspl HTMLs.
-    ///
-    /// * `companies` - A channel receiver of company ids
-    ///
-    /// This function will perform multiple operations, communicating with channels.
-    /// 1. Get captcha images to solve
-    /// 2. Solve the captchas and store each answer with the corresponding captcha
-    /// 3. Request for the corresponding bspl HTML with the captcha answer
-    ///
-    /// Process #3 is independent of #1 and #2.
-    /// You can submit any cookies and answer combination to get a bspl.
-    ///
-    /// ## Error handling
-    /// Each process is not going to do any early returns on an error.
-    /// The error will be stored with the captchas, so a single error cannot stop the whole process.
-    /// This allows captchas or companies with errors to be retried in the future
-    pub async fn get_bspl_htmls(
-        &self,
-        companies: crossbeam_channel::Receiver<VniaSn>,
-    ) -> Result<(), SmesError> {
-        const BUFFER_SIZE: usize = 8;
-
-        let rx = self.get_captchas(BUFFER_SIZE).await;
-
-        Ok(())
-    }
-
-    /// Fetch many captchas to solve.
-    ///
-    /// * `cap` - The maximum number of captchas to buffer in the channel.
-    ///
-    /// This function sends captchas to a channel that the receiver can consume.
-    /// It does not introduce any artificial delays between requests;
-    /// therefore, it may aggressively request captchas from the server if the receiver processes them quickly.
-    /// The receiver should control the rate of captcha processing to avoid overwhelming the server.
-    async fn get_captchas(
-        &self,
-        cap: usize,
-    ) -> crossbeam_channel::Receiver<Result<Captcha<Unsubmitted>, SmesError>> {
-        let (tx, rx) = crossbeam_channel::bounded::<Result<Captcha<Unsubmitted>, SmesError>>(cap);
-
-        loop {
-            let tx = tx.clone();
-            let captcha = self.get_captcha().await;
-            if let Err(e) = tx.send(captcha) {
-                tracing::trace!(?e, "Failed to send captcha. The channel has been closed.");
-                break;
-            }
-        }
-        rx
-    }
-
-    async fn solve_captchas(
-        &self,
-        rx: crossbeam_channel::Receiver<Result<Unsubmitted, SmesError>>,
-        cap: usize,
-    ) -> crossbeam_channel::Receiver<Result<Solved, SmesError>> {
-        let (tx, rx) = crossbeam_channel::bounded::<Result<Solved, SmesError>>(cap);
-        let api = NopeChaApi::default();
-
-        while let Ok(captcha) = rx.recv() {
-            let tx = tx.clone();
-            match captcha {
-                Ok(captcha) => {
-                    unimplemented!()
-                }
-                Err(_) => {
-                    if let Err(e) = tx.send(captcha) {
-                        tracing::trace!(?e, "Failed to send captcha. The channel has been closed.");
-                        break;
-                    }
-                }
-            }
-        }
-
-        rx
-    }
-
     /// Get a captcha image from the smes website.
     ///
     /// The cookie information is stored with the captcha,
     /// and it will later be used to be submitted together with the answer.
-    async fn get_captcha(&self) -> Result<Captcha<Unsubmitted>, SmesError> {
+    #[tracing::instrument(skip(self))]
+    pub(crate) async fn get_captcha(&self) -> Result<Captcha<Unsubmitted>, SmesError> {
         let response = self
             .request(
                 Method::GET,
@@ -139,12 +61,15 @@ impl BsplApi {
     ///
     /// You need to submit the pre-solved captcha answer together with the cookies.
     /// The smes website knows which captcha the answer belongs to by the cookies.
-    async fn get_bspl_html(
+    #[tracing::instrument(skip(self))]
+    pub(crate) async fn get_bspl_html(
         &self,
         cookies: Vec<HeaderValue>,
-        company_id: &str,
+        company_id: usize,
         captcha_answer: &str,
     ) -> Result<Html, SmesError> {
+        tracing::trace!("Getting bspl html");
+
         let mut headers = HeaderMap::with_bspl();
         cookies.into_iter().for_each(|cookie| {
             headers.insert(SET_COOKIE, cookie);
@@ -156,7 +81,10 @@ impl BsplApi {
                 &self.domain,
                 "/venturein/pbntc/searchVntrCmpDtls",
                 headers,
-                Some(&[("vniaSn ", company_id), ("captcha", captcha_answer)]),
+                Some(&[
+                    ("vniaSn", company_id.to_string().as_str()),
+                    ("captcha", captcha_answer),
+                ]),
                 None,
             )
             .await?;

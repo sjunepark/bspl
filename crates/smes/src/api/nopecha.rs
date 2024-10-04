@@ -4,26 +4,27 @@ use crate::api::base::ParsedResponse;
 use crate::api::model::{Captcha, Solved, Submitted, Unsubmitted};
 use crate::error::{ExternalApiError, UnsuccessfulResponseError};
 use crate::SmesError;
+use backon::{ConstantBuilder, Retryable};
 use base64::engine::general_purpose;
 use base64::Engine;
-use crossbeam_channel::Receiver;
 use image::DynamicImage;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::fmt::Debug;
 use std::io::Cursor;
+use std::time::Duration;
 
 /// API for solving captcha using the Nopecha API
 /// ref: <https://developers.nopecha.com/recognition/textcaptcha/>
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
-pub(crate) struct NopeChaApi {
+pub(crate) struct NopechaApi {
     client: reqwest::Client,
     api_key: String,
     domain: String,
 }
 
-impl Default for NopeChaApi {
+impl Default for NopechaApi {
     fn default() -> Self {
         Self {
             client: reqwest::Client::new(),
@@ -33,21 +34,14 @@ impl Default for NopeChaApi {
     }
 }
 
-impl NopeChaApi {
-    pub(crate) async fn submit_challenges(
-        &self,
-        captchas: Receiver<Result<Captcha<Unsubmitted>, SmesError>>,
-    ) -> Receiver<Result<Captcha<Submitted>, SmesError>> {
-        unimplemented!();
-    }
-
+impl NopechaApi {
     /// * `image_data` - Image data encoded in base64
     /// Submit a captcha and get a captcha with a `nopecha_id`.
     /// The `nopecha_id` should be later submitted to get the answer.
-    #[tracing::instrument(skip(self))]
-    async fn submit_challenge(
+    #[tracing::instrument(skip(self, captcha))]
+    pub(crate) async fn submit_captcha(
         &self,
-        mut captcha: Captcha<Unsubmitted>,
+        captcha: Captcha<Unsubmitted>,
     ) -> Result<Captcha<Submitted>, SmesError> {
         let image = image_to_base64(&captcha.image())?;
 
@@ -67,13 +61,16 @@ impl NopeChaApi {
 
         let answer: ChallengeAnswer = serde_json::from_slice(&response.bytes)?;
         let nopecha_id = answer.data;
-        Ok(captcha.submit(&nopecha_id))
+
+        let captcha = captcha.submit(&nopecha_id);
+        tracing::trace!(?captcha, "Captcha submitted");
+        Ok(captcha)
     }
 
-    #[tracing::instrument(skip(self))]
-    async fn get_answer(
+    #[tracing::instrument(skip(self, captcha))]
+    pub(crate) async fn get_answer(
         &self,
-        mut captcha: Captcha<Submitted>,
+        captcha: Captcha<Submitted>,
     ) -> Result<Captcha<Solved>, SmesError> {
         let payload = json!({
             "key": self.api_key,
@@ -123,7 +120,9 @@ impl NopeChaApi {
                     .into());
                 }
 
-                captcha.solve(answer)
+                let captcha = captcha.solve(answer);
+                tracing::trace!(?captcha, "Captcha solved");
+                captcha
             }),
             ApiResponse::Error(error) => Err(UnsuccessfulResponseError {
                 message: "Nopecha API returned an error",
@@ -135,6 +134,29 @@ impl NopeChaApi {
             .into()),
         }
     }
+}
+
+// This is not in the NopechaApi
+// because we need a new instance of the api instance
+// to make multiple retries in the async environment.
+#[tracing::instrument]
+pub(crate) async fn get_answer_with_retries(
+    captcha: &Captcha<Submitted>,
+    max_retry: usize,
+    delay: Duration,
+) -> Result<Captcha<Solved>, SmesError> {
+    (|| async {
+        let api = NopechaApi::default();
+        api.get_answer(captcha.clone()).await
+    })
+    .retry(
+        ConstantBuilder::default()
+            .with_delay(delay)
+            .with_max_times(max_retry),
+    )
+    .when(|e| matches!(e, SmesError::UnsuccessfulResponse { .. }))
+    .notify(|e, duration| tracing::warn!(?e, ?duration, "Retrying get_answer"))
+    .await
 }
 
 #[allow(dead_code)]
@@ -176,7 +198,7 @@ mod tests {
         if matches!(goldrust.response_source, ResponseSource::Local) {
             std::env::set_var("NOPECHA_KEY", "test");
         }
-        let mut api = NopeChaApi::default();
+        let mut api = NopechaApi::default();
 
         match goldrust.response_source {
             ResponseSource::Local => {
@@ -202,7 +224,7 @@ mod tests {
 
         // Received captcha
         let captcha = api
-            .submit_challenge(captcha)
+            .submit_captcha(captcha)
             .instrument(tracing::info_span!("test", ?test_id))
             .await
             .expect("Failed to submit captcha");
@@ -236,12 +258,12 @@ mod tests {
             return;
         }
 
-        let api = NopeChaApi::default();
+        let api = NopechaApi::default();
 
         let captcha = get_local_captcha();
 
         let captcha = api
-            .submit_challenge(captcha)
+            .submit_captcha(captcha)
             .instrument(tracing::info_span!("test", ?function_id))
             .await
             .expect("Failed to submit captcha");
@@ -256,7 +278,7 @@ mod tests {
         }
         .retry(
             ConstantBuilder::default()
-                .with_delay(std::time::Duration::from_secs(1))
+                .with_delay(Duration::from_secs(1))
                 .with_max_times(10),
         )
         .when(|e| matches!(e, SmesError::UnsuccessfulResponse { .. }))

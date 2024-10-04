@@ -83,7 +83,6 @@ pub(crate) trait Api: Default {
         }
 
         let response = builder.send().await?;
-        tracing::trace!(?response, ?domain, "Received response");
 
         ParsedResponse::with_reqwest_response(response).await
     }

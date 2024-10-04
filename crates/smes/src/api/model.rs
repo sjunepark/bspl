@@ -2,6 +2,7 @@ use derive_more::Display;
 use image::DynamicImage;
 use reqwest::header::HeaderValue;
 use serde::{Deserialize, Serialize};
+use std::ops::Deref;
 
 // region: Captcha
 /// Represents a captcha which could be in the following three `State`s:
@@ -129,13 +130,21 @@ pub struct Company {
     pub indsty_nm: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Display)]
+#[derive(Debug, Serialize, Deserialize, Clone, Display, Copy)]
 pub struct VniaSn(pub usize);
 
+impl Deref for VniaSn {
+    type Target = usize;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub(crate) struct BsPl {
-    vnia_sn: VniaSn,
-    html: Option<Html>,
+pub struct BsPl {
+    pub vnia_sn: VniaSn,
+    pub html: Html,
 }
 // endregion: Company
 
