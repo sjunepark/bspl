@@ -70,6 +70,8 @@ impl NopeChaApi {
         let response = self
             .client
             .get(format!("{}/", self.domain))
+            // The docs require the key & id to be sent as query params and the payload
+            // ref: <https://developers.nopecha.com/recognition/textcaptcha/
             .query(&payload)
             .json(&payload)
             .send()

@@ -1,8 +1,8 @@
 use crate::api::base::Api;
 use crate::api::header::HeaderMapExt;
-use crate::api::model::Captcha;
+use crate::api::model::{Captcha, Html};
 use crate::SmesError;
-use reqwest::header::{HeaderMap, SET_COOKIE};
+use reqwest::header::{HeaderMap, HeaderValue, SET_COOKIE};
 use reqwest::{Client, Method};
 
 pub struct BsplApi {
@@ -36,6 +36,7 @@ impl BsplApi {
                 "/venturein/pbntc/captchaImg.do",
                 HeaderMap::with_bspl_captcha(),
                 None,
+                None,
             )
             .await?;
 
@@ -55,12 +56,43 @@ impl BsplApi {
             answer: None,
         })
     }
+
+    // todo: Has to be tested via integration tests because of captcha solving process
+    pub async fn get_bspl_html(
+        &self,
+        cookies: Vec<HeaderValue>,
+        company_id: &str,
+        captcha_answer: &str,
+    ) -> Result<Html, SmesError> {
+        let mut headers = HeaderMap::with_bspl();
+        cookies.into_iter().for_each(|cookie| {
+            headers.insert(SET_COOKIE, cookie);
+        });
+
+        let response = self
+            .request(
+                Method::POST,
+                &self.domain,
+                "/venturein/pbntc/searchVntrCmpDtls",
+                headers,
+                Some(&[("vniaSn ", company_id), ("captcha", captcha_answer)]),
+                None,
+            )
+            .await?;
+
+        let html = String::from_utf8(response.bytes.into()).inspect_err(|e| {
+            tracing::error!(?e, "Failed to decode response body");
+        })?;
+
+        Ok(html)
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use goldrust::{goldrust, Content, Goldrust, ResponseSource};
+    use reqwest::header::CONTENT_TYPE;
     use tracing::Instrument;
     use wiremock::Mock;
 
@@ -86,10 +118,8 @@ mod tests {
                     .respond_with(
                         wiremock::ResponseTemplate::new(200)
                             .set_body_bytes(golden_file)
-                            .append_header(
-                                "Set-Cookie",
-                                "SESSION_TTL=20241003172138; Max-Age=1800",
-                            ),
+                            .append_header(CONTENT_TYPE, "image/png")
+                            .append_header(SET_COOKIE, "SESSION_TTL=20241003172138; Max-Age=1800"),
                     )
                     .expect(1)
                     .mount(&mock_server)

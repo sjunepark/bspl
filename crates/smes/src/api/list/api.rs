@@ -49,12 +49,14 @@ impl ListApi {
                 &self.domain,
                 "/venturein/pbntc/searchVntrCmpAction",
                 HeaderMap::with_list(),
+                None,
                 Some(serde_json::to_value(payload)?),
             )
             .await?;
 
-        let text =
-            std::str::from_utf8(&request_response.bytes).unwrap_or("Failed to decode bytes body");
+        let text = std::str::from_utf8(&request_response.bytes).inspect_err(|e| {
+            tracing::error!(?e, "Failed to decode response body");
+        })?;
 
         // Deserialize the request response
         let response: ListResponse =

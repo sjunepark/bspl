@@ -1,6 +1,6 @@
 use crate::error::UnsuccessfulResponseError;
 use crate::SmesError;
-use reqwest::header::HeaderMap;
+use reqwest::header::{HeaderMap, CONTENT_TYPE};
 use reqwest::StatusCode;
 
 pub(crate) struct ParsedResponse {
@@ -19,8 +19,15 @@ impl ParsedResponse {
         let headers = response.headers().clone();
         let bytes = response.bytes().await.map_err(SmesError::Reqwest)?;
 
-        // Convert to string for error handling
-        let body = std::str::from_utf8(&bytes).unwrap_or("Failed to decode bytes body");
+        //  Check if image
+        let content_type = headers.get(CONTENT_TYPE).map(|v| v.to_str()).transpose()?;
+
+        let body = match content_type {
+            Some(content_type) if content_type.contains("image/") => "image data",
+            _ => std::str::from_utf8(&bytes).inspect_err(|e| {
+                tracing::error!(?e, "Failed to decode response body");
+            })?,
+        };
 
         // Check status code
         if !status.is_success() {
@@ -45,17 +52,17 @@ pub(crate) trait Api: Default {
     fn client(&self) -> &reqwest::Client;
 
     /// Default request method
-    /// * `domain` - The domain to send the request to
-    /// * `path` - The path to send the request to, should start with a `/`
-    /// * `payload` - The payload to send with the request.
-    ///
-    /// Should be serializable to JSON
+    /// * `domain` - The domain to send the request to.
+    /// * `path` - The path to send the request to, should start with a `/`.
+    /// * `headers` - The headers to send with the request, including the cookies.
+    /// * `payload` - The payload to send with the request (Should be serializable to JSON).
     async fn request(
         &self,
         method: reqwest::Method,
         domain: &str,
         path: &str,
         headers: HeaderMap,
+        query: Option<&[(&str, &str)]>,
         payload: Option<serde_json::Value>,
     ) -> Result<ParsedResponse, SmesError> {
         // Headers are set in the client with `default_headers`
@@ -66,6 +73,10 @@ pub(crate) trait Api: Default {
             // No need to use `.version(Version::HTTP_11)` as it's the default
             .request(method, format!("{}{}", domain, path))
             .headers(headers);
+
+        if let Some(query) = query {
+            builder = builder.query(&query);
+        }
 
         if let Some(payload) = payload {
             builder = builder.json(&payload);

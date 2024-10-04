@@ -18,3 +18,5 @@ impl std::fmt::Debug for Captcha {
             .finish()
     }
 }
+
+pub type Html = String;
