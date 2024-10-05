@@ -2,6 +2,8 @@
 
 pub mod api;
 mod error;
+mod html;
+mod model;
 mod utils;
 
 pub use api::{BsplApi, Company, ListApi, ListPayload, ListPayloadBuilder, ListResponse, VniaSn};

@@ -1,3 +1,4 @@
+use crate::html::Html;
 use derive_more::Display;
 use image::DynamicImage;
 use reqwest::header::HeaderValue;
@@ -146,8 +147,3 @@ pub struct BsPl {
     pub vnia_sn: VniaSn,
     pub html: Html,
 }
-// endregion: Company
-
-// region: Others
-pub type Html = String;
-// endregion: Others
