@@ -1,7 +1,10 @@
 use crate::error::UnsuccessfulResponseError;
 use crate::SmesError;
 use reqwest::header::{HeaderMap, CONTENT_TYPE};
-use reqwest::StatusCode;
+use reqwest::{Client, StatusCode};
+use reqwest_cookie_store::{CookieStore, CookieStoreMutex, RawCookie};
+use std::ops::Deref;
+use std::sync::{Arc, MutexGuard};
 
 pub(crate) struct ParsedResponse {
     pub(crate) status: StatusCode,
@@ -50,6 +53,24 @@ impl ParsedResponse {
 
 pub(crate) trait Api: Default {
     fn client(&self) -> &reqwest::Client;
+    /// Should return a cloned Arc of the cookie store
+    fn cookie_store(&self) -> &Arc<CookieStoreMutex>;
+
+    /// A guard is returned so that the reset cookies won't be modified by other processes
+    fn clear_cookies(&self) -> MutexGuard<CookieStore> {
+        self.cookie_store()
+            .lock()
+            .expect("Failed to lock cookie store")
+    }
+
+    fn cookies(&self) -> Vec<RawCookie> {
+        self.cookie_store()
+            .lock()
+            .expect("Failed to lock cookie store")
+            .iter_unexpired()
+            .map(|cookie| cookie.deref().to_owned())
+            .collect::<Vec<_>>()
+    }
 
     /// Default request method
     /// * `domain` - The domain to send the request to.
@@ -65,11 +86,22 @@ pub(crate) trait Api: Default {
         query: Option<&[(&str, &str)]>,
         payload: Option<serde_json::Value>,
     ) -> Result<ParsedResponse, SmesError> {
+        // Even though there could be performance penalties,
+        // the client is cloned to ensure consistency beyond await points.
+        // Without a separate client, it can't be guaranteed that the cookie store is not modified
+        let cookie_store = Arc::new(CookieStoreMutex::default());
+
+        let client = Client::builder()
+            .cookie_provider(Arc::clone(&cookie_store))
+            .build()
+            .expect("Failed to build reqwest client");
+        // Clear cookies before request
+        cookie_store.lock().unwrap().clear();
+
         // Headers are set in the client with `default_headers`
         // If additional headers are necessary,
         // headers can be modified with the `header` method on the request builder
-        let mut builder = self
-            .client()
+        let mut builder = client
             // No need to use `.version(Version::HTTP_11)` as it's the default
             .request(method, format!("{}{}", domain, path))
             .headers(headers);
@@ -83,6 +115,16 @@ pub(crate) trait Api: Default {
         }
 
         let response = builder.send().await?;
+
+        let cookies = cookie_store
+            .lock()
+            .unwrap()
+            .iter_unexpired()
+            .map(|cookie| cookie.deref().to_owned())
+            .collect::<Vec<_>>();
+
+        // todo: These cookies are currently empty
+        tracing::info!(?cookies, "Cookies after request");
 
         ParsedResponse::with_reqwest_response(response).await
     }

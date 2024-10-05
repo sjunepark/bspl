@@ -27,7 +27,7 @@ sec-gpc: 1
 # You have to send the corresponding cookie information of the original captcha image request.
 # The server seems to store the captcha answer based on the session information
 # responded for the original captcha image request.
-GET /venturein/pbntc/searchVntrCmpDtls?vniaSn=1097842&captcha=043375 HTTP/1.1
+GET /venturein/pbntc/searchVntrCmpDtls?vniaSn=1097842&captcha=673443 HTTP/1.1
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
 Accept-Encoding: gzip, deflate, br, zstd
 Accept-Language: en-US,en;q=0.9,ko-KR;q=0.8,ko;q=0.7,id;q=0.6

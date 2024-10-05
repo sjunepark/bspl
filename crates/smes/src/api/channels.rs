@@ -32,7 +32,7 @@ pub async fn get_bspl_htmls(companies: &[VniaSn]) -> UnboundedReceiver<BsPl> {
     let companies = companies.to_owned();
 
     tokio::spawn(async move {
-        let api = BsplApi::default();
+        let mut api = BsplApi::default();
         let mut index = 0;
 
         while let Some(captcha) = captcha_cookies.recv().await {
@@ -105,7 +105,7 @@ async fn get_captcha_cookies(count: usize) -> UnboundedReceiver<Captcha<Solved>>
 #[tracing::instrument]
 async fn get_captchas(count: usize, cap: usize) -> Receiver<Captcha<Unsubmitted>> {
     let (tx, rx) = channel::<Captcha<Unsubmitted>>(cap);
-    let api = BsplApi::default();
+    let mut api = BsplApi::default();
 
     tokio::spawn(async move {
         for i in 0..count {

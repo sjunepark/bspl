@@ -4,7 +4,9 @@ use crate::error::{BuildError, DeserializationError, UnsuccessfulResponseError};
 use crate::{ListPayload, ListPayloadBuilder, ListResponse, SmesError};
 use reqwest::header::HeaderMap;
 use reqwest::{Client, Method};
+use reqwest_cookie_store::{CookieStore, CookieStoreMutex};
 use std::fmt::Debug;
+use std::sync::Arc;
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -12,22 +14,30 @@ pub struct ListApi {
     client: Client,
     /// The domain, including the protocol of the api
     pub domain: String,
+    cookie_store: CookieStore,
 }
 
 impl Api for ListApi {
     fn client(&self) -> &Client {
         &self.client
     }
+
+    fn cookie_store(&self) -> &Arc<CookieStoreMutex> {
+        todo!()
+    }
 }
 
 impl Default for ListApi {
     fn default() -> Self {
+        let cookie_store = CookieStore::default();
+
         Self {
             client: Client::builder()
                 .default_headers(HeaderMap::with_list())
                 .build()
                 .expect("Failed to build reqwest client"),
             domain: "https://www.smes.go.kr".to_string(),
+            cookie_store,
         }
     }
 }
@@ -42,11 +52,16 @@ impl ListApi {
     /// - Request returned a status code of 200,
     ///   but the api response body contained an invalid result value
     #[tracing::instrument(skip(self))]
-    pub async fn get_company_list(&self, payload: &ListPayload) -> Result<ListResponse, SmesError> {
+    pub async fn get_company_list(
+        &mut self,
+        payload: &ListPayload,
+    ) -> Result<ListResponse, SmesError> {
+        let domain = self.domain.to_string();
+
         let request_response = self
             .request(
                 Method::POST,
-                &self.domain,
+                &domain,
                 "/venturein/pbntc/searchVntrCmpAction",
                 HeaderMap::with_list(),
                 None,
@@ -82,7 +97,7 @@ impl ListApi {
     }
 
     #[tracing::instrument(skip(self))]
-    pub async fn get_company_list_count(&self) -> Result<usize, SmesError> {
+    pub async fn get_company_list_count(&mut self) -> Result<usize, SmesError> {
         let payload = ListPayloadBuilder::default().build().map_err(|e| {
             SmesError::Build(BuildError {
                 message: "Failed to build payload",

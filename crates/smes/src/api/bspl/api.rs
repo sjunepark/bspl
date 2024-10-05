@@ -4,25 +4,36 @@ use crate::api::model::{Captcha, Html, Unsubmitted};
 use crate::SmesError;
 use reqwest::header::{HeaderMap, HeaderValue, SET_COOKIE};
 use reqwest::{Client, Method};
+use reqwest_cookie_store::CookieStoreMutex;
+use std::sync::Arc;
 
 pub struct BsplApi {
     client: Client,
     pub domain: String,
+    cookie_store: Arc<CookieStoreMutex>,
 }
 
 impl Api for BsplApi {
     fn client(&self) -> &Client {
         &self.client
     }
+
+    fn cookie_store(&self) -> &Arc<CookieStoreMutex> {
+        &self.cookie_store
+    }
 }
 
 impl Default for BsplApi {
     fn default() -> Self {
+        let cookie_store = Arc::new(CookieStoreMutex::default());
+
         Self {
             client: Client::builder()
+                .cookie_provider(Arc::clone(&cookie_store))
                 .build()
                 .expect("Failed to build reqwest client"),
             domain: "https://www.smes.go.kr".to_string(),
+            cookie_store,
         }
     }
 }
@@ -33,11 +44,13 @@ impl BsplApi {
     /// The cookie information is stored with the captcha,
     /// and it will later be used to be submitted together with the answer.
     #[tracing::instrument(skip(self))]
-    pub(crate) async fn get_captcha(&self) -> Result<Captcha<Unsubmitted>, SmesError> {
+    pub(crate) async fn get_captcha(&mut self) -> Result<Captcha<Unsubmitted>, SmesError> {
+        let domain = self.domain.to_string();
+
         let response = self
             .request(
                 Method::GET,
-                &self.domain,
+                &domain,
                 "/venturein/pbntc/captchaImg.do",
                 HeaderMap::with_bspl_captcha(),
                 None,
@@ -63,12 +76,13 @@ impl BsplApi {
     /// The smes website knows which captcha the answer belongs to by the cookies.
     #[tracing::instrument(skip(self))]
     pub(crate) async fn get_bspl_html(
-        &self,
+        &mut self,
         cookies: Vec<HeaderValue>,
         company_id: usize,
         captcha_answer: &str,
     ) -> Result<Html, SmesError> {
         tracing::trace!("Getting bspl html");
+        let domain = self.domain.to_string();
 
         let mut headers = HeaderMap::with_bspl();
         cookies.into_iter().for_each(|cookie| {
@@ -78,7 +92,7 @@ impl BsplApi {
         let response = self
             .request(
                 Method::POST,
-                &self.domain,
+                &domain,
                 "/venturein/pbntc/searchVntrCmpDtls",
                 headers,
                 Some(&[

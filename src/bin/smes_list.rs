@@ -12,7 +12,7 @@ async fn main() {
         })
         .expect("Failed to create db");
 
-    let api = ListApi::new();
+    let mut api = ListApi::new();
 
     let total_count = api
         .get_company_list_count()

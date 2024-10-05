@@ -1,3 +1,4 @@
+use cookie::ParseError;
 use reqwest::header::ToStrError;
 use std::str::Utf8Error;
 use std::string::FromUtf8Error;
@@ -17,6 +18,8 @@ pub enum SmesError {
     Image(#[from] image::ImageError),
     #[error("Missing expected field: {0}")]
     MissingExpectedField(String),
+    #[error("Parse error: {0}")]
+    CookieParse(#[from] ParseError),
     #[error("HTTP error: {0}")]
     Reqwest(#[from] reqwest::Error),
     #[error("Serde JSON error: {0}")]
