@@ -1,4 +1,5 @@
 /// Assert that a type implements all common traits.
+///
 /// The common traits are
 /// Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Display, Default, Send, Sync, Serialize, DeserializeOwned.
 /// (DeserializeOwned is used instead of Deserialize because of lifetime issues, and Deserialize<'static> auto-implements DeserializeOwned.)
