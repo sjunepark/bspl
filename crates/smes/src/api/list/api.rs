@@ -6,7 +6,6 @@ use reqwest::header::HeaderMap;
 use reqwest::{Client, Method};
 use std::fmt::Debug;
 
-#[allow(dead_code)]
 #[derive(Debug)]
 pub struct ListApi {
     client: Client,

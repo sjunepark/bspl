@@ -62,7 +62,6 @@ pub struct ListResponse {
 }
 
 impl ListResponse {
-    #[allow(dead_code)]
     pub fn is_success(&self) -> bool {
         self.result == "SUCCESS"
     }

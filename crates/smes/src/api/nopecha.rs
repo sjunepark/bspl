@@ -2,7 +2,7 @@
 
 use crate::api::base::ParsedResponse;
 use crate::api::model::{Captcha, Solved, Submitted, Unsubmitted};
-use crate::error::{ExternalApiError, UnsuccessfulResponseError};
+use crate::error::{ExternalApiError, NopechaError, UnsuccessfulResponseError};
 use crate::SmesError;
 use backon::{ConstantBuilder, Retryable};
 use base64::engine::general_purpose;
@@ -16,7 +16,6 @@ use std::time::Duration;
 
 /// API for solving captcha using the Nopecha API
 /// ref: <https://developers.nopecha.com/recognition/textcaptcha/>
-#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub(crate) struct NopechaApi {
     client: reqwest::Client,
@@ -88,23 +87,15 @@ impl NopechaApi {
             .await?;
         let response = ParsedResponse::with_reqwest_response(response).await?;
 
-        #[allow(dead_code)]
         #[derive(Deserialize)]
         #[serde(untagged)]
         enum ApiResponse {
             Answer(Answer),
-            Error(Error),
+            Error(NopechaError),
         }
-        #[allow(dead_code)]
         #[derive(Deserialize, Debug)]
         struct Answer {
             data: Vec<String>,
-        }
-        #[allow(dead_code)]
-        #[derive(Deserialize, Debug)]
-        struct Error {
-            error: Option<usize>,
-            message: String,
         }
         let api_response: ApiResponse = serde_json::from_slice(&response.bytes)?;
 
@@ -159,7 +150,6 @@ pub(crate) async fn get_answer_with_retries(
     .await
 }
 
-#[allow(dead_code)]
 #[derive(Serialize, Deserialize)]
 struct ChallengeAnswer {
     data: String,
