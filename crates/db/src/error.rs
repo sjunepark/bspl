@@ -10,6 +10,8 @@ pub enum DbError {
     Io(#[from] std::io::Error),
     #[error("Libsql error: {0}")]
     Libsql(#[from] libsql::Error),
+    #[error("Model error: {0}")]
+    Model(#[from] model::ModelError),
     #[error("Validation error: {0}")]
     Validation(#[from] validator::ValidationErrors),
 }

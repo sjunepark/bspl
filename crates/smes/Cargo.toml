@@ -24,6 +24,9 @@ tracing = { workspace = true, features = ["log"] }
 utils = { workspace = true }
 log = "0.4.22"
 
+# Workspace crates
+model = { workspace = true }
+
 [dev-dependencies]
 goldrust = { workspace = true, features = ["image"] }
 tracing-setup = { workspace = true }

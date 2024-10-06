@@ -10,6 +10,7 @@ pub trait Params {
     fn params(&self) -> impl IntoParams;
 }
 
+// todo: Maybe remove validation if `model` insures everything is initialized correctly.
 /// Represents a company with its details.
 ///
 /// Example:
@@ -138,14 +139,11 @@ mod test_impl {
 
     impl<T> Dummy<T> for Company {
         fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
+            tracing_setup::subscribe();
             let now = Utc::now().with_timezone(&Asia::Seoul).date_naive();
 
             Company {
-                id: NumberWithFormat(EN, "^#########")
-                    .fake::<String>()
-                    .parse()
-                    .inspect_err(|e| tracing::error!(?e, "Failed to parse number"))
-                    .unwrap(),
+                id: NumberWithFormat(EN, "^######").fake::<String>(),
                 representative_name: Name().fake_with_rng(rng),
                 headquarters_address: format!(
                     "{}, South Korea",

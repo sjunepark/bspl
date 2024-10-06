@@ -130,7 +130,7 @@ pub struct Company {
     pub indsty_nm: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Display, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Display, Copy, PartialEq)]
 pub struct VniaSn(pub usize);
 
 impl Deref for VniaSn {
@@ -151,3 +151,20 @@ pub struct BsPl {
 // region: Others
 pub type Html = String;
 // endregion: Others
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn vniasn_should_serialize_as_expected() {
+        let vnia_sn = super::VniaSn(1071180);
+        let json = serde_json::to_string(&vnia_sn).unwrap();
+        assert_eq!(json, r#"1071180"#);
+    }
+
+    #[test]
+    fn vniasn_should_deserialize_as_expected() {
+        let json = r#"1071180"#;
+        let vnia_sn: super::VniaSn = serde_json::from_str(json).unwrap();
+        assert_eq!(vnia_sn, super::VniaSn(1071180));
+    }
+}
