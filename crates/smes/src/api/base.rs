@@ -1,6 +1,6 @@
 use crate::error::UnsuccessfulResponseError;
 use crate::SmesError;
-use reqwest::header::{HeaderMap, CONTENT_TYPE};
+use reqwest::header::{HeaderMap, CONTENT_TYPE, SET_COOKIE};
 use reqwest::StatusCode;
 
 pub(crate) struct ParsedResponse {
@@ -10,6 +10,18 @@ pub(crate) struct ParsedResponse {
 }
 
 impl ParsedResponse {
+    pub(crate) fn cookies(&self) -> Result<cookie::CookieJar, SmesError> {
+        let mut jar = cookie::CookieJar::new();
+
+        for header in self.headers.get_all(SET_COOKIE) {
+            let header = header.to_str()?.to_string();
+            let cookie = cookie::Cookie::parse(header)?;
+            jar.add(cookie);
+        }
+
+        Ok(jar)
+    }
+
     pub(crate) async fn with_reqwest_response(
         response: reqwest::Response,
     ) -> Result<Self, SmesError> {
@@ -56,6 +68,7 @@ pub(crate) trait Api: Default {
     /// * `path` - The path to send the request to, should start with a `/`.
     /// * `headers` - The headers to send with the request, including the cookies.
     /// * `payload` - The payload to send with the request (Should be serializable to JSON).
+    #[tracing::instrument(skip(self))]
     async fn request(
         &self,
         method: reqwest::Method,
@@ -65,6 +78,8 @@ pub(crate) trait Api: Default {
         query: Option<&[(&str, &str)]>,
         payload: Option<serde_json::Value>,
     ) -> Result<ParsedResponse, SmesError> {
+        tracing::trace!(?headers, "Sending request");
+
         // Headers are set in the client with `default_headers`
         // If additional headers are necessary,
         // headers can be modified with the `header` method on the request builder
@@ -83,6 +98,7 @@ pub(crate) trait Api: Default {
         }
 
         let response = builder.send().await?;
+        tracing::trace!(?response, "Request sent and received response");
 
         ParsedResponse::with_reqwest_response(response).await
     }

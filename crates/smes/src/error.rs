@@ -1,5 +1,5 @@
 use cookie::ParseError;
-use reqwest::header::ToStrError;
+use reqwest::header::{InvalidHeaderValue, ToStrError};
 use std::str::Utf8Error;
 use std::string::FromUtf8Error;
 use utils::impl_error;
@@ -16,6 +16,8 @@ pub enum SmesError {
     ExternalApi(#[from] ExternalApiError),
     #[error("Image error: {0}")]
     Image(#[from] image::ImageError),
+    #[error("Invalid header value: {0}")]
+    InvalidHeaderValue(#[from] InvalidHeaderValue),
     #[error("Missing expected field: {0}")]
     MissingExpectedField(String),
     #[error("Parse error: {0}")]

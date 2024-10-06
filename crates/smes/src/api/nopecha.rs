@@ -139,7 +139,7 @@ impl NopechaApi {
 // This is not in the NopechaApi
 // because we need a new instance of the api instance
 // to make multiple retries in the async environment.
-#[tracing::instrument]
+#[tracing::instrument(skip(captcha))]
 pub(crate) async fn get_answer_with_retries(
     captcha: &Captcha<Submitted>,
     max_retry: usize,
@@ -178,6 +178,7 @@ mod tests {
     use super::*;
     use crate::api::model::Captcha;
     use backon::{ConstantBuilder, Retryable};
+    use cookie::CookieJar;
     use goldrust::{goldrust, Content, Goldrust, ResponseSource};
     use tracing::Instrument;
     use wiremock::Mock;
@@ -187,13 +188,12 @@ mod tests {
         tracing_setup::subscribe();
 
         // region: Arrange
-        let test_id = utils::function_id!();
         tracing_setup::subscribe();
+        let test_id = utils::function_id!();
+        let _span = tracing::info_span!("test", ?test_id).entered();
         let mut goldrust = goldrust!("json");
 
-        let mock_server = wiremock::MockServer::start()
-            .instrument(tracing::info_span!("test", ?test_id))
-            .await;
+        let mock_server = wiremock::MockServer::start().in_current_span().await;
 
         if matches!(goldrust.response_source, ResponseSource::Local) {
             std::env::set_var("NOPECHA_KEY", "test");
@@ -210,7 +210,7 @@ mod tests {
                     .respond_with(wiremock::ResponseTemplate::new(200).set_body_bytes(golden_file))
                     .expect(1)
                     .mount(&mock_server)
-                    .instrument(tracing::info_span!("test", ?test_id))
+                    .in_current_span()
                     .await;
 
                 api.domain = mock_server.uri();
@@ -225,7 +225,7 @@ mod tests {
         // Received captcha
         let captcha = api
             .submit_captcha(captcha)
-            .instrument(tracing::info_span!("test", ?test_id))
+            .in_current_span()
             .await
             .expect("Failed to submit captcha");
 
@@ -247,7 +247,6 @@ mod tests {
     #[tokio::test]
     async fn get_answer_should_work() {
         tracing_setup::subscribe();
-        let function_id = utils::function_id!();
 
         let allow_external_api_call = std::env::var("GOLDRUST_ALLOW_EXTERNAL_API_CALL")
             .unwrap_or("false".to_string())
@@ -264,7 +263,7 @@ mod tests {
 
         let captcha = api
             .submit_captcha(captcha)
-            .instrument(tracing::info_span!("test", ?function_id))
+            .in_current_span()
             .await
             .expect("Failed to submit captcha");
 
@@ -272,7 +271,7 @@ mod tests {
             || async {
                 api.clone()
                     .get_answer(captcha.clone())
-                    .instrument(tracing::info_span!("test", ?function_id))
+                    .in_current_span()
                     .await
             }
         }
@@ -283,7 +282,7 @@ mod tests {
         )
         .when(|e| matches!(e, SmesError::UnsuccessfulResponse { .. }))
         .notify(|e, duration| tracing::warn!(?e, ?duration, "Retrying"))
-        .instrument(tracing::info_span!("test", ?function_id))
+        .in_current_span()
         .await
         .expect("Failed to get answer");
 
@@ -297,6 +296,6 @@ mod tests {
         );
         let captcha_image = image::open(captcha_path).expect("Failed to load image");
 
-        Captcha::new(captcha_image, vec![])
+        Captcha::new(captcha_image, CookieJar::new())
     }
 }

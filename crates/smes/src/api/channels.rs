@@ -4,6 +4,7 @@ use crate::api::nopecha::NopechaApi;
 use crate::{BsplApi, VniaSn};
 use std::time::Duration;
 use tokio::sync::mpsc::{channel, unbounded_channel, Receiver, UnboundedReceiver};
+use tracing::Instrument;
 
 /// The entry point of getting the bspl HTMLs.
 ///
@@ -26,52 +27,56 @@ use tokio::sync::mpsc::{channel, unbounded_channel, Receiver, UnboundedReceiver}
 pub async fn get_bspl_htmls(companies: &[VniaSn]) -> UnboundedReceiver<BsPl> {
     let (tx, rx) = unbounded_channel::<BsPl>();
     let captcha_count = companies.len();
-    let mut captcha_cookies = get_captcha_cookies(captcha_count).await;
+    let mut captcha_cookies = get_solved_captchas(captcha_count).await;
 
     let companies_count = companies.len();
     let companies = companies.to_owned();
 
-    tokio::spawn(async move {
-        let mut api = BsplApi::default();
-        let mut index = 0;
+    tokio::spawn(
+        async move {
+            let mut api = BsplApi::default();
+            let mut index = 0;
 
-        while let Some(captcha) = captcha_cookies.recv().await {
-            if index >= companies_count {
-                break;
-            }
+            while let Some(captcha) = captcha_cookies.recv().await {
+                if index >= companies_count {
+                    break;
+                }
 
-            tracing::trace!(
-                "Getting {}/{} company's bspl html",
-                index + 1,
-                companies_count
-            );
-            let vnia_sn: VniaSn = companies[index];
-            let html = api
-                .get_bspl_html(captcha.cookies().to_vec(), *vnia_sn, captcha.answer())
-                .await;
+                tracing::trace!(
+                    "Getting {}/{} company's bspl html",
+                    index + 1,
+                    companies_count
+                );
+                let vnia_sn: VniaSn = companies[index];
+                let html = api
+                    .get_bspl_html(captcha.cookies(), *vnia_sn, captcha.answer())
+                    .await;
+                tracing::trace!(?html, "Received bspl html");
 
-            match html {
-                Ok(html) => {
-                    match tx.send(BsPl { vnia_sn, html }) {
-                        Ok(_) => {
-                            index += 1;
-                        }
-                        Err(e) => {
-                            tracing::warn!(
+                match html {
+                    Ok(html) => {
+                        match tx.send(BsPl { vnia_sn, html }) {
+                            Ok(_) => {
+                                index += 1;
+                            }
+                            Err(e) => {
+                                tracing::warn!(
                                 ?e,
                                 "Failed to send bspl html. The channel has been closed. Skipping."
                             );
-                        }
-                    };
-                }
-                Err(e) => {
-                    tracing::error!(?e, "Error received from get_bspl_html. Skipping.");
+                            }
+                        };
+                    }
+                    Err(e) => {
+                        tracing::error!(?e, "Error received from get_bspl_html. Skipping.");
+                    }
                 }
             }
-        }
 
-        captcha_cookies.close();
-    });
+            captcha_cookies.close();
+        }
+        .in_current_span(),
+    );
 
     rx
 }
@@ -80,7 +85,7 @@ pub async fn get_bspl_htmls(companies: &[VniaSn]) -> UnboundedReceiver<BsPl> {
 /// * `count` - The number of captchas to fetch.
 ///             This will correspond to the number of companies you want to query.
 #[tracing::instrument]
-async fn get_captcha_cookies(count: usize) -> UnboundedReceiver<Captcha<Solved>> {
+async fn get_solved_captchas(count: usize) -> UnboundedReceiver<Captcha<Solved>> {
     const BUFFER_SIZE: usize = 8;
     let unsubmitted_captchas = get_captchas(count, BUFFER_SIZE).await;
     let submitted_captchas = submit_captchas(unsubmitted_captchas).await;
@@ -107,26 +112,28 @@ async fn get_captchas(count: usize, cap: usize) -> Receiver<Captcha<Unsubmitted>
     let (tx, rx) = channel::<Captcha<Unsubmitted>>(cap);
     let mut api = BsplApi::default();
 
-    tokio::spawn(async move {
-        for i in 0..count {
-            tracing::trace!("Getting {}/{} cookie", i + 1, count);
-            let tx = tx.clone();
-            let captcha = match api.get_captcha().await {
-                Ok(captcha) => captcha,
-                Err(e) => {
-                    tracing::error!(?e, "Failed to get captcha. Skipping.");
-                    continue;
+    tokio::spawn(
+        async move {
+            for _ in 0..count {
+                let tx = tx.clone();
+                let captcha = match api.get_captcha().await {
+                    Ok(captcha) => captcha,
+                    Err(e) => {
+                        tracing::error!(?e, "Failed to get captcha. Skipping.");
+                        continue;
+                    }
+                };
+                if let Err(e) = tx.send(captcha).await {
+                    tracing::trace!(
+                        ?e,
+                        "Failed to send captcha. The channel has been closed. Skipping."
+                    );
+                    break;
                 }
-            };
-            if let Err(e) = tx.send(captcha).await {
-                tracing::trace!(
-                    ?e,
-                    "Failed to send captcha. The channel has been closed. Skipping."
-                );
-                break;
             }
         }
-    });
+        .in_current_span(),
+    );
 
     rx
 }
@@ -149,23 +156,26 @@ async fn submit_captchas(
     let (tx, rx) = unbounded_channel::<Captcha<Submitted>>();
     let api = NopechaApi::default();
 
-    tokio::spawn(async move {
-        while let Some(captcha) = captchas.recv().await {
-            match api.submit_captcha(captcha).await {
-                Ok(captcha) => {
-                    tx.send(captcha).unwrap_or_else(|e| {
-                        tracing::warn!(
-                            ?e,
-                            "Failed to send captcha. The channel has been closed. Skipping."
-                        );
-                    });
-                }
-                Err(e) => {
-                    tracing::error!(?e, "Error received from submit_captcha. Skipping.");
+    tokio::spawn(
+        async move {
+            while let Some(captcha) = captchas.recv().await {
+                match api.submit_captcha(captcha).await {
+                    Ok(captcha) => {
+                        tx.send(captcha).unwrap_or_else(|e| {
+                            tracing::warn!(
+                                ?e,
+                                "Failed to send captcha. The channel has been closed. Skipping."
+                            );
+                        });
+                    }
+                    Err(e) => {
+                        tracing::error!(?e, "Error received from submit_captcha. Skipping.");
+                    }
                 }
             }
         }
-    });
+        .in_current_span(),
+    );
 
     rx
 }
@@ -176,23 +186,26 @@ async fn get_answers(
 ) -> UnboundedReceiver<Captcha<Solved>> {
     let (tx, rx) = unbounded_channel::<Captcha<Solved>>();
 
-    tokio::spawn(async move {
-        while let Some(captcha) = captchas.recv().await {
-            match nopecha::get_answer_with_retries(&captcha, 10, Duration::from_secs(1)).await {
-                Ok(captcha) => {
-                    tx.send(captcha).unwrap_or_else(|e| {
-                        tracing::warn!(
-                            ?e,
-                            "Failed to send captcha. The channel has been closed. Skipping."
-                        );
-                    });
-                }
-                Err(e) => {
-                    tracing::error!(?e, "Error received from get_answer. Skipping.");
+    tokio::spawn(
+        async move {
+            while let Some(captcha) = captchas.recv().await {
+                match nopecha::get_answer_with_retries(&captcha, 10, Duration::from_secs(1)).await {
+                    Ok(captcha) => {
+                        tx.send(captcha).unwrap_or_else(|e| {
+                            tracing::warn!(
+                                ?e,
+                                "Failed to send captcha. The channel has been closed. Skipping."
+                            );
+                        });
+                    }
+                    Err(e) => {
+                        tracing::error!(?e, "Error received from get_answer. Skipping.");
+                    }
                 }
             }
         }
-    });
+        .in_current_span(),
+    );
 
     rx
 }

@@ -1,6 +1,6 @@
+use cookie::CookieJar;
 use derive_more::Display;
 use image::DynamicImage;
-use reqwest::header::HeaderValue;
 use serde::{Deserialize, Serialize};
 use std::ops::Deref;
 
@@ -15,7 +15,7 @@ use std::ops::Deref;
 #[derive(Clone)]
 pub(crate) struct Captcha<State> {
     image: DynamicImage,
-    cookies: Vec<HeaderValue>,
+    cookies: CookieJar,
     nopecha_id: Option<String>,
     answer: Option<String>,
     _marker: std::marker::PhantomData<State>,
@@ -33,13 +33,13 @@ impl<State> Captcha<State> {
         &self.image
     }
 
-    pub(crate) fn cookies(&self) -> &Vec<HeaderValue> {
+    pub(crate) fn cookies(&self) -> &CookieJar {
         &self.cookies
     }
 }
 
 impl Captcha<Unsubmitted> {
-    pub(crate) fn new(image: DynamicImage, cookies: Vec<HeaderValue>) -> Self {
+    pub(crate) fn new(image: DynamicImage, cookies: CookieJar) -> Self {
         Self {
             image,
             cookies,

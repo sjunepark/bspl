@@ -114,13 +114,12 @@ mod tests {
     #[tokio::test]
     async fn list_api_make_request_should_succeed() {
         // region: Arrange
-        let test_id = utils::function_id!();
         tracing_setup::subscribe();
+        let test_id = utils::function_id!();
+        let _span = tracing::info_span!("test", ?test_id).entered();
         let mut goldrust = goldrust!("json");
 
-        let mock_server = wiremock::MockServer::start()
-            .instrument(tracing::info_span!("test", ?test_id))
-            .await;
+        let mock_server = wiremock::MockServer::start().in_current_span().await;
         let mut api = ListApi::default();
 
         match goldrust.response_source {
@@ -139,7 +138,7 @@ mod tests {
                     })
                     .expect(1)
                     .mount(&mock_server)
-                    .instrument(tracing::info_span!("test", ?test_id))
+                    .in_current_span()
                     .await;
 
                 api.domain = mock_server.uri();
@@ -158,7 +157,7 @@ mod tests {
         // region: Act
         let response = api
             .get_company_list(&payload)
-            .instrument(tracing::info_span!("test", ?test_id))
+            .in_current_span()
             .await
             .inspect_err(|e| {
                 tracing::error!(?e, payload=?&payload, "Failed to make request");
@@ -190,16 +189,16 @@ mod tests {
     #[tokio::test]
     async fn list_api_total_count_should_succeed() {
         // region: Arrange
-        let test_id = utils::function_id!();
         tracing_setup::subscribe();
+        let test_id = utils::function_id!();
+        let _span = tracing::info_span!("test", ?test_id).entered();
+
         let allow_external_api_call: bool = std::env::var("GOLDRUST_ALLOW_EXTERNAL_API_CALL")
             .unwrap_or("false".to_string())
             .parse()
             .expect("Failed to parse GOLDRUST_ALLOW_EXTERNAL_API_CALL to bool");
 
-        let mock_server = wiremock::MockServer::start()
-            .instrument(tracing::info_span!("test", ?test_id))
-            .await;
+        let mock_server = wiremock::MockServer::start().in_current_span().await;
         let mut api = ListApi::new();
         const MOCK_TOTAL_COUNT: usize = 100;
 

@@ -8,6 +8,9 @@ async fn get_bspl_htmls_should_work_as_expected() {
 
     tracing_setup::subscribe();
     let test_id = utils::function_id!();
+    let _span = tracing::info_span!("test", ?test_id).entered();
+
+    tracing::info!("Starting test");
 
     let allow_external_api_call = std::env::var("GOLDRUST_ALLOW_EXTERNAL_API_CALL")
         .unwrap_or("false".to_string())
@@ -28,12 +31,12 @@ async fn get_bspl_htmls_should_work_as_expected() {
     .map(|&id| VniaSn(id))
     .collect();
 
-    let mut rx = get_bspl_htmls(&companies)
-        .instrument(tracing::info_span!("test", ?test_id))
-        .instrument(tracing::info_span!("test", ?test_id))
-        .await;
+    let mut rx = get_bspl_htmls(&companies).in_current_span().await;
+
+    let mut bspl_count = 0_usize;
 
     while let Some(bspl) = rx.recv().await {
+        bspl_count += 1;
         let success = bspl.html.contains("유동자산");
 
         if !success {
@@ -42,4 +45,6 @@ async fn get_bspl_htmls_should_work_as_expected() {
 
         assert!(success);
     }
+
+    assert_eq!(bspl_count, TEST_COUNT);
 }
