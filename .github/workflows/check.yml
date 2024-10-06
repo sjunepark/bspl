@@ -108,3 +108,18 @@ jobs:
       # --feature-powerset runs for every combination of features
       - name: cargo hack
         run: cargo hack --workspace --feature-powerset check
+  # There are edge cases where --all-targets allows uncatched errors to be introduced.
+  # For example, when a dev dependency enables a certain feature flag which the normal dependencies should have,
+  # --all-targets will not through a compile error, but --lib --bins will.
+  # This can be caught by `cargo hack`, but am not sure how `hack` internally works.
+  lib-bins:
+    name: ubuntu / stable / lib-bins
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Install stable
+        uses: dtolnay/rust-toolchain@stable
+      - name: cargo check
+        run: cargo check --workspace --all-features --lib --bins
