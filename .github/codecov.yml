@@ -1,3 +1,10 @@
+# ref: https://docs.codecov.com/docs/codecovyml-reference
+coverage:
+  status:
+    patch: false
+    project: false
+    changes: false
+
 # Test files aren't important for coverage
 ignore:
   - "**/tests/**/*"
