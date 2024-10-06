@@ -4,9 +4,7 @@ use crate::error::{BuildError, DeserializationError, UnsuccessfulResponseError};
 use crate::{ListPayload, ListPayloadBuilder, ListResponse, SmesError};
 use reqwest::header::HeaderMap;
 use reqwest::{Client, Method};
-use reqwest_cookie_store::{CookieStore, CookieStoreMutex};
 use std::fmt::Debug;
-use std::sync::Arc;
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -14,30 +12,22 @@ pub struct ListApi {
     client: Client,
     /// The domain, including the protocol of the api
     pub domain: String,
-    cookie_store: CookieStore,
 }
 
 impl Api for ListApi {
     fn client(&self) -> &Client {
         &self.client
     }
-
-    fn cookie_store(&self) -> &Arc<CookieStoreMutex> {
-        todo!()
-    }
 }
 
 impl Default for ListApi {
     fn default() -> Self {
-        let cookie_store = CookieStore::default();
-
         Self {
             client: Client::builder()
                 .default_headers(HeaderMap::with_list())
                 .build()
                 .expect("Failed to build reqwest client"),
             domain: "https://www.smes.go.kr".to_string(),
-            cookie_store,
         }
     }
 }

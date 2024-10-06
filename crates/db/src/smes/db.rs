@@ -1,9 +1,7 @@
 use crate::smes::model::Params;
 use crate::{Company, DbError, LibsqlDb};
 use hashbrown::HashSet;
-use model::company;
 use serde::Deserialize;
-use std::str::FromStr;
 
 impl LibsqlDb {
     #[tracing::instrument(skip(self))]
@@ -25,12 +23,12 @@ impl LibsqlDb {
     }
 
     #[tracing::instrument(skip(self))]
-    pub async fn get_company_ids(&self) -> Result<hashbrown::HashSet<String>, DbError> {
+    pub async fn get_company_ids(&self) -> Result<HashSet<String>, DbError> {
         let mut rows = self
             .connection
             .query("SELECT id from smes_company", ())
             .await?;
-        let mut company_ids = hashbrown::HashSet::new();
+        let mut company_ids = HashSet::new();
 
         #[derive(Deserialize)]
         struct IdStruct {

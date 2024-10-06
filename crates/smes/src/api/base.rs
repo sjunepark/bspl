@@ -1,10 +1,7 @@
 use crate::error::UnsuccessfulResponseError;
 use crate::SmesError;
 use reqwest::header::{HeaderMap, CONTENT_TYPE};
-use reqwest::{Client, StatusCode};
-use reqwest_cookie_store::{CookieStore, CookieStoreMutex, RawCookie};
-use std::ops::Deref;
-use std::sync::{Arc, MutexGuard};
+use reqwest::StatusCode;
 
 pub(crate) struct ParsedResponse {
     pub(crate) status: StatusCode,
@@ -53,24 +50,6 @@ impl ParsedResponse {
 
 pub(crate) trait Api: Default {
     fn client(&self) -> &reqwest::Client;
-    /// Should return a cloned Arc of the cookie store
-    fn cookie_store(&self) -> &Arc<CookieStoreMutex>;
-
-    /// A guard is returned so that the reset cookies won't be modified by other processes
-    fn clear_cookies(&self) -> MutexGuard<CookieStore> {
-        self.cookie_store()
-            .lock()
-            .expect("Failed to lock cookie store")
-    }
-
-    fn cookies(&self) -> Vec<RawCookie> {
-        self.cookie_store()
-            .lock()
-            .expect("Failed to lock cookie store")
-            .iter_unexpired()
-            .map(|cookie| cookie.deref().to_owned())
-            .collect::<Vec<_>>()
-    }
 
     /// Default request method
     /// * `domain` - The domain to send the request to.
@@ -86,14 +65,11 @@ pub(crate) trait Api: Default {
         query: Option<&[(&str, &str)]>,
         payload: Option<serde_json::Value>,
     ) -> Result<ParsedResponse, SmesError> {
-        let client = Client::builder()
-            .build()
-            .expect("Failed to build reqwest client");
-
         // Headers are set in the client with `default_headers`
         // If additional headers are necessary,
         // headers can be modified with the `header` method on the request builder
-        let mut builder = client
+        let mut builder = self
+            .client()
             // No need to use `.version(Version::HTTP_11)` as it's the default
             .request(method, format!("{}{}", domain, path))
             .headers(headers);

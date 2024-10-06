@@ -4,36 +4,25 @@ use crate::api::model::{Captcha, Html, Unsubmitted};
 use crate::SmesError;
 use reqwest::header::{HeaderMap, HeaderValue, SET_COOKIE};
 use reqwest::{Client, Method};
-use reqwest_cookie_store::CookieStoreMutex;
-use std::sync::Arc;
 
 pub struct BsplApi {
     client: Client,
     pub domain: String,
-    cookie_store: Arc<CookieStoreMutex>,
 }
 
 impl Api for BsplApi {
     fn client(&self) -> &Client {
         &self.client
     }
-
-    fn cookie_store(&self) -> &Arc<CookieStoreMutex> {
-        &self.cookie_store
-    }
 }
 
 impl Default for BsplApi {
     fn default() -> Self {
-        let cookie_store = Arc::new(CookieStoreMutex::default());
-
         Self {
             client: Client::builder()
-                .cookie_provider(Arc::clone(&cookie_store))
                 .build()
                 .expect("Failed to build reqwest client"),
             domain: "https://www.smes.go.kr".to_string(),
-            cookie_store,
         }
     }
 }
