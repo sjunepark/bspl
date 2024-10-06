@@ -167,4 +167,11 @@ mod tests {
         let vnia_sn: super::VniaSn = serde_json::from_str(json).unwrap();
         assert_eq!(vnia_sn, super::VniaSn(1071180));
     }
+
+    #[test]
+    fn vniasn_should_display_as_expected() {
+        let vnia_sn = super::VniaSn(1071180);
+        let display = format!("{}", vnia_sn);
+        assert_eq!(display, "1071180");
+    }
 }

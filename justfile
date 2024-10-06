@@ -45,6 +45,10 @@ test-doc:
     clear
     cargo test --workspace --all-features --doc
 
+check-lib-bins:
+    clear
+    cargo check --workspace --all-features --lib --bins
+
 example package name:
     clear
     cargo run -p {{package}} --example {{name}}
@@ -60,6 +64,10 @@ cov:
 lint:
     clear
     cargo clippy --workspace --all-features --all-targets --locked
+
+tree:
+    clear
+    cargo tree --workspace --all-features --all-targets -i derive_more-impl
 
 ## DB
 turso-dev:
