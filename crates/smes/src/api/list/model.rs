@@ -1,3 +1,4 @@
+use crate::api::Company;
 use crate::utils::{
     deserialize_optional_number_from_string, serialize_number_as_string,
     serialize_optional_number_as_string,
@@ -61,42 +62,9 @@ pub struct ListResponse {
 }
 
 impl ListResponse {
-    #[allow(dead_code)]
     pub fn is_success(&self) -> bool {
         self.result == "SUCCESS"
     }
-}
-
-/// Represents a company with its details.
-///
-/// Example:
-/// ```json
-/// {
-///   "vnia_sn": "1071180",
-///   "rprsv_nm": "김성국",
-///   "hdofc_addr": "경기도 김포시",
-///   "bizrno": "5632000760",
-///   "cmp_nm": "루키게임즈",
-///   "indsty_cd": "63999",
-///   "indsty_nm": "그 외 기타 정보 서비스업"
-/// }
-/// ```
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Company {
-    /// 고유번호 (Unique Number)
-    pub vnia_sn: usize,
-    /// 대표자명 (Representative Name)
-    pub rprsv_nm: String,
-    /// 본사주소 (Headquarters Address)
-    pub hdofc_addr: String,
-    /// 사업자번호 (Business Registration Number)
-    pub bizrno: String,
-    /// 기업명 (Company Name)
-    pub cmp_nm: String,
-    /// 업종코드 (Industry Code)
-    pub indsty_cd: String,
-    /// 업종 (Industry Name)
-    pub indsty_nm: String,
 }
 
 #[cfg(test)]

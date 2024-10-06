@@ -10,6 +10,7 @@ pub trait Params {
     fn params(&self) -> impl IntoParams;
 }
 
+// todo: Maybe remove validation if `model` insures everything is initialized correctly.
 /// Represents a company with its details.
 ///
 /// Example:
@@ -138,14 +139,11 @@ mod test_impl {
 
     impl<T> Dummy<T> for Company {
         fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
+            tracing_setup::subscribe();
             let now = Utc::now().with_timezone(&Asia::Seoul).date_naive();
 
             Company {
-                id: NumberWithFormat(EN, "^#########")
-                    .fake::<String>()
-                    .parse()
-                    .inspect_err(|e| tracing::error!(?e, "Failed to parse number"))
-                    .unwrap(),
+                id: NumberWithFormat(EN, "^######").fake::<String>(),
                 representative_name: Name().fake_with_rng(rng),
                 headquarters_address: format!(
                     "{}, South Korea",
@@ -165,11 +163,12 @@ mod test_impl {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use smes::VniaSn;
 
     #[test]
     fn company_try_from_should_fail_for_invalid_field_values() {
         let company = smes::Company {
-            vnia_sn: 1071180,
+            vnia_sn: VniaSn(1071180),
             rprsv_nm: "김성국".to_string(),
             hdofc_addr: "경기도 김포시".to_string(),
             bizrno: "5632000760".to_string(),
@@ -178,7 +177,7 @@ mod tests {
             indsty_nm: "그 외 기타 정보 서비스업".to_string(),
         };
 
-        let invalid_id = 123456_usize;
+        let invalid_id = VniaSn(123456);
         let invalid_business_registration_number = "123456789";
         let invalid_industry_code = "1234";
 

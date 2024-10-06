@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/db", "crates/smes", "crates/utils", "crates/tracing-setup"]
+members = ["crates/db", "crates/smes", "crates/utils", "crates/tracing-setup", "crates/model"]
 
 [package]
 name = "bspl"
@@ -25,16 +25,19 @@ base64 = "0.22.1"
 bytes = "1.7.2"
 chrono = "0.4.38"
 chrono-tz = "0.10.0"
+cookie = "0.18.1"
 derive_builder = "0.20.1"
 derive_more = "1.0.0"
 hashbrown = "0.15.0"
 image = "0.25.2"
-libsql = { version = "0.6.0", default-features = false }
+libsql = "0.6.0"
+nutype = "0.5.0"
 rand = "0.8.5"
 reqwest = "0.12.7"
 serde = "1.0.210"
 serde-aux = "4.5.0"
 serde_json = "1.0.128"
+static_assertions = "1.1.0"
 thiserror = "1.0.63"
 tokio = "1.40.0"
 tracing = "0.1.40"
@@ -46,6 +49,7 @@ db = { path = "crates/db" }
 smes = { path = "crates/smes" }
 tracing-setup = { path = "crates/tracing-setup" }
 utils = { path = "crates/utils" }
+model = { path = "crates/model" }
 
 # Testig
 fake = "2.10.0"

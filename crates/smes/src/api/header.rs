@@ -1,12 +1,13 @@
 use reqwest::header::{
-    HeaderMap, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CONNECTION, CONTENT_TYPE, HOST, ORIGIN,
-    PRAGMA, REFERER, USER_AGENT,
+    HeaderMap, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, CONTENT_TYPE,
+    HOST, ORIGIN, PRAGMA, REFERER, USER_AGENT,
 };
 
 pub(crate) trait HeaderMapExt {
     fn with_base() -> HeaderMap;
     fn with_list() -> HeaderMap;
     fn with_bspl_captcha() -> HeaderMap;
+    fn with_bspl() -> HeaderMap;
 }
 
 #[macro_export]
@@ -62,6 +63,21 @@ impl HeaderMapExt for HeaderMap {
             "Sec-Fetch-Dest" => "image",
             "Sec-Fetch-Mode" => "no-cors",
             "Sec-Fetch-Site" => "same-origin"
+        );
+        headers
+    }
+
+    fn with_bspl() -> HeaderMap {
+        let mut headers = Self::with_base();
+        header_map!(headers,
+            ACCEPT => "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            CACHE_CONTROL => "no-cache",
+            PRAGMA => "no-cache",
+            "Sec-Fetch-Dest" => "document",
+            "Sec-Fetch-Mode" => "navigate",
+            "Sec-Fetch-Site" => "same-origin",
+            "Sec-Fetch-User" => "?1",
+            "Upgrade-Insecure-Requests" => "1"
         );
         headers
     }

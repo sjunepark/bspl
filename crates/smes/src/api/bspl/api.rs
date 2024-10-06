@@ -1,8 +1,9 @@
 use crate::api::base::Api;
 use crate::api::header::HeaderMapExt;
-use crate::api::model::Captcha;
+use crate::api::model::{Captcha, Html, Unsubmitted};
 use crate::SmesError;
-use reqwest::header::{HeaderMap, SET_COOKIE};
+use cookie::CookieJar;
+use reqwest::header::{HeaderMap, COOKIE};
 use reqwest::{Client, Method};
 
 pub struct BsplApi {
@@ -28,32 +29,96 @@ impl Default for BsplApi {
 }
 
 impl BsplApi {
-    pub async fn get_captcha_image(&self) -> Result<Captcha, SmesError> {
+    /// Get a captcha image from the smes website.
+    ///
+    /// The cookie information is stored with the captcha,
+    /// and it will later be used to be submitted together with the answer.
+    #[tracing::instrument(skip(self))]
+    pub(crate) async fn get_captcha(&mut self) -> Result<Captcha<Unsubmitted>, SmesError> {
+        let domain = self.domain.to_string();
+
         let response = self
             .request(
                 Method::GET,
-                &self.domain,
+                &domain,
                 "/venturein/pbntc/captchaImg.do",
                 HeaderMap::with_bspl_captcha(),
+                None,
                 None,
             )
             .await?;
 
         let image = image::load_from_memory(&response.bytes)?;
-        let cookies = response
-            .headers
-            .get_all(SET_COOKIE)
-            .iter()
-            .cloned()
-            .collect();
+        let cookies = response.cookies()?;
+        tracing::trace!(?cookies, "Cookies from original request");
 
-        // todo: implement id
-        Ok(Captcha {
-            image,
-            cookies,
-            nopecha_id: None,
-            answer: None,
-        })
+        Ok(Captcha::new(image, cookies))
+    }
+
+    // todo: Has to be tested via integration tests because of captcha solving process
+    /// Get the HTML of the bspl page.
+    ///
+    /// You need to submit the pre-solved captcha answer together with the cookies.
+    /// The smes website knows which captcha the answer belongs to by the cookies.
+    #[tracing::instrument(skip(self, cookies, company_id, captcha_answer))]
+    pub(crate) async fn get_bspl_html(
+        &mut self,
+        cookies: &CookieJar,
+        company_id: usize,
+        captcha_answer: &str,
+    ) -> Result<Html, SmesError> {
+        tracing::trace!("Getting bspl html");
+        let domain = self.domain.to_string();
+        const PATH: &str = "/venturein/pbntc/searchVntrCmpDtls";
+
+        let mut headers = HeaderMap::with_bspl();
+        let cookies = cookies
+            .iter()
+            .filter(|&cookie| {
+                if let Some(path) = cookie.path() {
+                    let starts_with = PATH.starts_with(path);
+                    tracing::trace!(
+                        cookie = ?cookie,
+                        ?PATH,
+                        ?path,
+                        ?starts_with,
+                        "Evaluating whether to insert the current cookie"
+                    );
+                    starts_with
+                } else {
+                    tracing::trace!("Cookie has no path");
+                    false
+                }
+            })
+            .map(|c| {
+                let (name, value) = c.name_value_trimmed();
+                format!("{}={}", name, value)
+            })
+            .collect::<Vec<String>>()
+            .join("; ");
+
+        tracing::trace!(?cookies, "Inserting cookie to request header");
+        headers.insert(COOKIE, cookies.parse()?);
+
+        let response = self
+            .request(
+                Method::POST,
+                &domain,
+                PATH,
+                headers,
+                Some(&[
+                    ("vniaSn", company_id.to_string().as_str()),
+                    ("captcha", captcha_answer),
+                ]),
+                None,
+            )
+            .await?;
+
+        let html = String::from_utf8(response.bytes.into()).inspect_err(|e| {
+            tracing::error!(?e, "Failed to decode response body");
+        })?;
+
+        Ok(html)
     }
 }
 
@@ -61,19 +126,19 @@ impl BsplApi {
 mod tests {
     use super::*;
     use goldrust::{goldrust, Content, Goldrust, ResponseSource};
+    use reqwest::header::{CONTENT_TYPE, SET_COOKIE};
     use tracing::Instrument;
     use wiremock::Mock;
 
     #[tokio::test]
     async fn get_captcha_image_should_get_valid_image() {
         // region: Arrange
-        let test_id = utils::function_id!();
         tracing_setup::subscribe();
+        let test_id = utils::function_id!();
+        let _span = tracing::info_span!("test", ?test_id).entered();
         let mut goldrust = goldrust!("png");
 
-        let mock_server = wiremock::MockServer::start()
-            .instrument(tracing::info_span!("test", ?test_id))
-            .await;
+        let mock_server = wiremock::MockServer::start().in_current_span().await;
         let mut api = BsplApi::default();
 
         match goldrust.response_source {
@@ -86,14 +151,13 @@ mod tests {
                     .respond_with(
                         wiremock::ResponseTemplate::new(200)
                             .set_body_bytes(golden_file)
-                            .append_header(
-                                "Set-Cookie",
-                                "SESSION_TTL=20241003172138; Max-Age=1800",
-                            ),
+                            .append_header(CONTENT_TYPE, "image/png")
+                            .append_header(SET_COOKIE, "SESSION_TTL=20241003172138; Max-Age=1800; Expires=Thu, 03-Oct-2024 08:21:38 GMT; Path=/; Secure")
+                            .append_header(SET_COOKIE, "SMESSESSION=52631aca-0a20-4edc-bcce-3984f073a630; Path=/venturein/; HttpOnly"),
                     )
                     .expect(1)
                     .mount(&mock_server)
-                    .instrument(tracing::info_span!("test", ?test_id))
+                    .in_current_span()
                     .await;
 
                 api.domain = mock_server.uri();
@@ -103,25 +167,23 @@ mod tests {
         // endregion: Arrange
 
         // region: Act
-        let captcha_image = api.get_captcha_image().await.unwrap();
+        let captcha_image = api.get_captcha().await.unwrap();
         // endregion: Act
 
         // region Assert
-        let width = captcha_image.image.width();
-        let height = captcha_image.image.height();
+        let width = captcha_image.image().width();
+        let height = captcha_image.image().height();
         assert!(width > 0);
         assert!(height > 0);
 
         // There should be cookies to map future answers to the captcha image
-        assert!(!captcha_image.cookies.is_empty());
-
-        // There should be no answer to the captcha image
-        assert!(captcha_image.answer.is_none());
+        assert!(captcha_image.cookies().get("SMESSESSION").is_some());
+        assert!(captcha_image.cookies().get("SESSION_TTL").is_some());
         // endregion: Assert
 
         // region: Cleanup
         goldrust
-            .save(Content::Image(captcha_image.image))
+            .save(Content::Image(captcha_image.image().clone()))
             .expect("Failed to save image");
         // endregion: Cleanup
     }

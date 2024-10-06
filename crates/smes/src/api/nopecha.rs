@@ -1,9 +1,10 @@
 // todo: clean up tracing
 
 use crate::api::base::ParsedResponse;
-use crate::api::model::Captcha;
-use crate::error::{ExternalApiError, UnsuccessfulResponseError};
+use crate::api::model::{Captcha, Solved, Submitted, Unsubmitted};
+use crate::error::{ExternalApiError, NopechaError, NopechaErrorBody};
 use crate::SmesError;
+use backon::{ConstantBuilder, Retryable};
 use base64::engine::general_purpose;
 use base64::Engine;
 use image::DynamicImage;
@@ -11,18 +12,18 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::fmt::Debug;
 use std::io::Cursor;
+use std::time::Duration;
 
 /// API for solving captcha using the Nopecha API
 /// ref: <https://developers.nopecha.com/recognition/textcaptcha/>
-#[allow(dead_code)]
 #[derive(Debug, Clone)]
-pub(crate) struct NopeChaApi {
+pub(crate) struct NopechaApi {
     client: reqwest::Client,
     api_key: String,
     domain: String,
 }
 
-impl Default for NopeChaApi {
+impl Default for NopechaApi {
     fn default() -> Self {
         Self {
             client: reqwest::Client::new(),
@@ -32,13 +33,16 @@ impl Default for NopeChaApi {
     }
 }
 
-impl NopeChaApi {
+impl NopechaApi {
     /// * `image_data` - Image data encoded in base64
-    #[tracing::instrument(skip(self))]
     /// Submit a captcha and get a captcha with a `nopecha_id`.
     /// The `nopecha_id` should be later submitted to get the answer.
-    async fn submit_challenge(&self, mut captcha: Captcha) -> Result<Captcha, SmesError> {
-        let image = image_to_base64(&captcha.image)?;
+    #[tracing::instrument(skip(self, captcha))]
+    pub(crate) async fn submit_captcha(
+        &self,
+        captcha: Captcha<Unsubmitted>,
+    ) -> Result<Captcha<Submitted>, SmesError> {
+        let image = image_to_base64(captcha.image())?;
 
         let payload = json!({
             "key": self.api_key,
@@ -55,44 +59,43 @@ impl NopeChaApi {
         let response = ParsedResponse::with_reqwest_response(response).await?;
 
         let answer: ChallengeAnswer = serde_json::from_slice(&response.bytes)?;
+        let nopecha_id = answer.data;
 
-        captcha.nopecha_id = Some(answer.data);
+        let captcha = captcha.submit(&nopecha_id);
+        tracing::trace!(?captcha, "Captcha submitted");
         Ok(captcha)
     }
 
-    #[tracing::instrument(skip(self))]
-    async fn get_answer(&self, mut captcha: Captcha) -> Result<Captcha, SmesError> {
+    #[tracing::instrument(skip(self, captcha))]
+    pub(crate) async fn get_answer(
+        &self,
+        captcha: Captcha<Submitted>,
+    ) -> Result<Captcha<Solved>, SmesError> {
         let payload = json!({
             "key": self.api_key,
-            "id": captcha.nopecha_id,
+            "id": captcha.nopecha_id(),
         });
 
         let response = self
             .client
             .get(format!("{}/", self.domain))
+            // The docs require the key & id to be sent as query params and the payload
+            // ref: <https://developers.nopecha.com/recognition/textcaptcha/
             .query(&payload)
             .json(&payload)
             .send()
             .await?;
         let response = ParsedResponse::with_reqwest_response(response).await?;
 
-        #[allow(dead_code)]
         #[derive(Deserialize)]
         #[serde(untagged)]
         enum ApiResponse {
             Answer(Answer),
-            Error(Error),
+            Error(NopechaErrorBody),
         }
-        #[allow(dead_code)]
         #[derive(Deserialize, Debug)]
         struct Answer {
             data: Vec<String>,
-        }
-        #[allow(dead_code)]
-        #[derive(Deserialize, Debug)]
-        struct Error {
-            error: Option<usize>,
-            message: String,
         }
         let api_response: ApiResponse = serde_json::from_slice(&response.bytes)?;
 
@@ -108,22 +111,38 @@ impl NopeChaApi {
                     .into());
                 }
 
-                captcha.answer = Some(answer);
+                let captcha = captcha.solve(answer);
+                tracing::trace!(?captcha, "Captcha solved");
                 captcha
             }),
-            ApiResponse::Error(error) => Err(UnsuccessfulResponseError {
-                message: "Nopecha API returned an error",
-                status: response.status,
-                headers: response.headers,
-                body: format!("{:?}", error),
-                source: None,
-            }
-            .into()),
+            ApiResponse::Error(error) => Err(NopechaError::from(error).into()),
         }
     }
 }
 
-#[allow(dead_code)]
+// This is not in the NopechaApi
+// because we need a new instance of the api instance
+// to make multiple retries in the async environment.
+#[tracing::instrument(skip(captcha))]
+pub(crate) async fn get_answer_with_retries(
+    captcha: &Captcha<Submitted>,
+    max_retry: usize,
+    delay: Duration,
+) -> Result<Captcha<Solved>, SmesError> {
+    (|| async {
+        let api = NopechaApi::default();
+        api.get_answer(captcha.clone()).await
+    })
+    .retry(
+        ConstantBuilder::default()
+            .with_delay(delay)
+            .with_max_times(max_retry),
+    )
+    .when(|e| matches!(e, SmesError::Nopecha(NopechaError::IncompleteJob(_))))
+    .notify(|e, duration| tracing::warn!(?e, ?duration, "Retrying get_answer"))
+    .await
+}
+
 #[derive(Serialize, Deserialize)]
 struct ChallengeAnswer {
     data: String,
@@ -140,7 +159,9 @@ fn image_to_base64(image: &DynamicImage) -> Result<String, SmesError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::api::model::Captcha;
     use backon::{ConstantBuilder, Retryable};
+    use cookie::CookieJar;
     use goldrust::{goldrust, Content, Goldrust, ResponseSource};
     use tracing::Instrument;
     use wiremock::Mock;
@@ -150,18 +171,17 @@ mod tests {
         tracing_setup::subscribe();
 
         // region: Arrange
-        let test_id = utils::function_id!();
         tracing_setup::subscribe();
+        let test_id = utils::function_id!();
+        let _span = tracing::info_span!("test", ?test_id).entered();
         let mut goldrust = goldrust!("json");
 
-        let mock_server = wiremock::MockServer::start()
-            .instrument(tracing::info_span!("test", ?test_id))
-            .await;
+        let mock_server = wiremock::MockServer::start().in_current_span().await;
 
         if matches!(goldrust.response_source, ResponseSource::Local) {
             std::env::set_var("NOPECHA_KEY", "test");
         }
-        let mut api = NopeChaApi::default();
+        let mut api = NopechaApi::default();
 
         match goldrust.response_source {
             ResponseSource::Local => {
@@ -173,7 +193,7 @@ mod tests {
                     .respond_with(wiremock::ResponseTemplate::new(200).set_body_bytes(golden_file))
                     .expect(1)
                     .mount(&mock_server)
-                    .instrument(tracing::info_span!("test", ?test_id))
+                    .in_current_span()
                     .await;
 
                 api.domain = mock_server.uri();
@@ -187,16 +207,18 @@ mod tests {
 
         // Received captcha
         let captcha = api
-            .submit_challenge(captcha)
-            .instrument(tracing::info_span!("test", ?test_id))
+            .submit_captcha(captcha)
+            .in_current_span()
             .await
             .expect("Failed to submit captcha");
 
-        let nopecha_id = captcha.nopecha_id.to_owned().expect("No nopecha_id");
+        let nopecha_id = captcha.nopecha_id();
         // endregion: Act
 
         // region: Cleanup
-        let challenge_answer = ChallengeAnswer { data: nopecha_id };
+        let challenge_answer = ChallengeAnswer {
+            data: nopecha_id.to_string(),
+        };
         goldrust
             .save(Content::Json(
                 serde_json::to_value(&challenge_answer).expect("Failed to serialize"),
@@ -208,7 +230,6 @@ mod tests {
     #[tokio::test]
     async fn get_answer_should_work() {
         tracing_setup::subscribe();
-        let function_id = utils::function_id!();
 
         let allow_external_api_call = std::env::var("GOLDRUST_ALLOW_EXTERNAL_API_CALL")
             .unwrap_or("false".to_string())
@@ -219,13 +240,13 @@ mod tests {
             return;
         }
 
-        let api = NopeChaApi::default();
+        let api = NopechaApi::default();
 
         let captcha = get_local_captcha();
 
         let captcha = api
-            .submit_challenge(captcha)
-            .instrument(tracing::info_span!("test", ?function_id))
+            .submit_captcha(captcha)
+            .in_current_span()
             .await
             .expect("Failed to submit captcha");
 
@@ -233,36 +254,31 @@ mod tests {
             || async {
                 api.clone()
                     .get_answer(captcha.clone())
-                    .instrument(tracing::info_span!("test", ?function_id))
+                    .in_current_span()
                     .await
             }
         }
         .retry(
             ConstantBuilder::default()
-                .with_delay(std::time::Duration::from_secs(1))
+                .with_delay(Duration::from_secs(1))
                 .with_max_times(10),
         )
         .when(|e| matches!(e, SmesError::UnsuccessfulResponse { .. }))
         .notify(|e, duration| tracing::warn!(?e, ?duration, "Retrying"))
-        .instrument(tracing::info_span!("test", ?function_id))
+        .in_current_span()
         .await
         .expect("Failed to get answer");
 
-        assert_eq!(result.answer.as_ref().expect("No answer"), "160665");
+        assert_eq!(result.answer(), "160665");
     }
 
-    fn get_local_captcha() -> Captcha {
+    fn get_local_captcha() -> Captcha<Unsubmitted> {
         let captcha_path = concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/tests/resources/captcha/160665.png"
         );
         let captcha_image = image::open(captcha_path).expect("Failed to load image");
 
-        Captcha {
-            image: captcha_image,
-            cookies: vec![],
-            nopecha_id: None,
-            answer: None,
-        }
+        Captcha::new(captcha_image, CookieJar::new())
     }
 }

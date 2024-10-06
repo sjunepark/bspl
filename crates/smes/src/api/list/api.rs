@@ -6,7 +6,6 @@ use reqwest::header::HeaderMap;
 use reqwest::{Client, Method};
 use std::fmt::Debug;
 
-#[allow(dead_code)]
 #[derive(Debug)]
 pub struct ListApi {
     client: Client,
@@ -42,19 +41,26 @@ impl ListApi {
     /// - Request returned a status code of 200,
     ///   but the api response body contained an invalid result value
     #[tracing::instrument(skip(self))]
-    pub async fn get_company_list(&self, payload: &ListPayload) -> Result<ListResponse, SmesError> {
+    pub async fn get_company_list(
+        &mut self,
+        payload: &ListPayload,
+    ) -> Result<ListResponse, SmesError> {
+        let domain = self.domain.to_string();
+
         let request_response = self
             .request(
                 Method::POST,
-                &self.domain,
+                &domain,
                 "/venturein/pbntc/searchVntrCmpAction",
                 HeaderMap::with_list(),
+                None,
                 Some(serde_json::to_value(payload)?),
             )
             .await?;
 
-        let text =
-            std::str::from_utf8(&request_response.bytes).unwrap_or("Failed to decode bytes body");
+        let text = std::str::from_utf8(&request_response.bytes).inspect_err(|e| {
+            tracing::error!(?e, "Failed to decode response body");
+        })?;
 
         // Deserialize the request response
         let response: ListResponse =
@@ -80,7 +86,7 @@ impl ListApi {
     }
 
     #[tracing::instrument(skip(self))]
-    pub async fn get_company_list_count(&self) -> Result<usize, SmesError> {
+    pub async fn get_company_list_count(&mut self) -> Result<usize, SmesError> {
         let payload = ListPayloadBuilder::default().build().map_err(|e| {
             SmesError::Build(BuildError {
                 message: "Failed to build payload",
@@ -107,13 +113,12 @@ mod tests {
     #[tokio::test]
     async fn list_api_make_request_should_succeed() {
         // region: Arrange
-        let test_id = utils::function_id!();
         tracing_setup::subscribe();
+        let test_id = utils::function_id!();
+        let _span = tracing::info_span!("test", ?test_id).entered();
         let mut goldrust = goldrust!("json");
 
-        let mock_server = wiremock::MockServer::start()
-            .instrument(tracing::info_span!("test", ?test_id))
-            .await;
+        let mock_server = wiremock::MockServer::start().in_current_span().await;
         let mut api = ListApi::default();
 
         match goldrust.response_source {
@@ -132,7 +137,7 @@ mod tests {
                     })
                     .expect(1)
                     .mount(&mock_server)
-                    .instrument(tracing::info_span!("test", ?test_id))
+                    .in_current_span()
                     .await;
 
                 api.domain = mock_server.uri();
@@ -151,7 +156,7 @@ mod tests {
         // region: Act
         let response = api
             .get_company_list(&payload)
-            .instrument(tracing::info_span!("test", ?test_id))
+            .in_current_span()
             .await
             .inspect_err(|e| {
                 tracing::error!(?e, payload=?&payload, "Failed to make request");
@@ -183,16 +188,16 @@ mod tests {
     #[tokio::test]
     async fn list_api_total_count_should_succeed() {
         // region: Arrange
-        let test_id = utils::function_id!();
         tracing_setup::subscribe();
+        let test_id = utils::function_id!();
+        let _span = tracing::info_span!("test", ?test_id).entered();
+
         let allow_external_api_call: bool = std::env::var("GOLDRUST_ALLOW_EXTERNAL_API_CALL")
             .unwrap_or("false".to_string())
             .parse()
             .expect("Failed to parse GOLDRUST_ALLOW_EXTERNAL_API_CALL to bool");
 
-        let mock_server = wiremock::MockServer::start()
-            .instrument(tracing::info_span!("test", ?test_id))
-            .await;
+        let mock_server = wiremock::MockServer::start().in_current_span().await;
         let mut api = ListApi::new();
         const MOCK_TOTAL_COUNT: usize = 100;
 

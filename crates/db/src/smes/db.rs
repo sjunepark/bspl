@@ -1,5 +1,6 @@
 use crate::smes::model::Params;
 use crate::{Company, DbError, LibsqlDb};
+use hashbrown::HashSet;
 use serde::Deserialize;
 
 impl LibsqlDb {
@@ -12,6 +13,8 @@ impl LibsqlDb {
         let mut companies = Vec::new();
 
         while let Some(row) = rows.next().await? {
+            let a = row.get_value(0).expect("Failed to get value");
+            tracing::info!(?a);
             let company = libsql::de::from_row::<Company>(&row)?;
             companies.push(company);
         }
@@ -20,12 +23,12 @@ impl LibsqlDb {
     }
 
     #[tracing::instrument(skip(self))]
-    pub async fn get_company_ids(&self) -> Result<hashbrown::HashSet<String>, DbError> {
+    pub async fn get_company_ids(&self) -> Result<HashSet<String>, DbError> {
         let mut rows = self
             .connection
             .query("SELECT id from smes_company", ())
             .await?;
-        let mut company_ids = hashbrown::HashSet::new();
+        let mut company_ids = HashSet::new();
 
         #[derive(Deserialize)]
         struct IdStruct {
@@ -120,10 +123,24 @@ ON CONFLICT (id) DO UPDATE SET representative_name          = EXCLUDED.represent
 
 #[cfg(test)]
 mod tests {
-    use fake::Fake;
-
     use crate::test_utils::{text_context, DbSource, TestContext};
     use crate::{Company, LibsqlDb};
+    use fake::Fake;
+    use model::company;
+    use serde::Deserialize;
+    use std::str::FromStr;
+
+    #[test]
+    fn id_struct_should_deserialize_as_expected() {
+        #[derive(Deserialize)]
+        struct IdStruct {
+            id: company::Id,
+        }
+
+        let json = r#"{"id":"1234567"}"#;
+        let id_struct: IdStruct = serde_json::from_str(json).unwrap();
+        assert_eq!(id_struct.id, company::Id::from_str("1234567").unwrap());
+    }
 
     #[tokio::test]
     async fn insert_and_get_companies_should_work() {
@@ -184,7 +201,7 @@ mod tests {
 
         // Add a new company to see that this company was properly updated
         let mut new_company = ().fake::<Company>();
-        const NEW_COMPANY_ID: &str = "2000000000";
+        const NEW_COMPANY_ID: &str = "2000000";
         new_company.id = NEW_COMPANY_ID.to_string();
         let new_company_representative_name = new_company.representative_name.clone();
         updated_companies.push(new_company);

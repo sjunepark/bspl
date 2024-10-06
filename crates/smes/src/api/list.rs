@@ -1,5 +1,5 @@
-mod api;
-mod types;
+pub mod api;
+mod model;
 
 pub use api::ListApi;
-pub use types::{Company, ListPayload, ListPayloadBuilder, ListResponse};
+pub use model::{ListPayload, ListPayloadBuilder, ListResponse};

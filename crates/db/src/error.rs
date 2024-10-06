@@ -1,6 +1,6 @@
-use utils::impl_error;
+use thiserror::Error;
 
-#[derive(thiserror::Error, Debug)]
+#[derive(Error, Debug)]
 pub enum DbError {
     #[error("Connection error: {0}")]
     Connection(#[from] ConnectionError),
@@ -10,21 +10,16 @@ pub enum DbError {
     Io(#[from] std::io::Error),
     #[error("Libsql error: {0}")]
     Libsql(#[from] libsql::Error),
+    #[error("Model error: {0}")]
+    Model(#[from] model::ModelError),
     #[error("Validation error: {0}")]
     Validation(#[from] validator::ValidationErrors),
 }
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
+#[error("Connection error: {message}")]
 pub struct ConnectionError {
+    #[source]
     pub source: Option<Box<dyn std::error::Error>>,
     pub message: &'static str,
-}
-
-impl_error!(ConnectionError);
-
-impl std::fmt::Display for ConnectionError {
-    #[cfg_attr(coverage_nightly, coverage(off))]
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Connection error: {}", self.message)
-    }
 }
