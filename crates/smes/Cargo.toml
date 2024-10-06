@@ -10,7 +10,7 @@ base64 = { workspace = true }
 bytes = { workspace = true }
 cookie = { workspace = true }
 derive_builder = { workspace = true }
-derive_more = { workspace = true, features = ["as_ref"] }
+derive_more = { workspace = true, features = ["display"] }
 image = { workspace = true }
 reqwest = { workspace = true, features = ["json"] }
 serde = { workspace = true, features = ["derive"] }

@@ -2,7 +2,7 @@
 
 use crate::api::base::ParsedResponse;
 use crate::api::model::{Captcha, Solved, Submitted, Unsubmitted};
-use crate::error::{ExternalApiError, NopechaError, UnsuccessfulResponseError};
+use crate::error::{ExternalApiError, NopechaError, NopechaErrorBody};
 use crate::SmesError;
 use backon::{ConstantBuilder, Retryable};
 use base64::engine::general_purpose;
@@ -42,7 +42,7 @@ impl NopechaApi {
         &self,
         captcha: Captcha<Unsubmitted>,
     ) -> Result<Captcha<Submitted>, SmesError> {
-        let image = image_to_base64(&captcha.image())?;
+        let image = image_to_base64(captcha.image())?;
 
         let payload = json!({
             "key": self.api_key,
@@ -91,7 +91,7 @@ impl NopechaApi {
         #[serde(untagged)]
         enum ApiResponse {
             Answer(Answer),
-            Error(NopechaError),
+            Error(NopechaErrorBody),
         }
         #[derive(Deserialize, Debug)]
         struct Answer {
@@ -115,14 +115,7 @@ impl NopechaApi {
                 tracing::trace!(?captcha, "Captcha solved");
                 captcha
             }),
-            ApiResponse::Error(error) => Err(UnsuccessfulResponseError {
-                message: "Nopecha API returned an error",
-                status: response.status,
-                headers: response.headers,
-                body: format!("{:?}", error),
-                source: None,
-            }
-            .into()),
+            ApiResponse::Error(error) => Err(NopechaError::from(error).into()),
         }
     }
 }
@@ -145,7 +138,7 @@ pub(crate) async fn get_answer_with_retries(
             .with_delay(delay)
             .with_max_times(max_retry),
     )
-    .when(|e| matches!(e, SmesError::UnsuccessfulResponse { .. }))
+    .when(|e| matches!(e, SmesError::Nopecha(NopechaError::IncompleteJob(_))))
     .notify(|e, duration| tracing::warn!(?e, ?duration, "Retrying get_answer"))
     .await
 }

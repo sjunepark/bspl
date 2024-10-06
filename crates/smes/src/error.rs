@@ -33,10 +33,30 @@ pub enum SmesError {
     UnsuccessfulResponse(#[from] UnsuccessfulResponseError),
 }
 
+#[derive(Error, Debug)]
+pub enum NopechaError {
+    #[error("Nopecha error: {0}")]
+    IncompleteJob(NopechaErrorBody),
+    #[error("Nopecha error: {0}")]
+    OutOfCredit(NopechaErrorBody),
+    #[error("Nopecha error: {0}")]
+    Other(NopechaErrorBody),
+}
+
+impl From<NopechaErrorBody> for NopechaError {
+    fn from(body: NopechaErrorBody) -> Self {
+        match body.code {
+            14 => NopechaError::IncompleteJob(body),
+            16 => NopechaError::OutOfCredit(body),
+            _ => NopechaError::Other(body),
+        }
+    }
+}
+
 #[derive(Error, Debug, Serialize, Deserialize)]
-#[error("Nopecha error: code: {code}, message: {message}")]
-pub struct NopechaError {
-    code: usize, // 16: out of credit
+#[error("Nopecha error body: code: {code}, message: {message}")]
+pub struct NopechaErrorBody {
+    code: usize,
     message: String,
 }
 

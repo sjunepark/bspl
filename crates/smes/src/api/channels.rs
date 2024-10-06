@@ -1,7 +1,8 @@
 use crate::api::model::{BsPl, Captcha, Solved, Submitted, Unsubmitted};
 use crate::api::nopecha;
 use crate::api::nopecha::NopechaApi;
-use crate::{BsplApi, VniaSn};
+use crate::error::NopechaError;
+use crate::{BsplApi, SmesError, VniaSn};
 use std::time::Duration;
 use tokio::sync::mpsc::{channel, unbounded_channel, Receiver, UnboundedReceiver};
 use tracing::Instrument;
@@ -71,8 +72,6 @@ pub async fn get_bspl_htmls(companies: &[VniaSn]) -> UnboundedReceiver<BsPl> {
                     }
                 }
             }
-
-            captcha_cookies.close();
         }
         .in_current_span(),
     );
@@ -197,9 +196,18 @@ async fn get_answers(
                             );
                         });
                     }
-                    Err(e) => {
-                        tracing::error!(?e, "Error received from get_answer. Skipping.");
-                    }
+                    Err(e) => match e {
+                        SmesError::Nopecha(NopechaError::OutOfCredit(e)) => {
+                            tracing::warn!(?e, "Nopecha API out of credit. Stopping.");
+                            break;
+                        }
+                        _ => {
+                            tracing::error!(
+                                ?e,
+                                "Error received while running get_answer_with_retries. Skipping."
+                            );
+                        }
+                    },
                 }
             }
         }
