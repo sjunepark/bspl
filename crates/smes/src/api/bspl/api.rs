@@ -63,9 +63,13 @@ impl BsplApi {
             .headers
             .get_all(SET_COOKIE)
             .iter()
+            .inspect(|cookie| {
+                tracing::debug!(?cookie, "Received cookie");
+            })
             .cloned()
             .collect();
 
+        tracing::debug!("Received captcha image");
         Ok(Captcha::new(image, cookies))
     }
 
@@ -174,5 +178,7 @@ mod tests {
             .save(Content::Image(captcha_image.image().clone()))
             .expect("Failed to save image");
         // endregion: Cleanup
+
+        assert!(false)
     }
 }

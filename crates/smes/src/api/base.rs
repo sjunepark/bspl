@@ -86,17 +86,9 @@ pub(crate) trait Api: Default {
         query: Option<&[(&str, &str)]>,
         payload: Option<serde_json::Value>,
     ) -> Result<ParsedResponse, SmesError> {
-        // Even though there could be performance penalties,
-        // the client is cloned to ensure consistency beyond await points.
-        // Without a separate client, it can't be guaranteed that the cookie store is not modified
-        let cookie_store = Arc::new(CookieStoreMutex::default());
-
         let client = Client::builder()
-            .cookie_provider(Arc::clone(&cookie_store))
             .build()
             .expect("Failed to build reqwest client");
-        // Clear cookies before request
-        cookie_store.lock().unwrap().clear();
 
         // Headers are set in the client with `default_headers`
         // If additional headers are necessary,
@@ -115,16 +107,6 @@ pub(crate) trait Api: Default {
         }
 
         let response = builder.send().await?;
-
-        let cookies = cookie_store
-            .lock()
-            .unwrap()
-            .iter_unexpired()
-            .map(|cookie| cookie.deref().to_owned())
-            .collect::<Vec<_>>();
-
-        // todo: These cookies are currently empty
-        tracing::info!(?cookies, "Cookies after request");
 
         ParsedResponse::with_reqwest_response(response).await
     }

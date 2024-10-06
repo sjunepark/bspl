@@ -1,8 +1,11 @@
+## Exploration files
+**/explore/**
+
 ### Production local db
 /db/**/*
 
 ### Mock db
-tests/db/**/*
+tests/db/**
 
 ### dotenv template
 .env
