@@ -1,10 +1,11 @@
 use cookie::ParseError;
 use reqwest::header::{InvalidHeaderValue, ToStrError};
+use serde::{Deserialize, Serialize};
 use std::str::Utf8Error;
 use std::string::FromUtf8Error;
-use utils::impl_error;
+use thiserror::Error;
 
-#[derive(thiserror::Error, Debug)]
+#[derive(Error, Debug)]
 pub enum SmesError {
     #[error("Build error: {0}")]
     Build(#[from] BuildError),
@@ -20,6 +21,8 @@ pub enum SmesError {
     InvalidHeaderValue(#[from] InvalidHeaderValue),
     #[error("Missing expected field: {0}")]
     MissingExpectedField(String),
+    #[error("Nopecha error: {0}")]
+    Nopecha(#[from] NopechaError),
     #[error("Parse error: {0}")]
     CookieParse(#[from] ParseError),
     #[error("HTTP error: {0}")]
@@ -30,7 +33,14 @@ pub enum SmesError {
     UnsuccessfulResponse(#[from] UnsuccessfulResponseError),
 }
 
-#[derive(thiserror::Error, Debug)]
+#[derive(Error, Debug, Serialize, Deserialize)]
+#[error("Nopecha error: code: {code}, message: {message}")]
+pub struct NopechaError {
+    code: usize, // 16: out of credit
+    message: String,
+}
+
+#[derive(Error, Debug)]
 pub enum ConversionError {
     #[error("Utf8 error: {0}")]
     Utf8(#[from] Utf8Error),
@@ -58,70 +68,40 @@ impl From<ToStrError> for SmesError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
+#[error("External API error: {message}")]
 pub struct ExternalApiError {
-    pub source: Option<Box<dyn std::error::Error>>,
     pub message: &'static str,
+    #[source]
+    pub source: Option<Box<dyn std::error::Error>>,
 }
 
-#[cfg_attr(coverage_nightly, coverage(off))]
-impl std::fmt::Display for ExternalApiError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "External API error: {}", self.message)
-    }
-}
-
-impl_error!(ExternalApiError);
-
-#[derive(Debug)]
+#[derive(Error, Debug)]
+#[error("Build error: {message}")]
 pub struct BuildError {
+    #[source]
     pub source: Option<Box<dyn std::error::Error>>,
     pub message: &'static str,
 }
 
-#[cfg_attr(coverage_nightly, coverage(off))]
-impl std::fmt::Display for BuildError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Build error: {}", self.message)
-    }
-}
-
-impl_error!(BuildError);
-
-#[derive(Debug)]
+#[derive(Error, Debug)]
+#[error("Deserialization error: {message}, serialized: {serialized}")]
 pub struct DeserializationError {
+    #[source]
     pub source: Option<Box<dyn std::error::Error>>,
     pub message: &'static str,
     pub serialized: String,
 }
 
-#[cfg_attr(coverage_nightly, coverage(off))]
-impl std::fmt::Display for DeserializationError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Deserialization error: {}", self.message)
-    }
-}
-
-impl_error!(DeserializationError);
-
-#[derive(Debug)]
+#[derive(Error, Debug)]
+#[error(
+    "Unsuccessful response error: {message}, status: {status}, headers: {headers:?}, body: {body}"
+)]
 pub struct UnsuccessfulResponseError {
+    #[source]
     pub source: Option<Box<dyn std::error::Error>>,
     pub message: &'static str,
     pub status: reqwest::StatusCode,
     pub headers: reqwest::header::HeaderMap,
     pub body: String,
 }
-
-#[cfg_attr(coverage_nightly, coverage(off))]
-impl std::fmt::Display for UnsuccessfulResponseError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "Unsuccessful response error: status_code: {:?}, headers: {:?}, message: {}",
-            self.status, self.headers, self.message
-        )
-    }
-}
-
-impl_error!(UnsuccessfulResponseError);

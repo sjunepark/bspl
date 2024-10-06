@@ -4,6 +4,7 @@ set dotenv-required
 set dotenv-filename := ".env.dev"
 
 watch_base := "cargo watch -q -c -i 'tests/resources/**/*'"
+no_capture := if env_var("TEST_LOG") == "true" { "--no-capture" } else { "" }
 
 run bin="":
     clear
@@ -34,7 +35,7 @@ watch-bench name="":
 
 test name="":
     clear
-    cargo nextest run --workspace --all-features --all-targets {{name}}
+    cargo nextest run {{no_capture}} --workspace --all-features --all-targets {{name}}
 
 test-pkg pkg:
     clear

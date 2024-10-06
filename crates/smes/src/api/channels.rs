@@ -51,7 +51,6 @@ pub async fn get_bspl_htmls(companies: &[VniaSn]) -> UnboundedReceiver<BsPl> {
                 let html = api
                     .get_bspl_html(captcha.cookies(), *vnia_sn, captcha.answer())
                     .await;
-                tracing::trace!(?html, "Received bspl html");
 
                 match html {
                     Ok(html) => {
