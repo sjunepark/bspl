@@ -68,7 +68,7 @@ pub async fn get_bspl_htmls(companies: &[VniaSn]) -> UnboundedReceiver<BsPl> {
                         };
                     }
                     Err(e) => {
-                        tracing::error!(?e, "Error received from get_bspl_html. Skipping.");
+                        tracing::warn!(?e, "Error received from get_bspl_html. Skipping.");
                     }
                 }
             }
@@ -117,12 +117,12 @@ async fn get_captchas(count: usize, cap: usize) -> Receiver<Captcha<Unsubmitted>
                 let captcha = match api.get_captcha().await {
                     Ok(captcha) => captcha,
                     Err(e) => {
-                        tracing::error!(?e, "Failed to get captcha. Skipping.");
+                        tracing::warn!(?e, "Failed to get captcha. Skipping.");
                         continue;
                     }
                 };
                 if let Err(e) = tx.send(captcha).await {
-                    tracing::trace!(
+                    tracing::warn!(
                         ?e,
                         "Failed to send captcha. The channel has been closed. Skipping."
                     );
@@ -167,7 +167,7 @@ async fn submit_captchas(
                         });
                     }
                     Err(e) => {
-                        tracing::error!(?e, "Error received from submit_captcha. Skipping.");
+                        tracing::warn!(?e, "Error received from submit_captcha. Skipping.");
                     }
                 }
             }
@@ -202,7 +202,7 @@ async fn get_answers(
                             break;
                         }
                         _ => {
-                            tracing::error!(
+                            tracing::warn!(
                                 ?e,
                                 "Error received while running get_answer_with_retries. Skipping."
                             );
