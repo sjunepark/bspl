@@ -4,7 +4,6 @@ use chrono::{NaiveDate, Utc};
 use chrono_tz::Asia;
 use libsql::params::IntoParams;
 use serde::{Deserialize, Serialize};
-use std::ops::Deref;
 use validator::Validate;
 
 pub trait Params {
@@ -88,32 +87,6 @@ impl Params for Company {
             ":create_date": self.create_date.to_string(),
             ":update_date": self.update_date.to_string(),
         }
-    }
-}
-
-pub struct Companies(Vec<Company>);
-
-impl TryFrom<Vec<smes::Company>> for Companies {
-    type Error = DbError;
-
-    fn try_from(value: Vec<smes::Company>) -> Result<Self, Self::Error> {
-        let len = value.len();
-        let companies = value
-            .into_iter()
-            .try_fold(Vec::with_capacity(len), |mut acc, c| {
-                let company = Company::try_from(c)?;
-                acc.push(company);
-                Ok::<Vec<Company>, DbError>(acc)
-            })?;
-        Ok(Self(companies))
-    }
-}
-
-impl Deref for Companies {
-    type Target = Vec<Company>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
     }
 }
 

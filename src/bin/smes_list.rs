@@ -1,4 +1,4 @@
-use db::{Companies, LibsqlDb};
+use db::LibsqlDb;
 use smes::{ListApi, ListPayloadBuilder};
 
 #[tokio::main]
@@ -29,11 +29,12 @@ async fn main() {
         .await
         .expect("Failed to make request");
 
-    let companies: Companies = response
+    let companies: Vec<_> = response
         .data_list
         .expect("data_list is None")
-        .try_into()
-        .expect("Failed to convert data_list to Companies");
+        .into_iter()
+        .map(|c| c.try_into().expect("Failed to convert company"))
+        .collect();
 
     db.upsert_companies(&companies)
         .await

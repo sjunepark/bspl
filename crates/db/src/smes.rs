@@ -3,4 +3,4 @@ mod db;
 mod html;
 mod utils;
 
-pub use company::{Companies, Company};
+pub use company::Company;

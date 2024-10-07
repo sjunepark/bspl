@@ -1,4 +1,4 @@
-use db::{Companies, LibsqlDb};
+use db::{Company, LibsqlDb};
 
 #[tokio::main]
 async fn main() {
@@ -17,11 +17,12 @@ async fn main() {
 
     let db = LibsqlDb::new_local(":memory:").await.unwrap();
 
-    let companies: Companies = list
+    let companies: Vec<Company> = list
         .data_list
         .unwrap_or_default()
-        .try_into()
-        .expect("Failed to convert");
+        .into_iter()
+        .map(|c| c.try_into().expect("Failed to convert company"))
+        .collect();
 
     db.insert_companies(&companies)
         .await
