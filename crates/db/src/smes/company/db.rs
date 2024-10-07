@@ -1,4 +1,4 @@
-use crate::smes::model::Params;
+use crate::smes::company::Params;
 use crate::{Company, DbError, LibsqlDb};
 use hashbrown::HashSet;
 use serde::Deserialize;
@@ -26,18 +26,18 @@ impl LibsqlDb {
     pub async fn get_company_ids(&self) -> Result<HashSet<String>, DbError> {
         let mut rows = self
             .connection
-            .query("SELECT id from smes_company", ())
+            .query("SELECT smes_id from smes_company", ())
             .await?;
         let mut company_ids = HashSet::new();
 
         #[derive(Deserialize)]
         struct IdStruct {
-            id: String,
+            smes_id: String,
         }
 
         while let Some(row) = rows.next().await? {
             let id_struct: IdStruct = libsql::de::from_row(&row)?;
-            company_ids.insert(id_struct.id);
+            company_ids.insert(id_struct.smes_id);
         }
 
         Ok(company_ids)
@@ -48,7 +48,7 @@ impl LibsqlDb {
         let tx = self.connection.transaction().await?;
         let mut stmt = tx
             .prepare(
-                "INSERT into smes_company (id,
+                "INSERT into smes_company (smes_id,
                      representative_name,
                      headquarters_address,
                      business_registration_number,
@@ -57,7 +57,7 @@ impl LibsqlDb {
                      industry_name,
                      create_date,
                      update_date)
-VALUES (:id,
+VALUES (:smes_id,
         :representative_name,
         :headquarters_address,
         :business_registration_number,
@@ -83,7 +83,7 @@ VALUES (:id,
         let tx = self.connection.transaction().await?;
         let mut stmt = tx
             .prepare(
-                "INSERT into smes_company (id,
+                "INSERT into smes_company (smes_id,
                      representative_name,
                      headquarters_address,
                      business_registration_number,
@@ -92,7 +92,7 @@ VALUES (:id,
                      industry_name,
                      create_date,
                      update_date)
-VALUES (:id,
+VALUES (:smes_id,
         :representative_name,
         :headquarters_address,
         :business_registration_number,
@@ -101,7 +101,7 @@ VALUES (:id,
         :industry_name,
         :create_date,
         :update_date)
-ON CONFLICT (id) DO UPDATE SET representative_name          = EXCLUDED.representative_name,
+ON CONFLICT (smes_id) DO UPDATE SET representative_name          = EXCLUDED.representative_name,
                                headquarters_address         = EXCLUDED.headquarters_address,
                                business_registration_number = EXCLUDED.business_registration_number,
                                company_name                 = EXCLUDED.company_name,
@@ -173,7 +173,8 @@ mod tests {
             .inspect_err(|e| tracing::error!(?e, "Failed to get company ids"))
             .unwrap();
 
-        let company_ids: hashbrown::HashSet<String> = companies.into_iter().map(|c| c.id).collect();
+        let company_ids: hashbrown::HashSet<String> =
+            companies.into_iter().map(|c| c.smes_id).collect();
         tracing::trace!(?company_ids);
         assert_eq!(db_company_ids, company_ids);
     }
@@ -202,13 +203,13 @@ mod tests {
         // Add a new company to see that this company was properly updated
         let mut new_company = ().fake::<Company>();
         const NEW_COMPANY_ID: &str = "2000000";
-        new_company.id = NEW_COMPANY_ID.to_string();
+        new_company.smes_id = NEW_COMPANY_ID.to_string();
         let new_company_representative_name = new_company.representative_name.clone();
         updated_companies.push(new_company);
 
         // Remove a company to check that this company was not updated
         let removed_company = updated_companies.pop().unwrap();
-        let removed_company_id = removed_company.id.as_str();
+        let removed_company_id = removed_company.smes_id.as_str();
         // endregion: Arrange
 
         // region: Action
@@ -226,7 +227,7 @@ mod tests {
             .unwrap();
 
         for company in &db_companies {
-            match company.id.as_str() {
+            match company.smes_id.as_str() {
                 NEW_COMPANY_ID => {
                     assert_eq!(company.representative_name, new_company_representative_name);
                 }
@@ -255,7 +256,10 @@ mod tests {
                 let company = ().fake::<Company>();
                 let id = incremental_id.to_string();
                 incremental_id += 1;
-                Company { id, ..company }
+                Company {
+                    smes_id: id,
+                    ..company
+                }
             })
             .collect();
 

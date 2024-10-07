@@ -36,6 +36,8 @@ pub async fn get_bspl_htmls(companies: &[VniaSn]) -> UnboundedReceiver<BsPl> {
             let mut api = BsplApi::default();
             let mut index = 0;
 
+            // todo: refactor code to use an iterator for companies,
+            // and call `next`, to prevent out of bounds access
             while let Some(captcha) = captcha_cookies.recv().await {
                 if index >= companies_count {
                     break;

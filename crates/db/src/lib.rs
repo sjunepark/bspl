@@ -2,9 +2,9 @@
 
 mod db;
 mod error;
-mod smes;
+pub mod smes;
 mod test_utils;
 
 pub use db::LibsqlDb;
 pub use error::DbError;
-pub use smes::{Companies, Company};
+pub use smes::{Company, Html};

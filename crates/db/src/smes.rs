@@ -1,4 +1,6 @@
-mod db;
-mod model;
+mod company;
+mod html;
+mod utils;
 
-pub use model::{Companies, Company};
+pub use company::Company;
+pub use html::Html;
