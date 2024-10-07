@@ -379,9 +379,6 @@ mod tests {
 
         let mock_server = wiremock::MockServer::start().in_current_span().await;
 
-        if matches!(goldrust.response_source, ResponseSource::Local) {
-            std::env::set_var("NOPECHA_KEY", "test");
-        }
         let mut api = NopechaApi::default();
 
         match goldrust.response_source {
