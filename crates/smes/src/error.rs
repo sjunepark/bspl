@@ -27,10 +27,22 @@ pub enum SmesError {
     CookieParse(#[from] ParseError),
     #[error("HTTP error: {0}")]
     Reqwest(#[from] reqwest::Error),
+    #[error("Scraper error: {0}")]
+    Scraper(#[from] scraper::error::SelectorErrorKind<'static>),
     #[error("Serde JSON error: {0}")]
     SerdeJson(#[from] serde_json::Error),
     #[error("Unsuccessful response error: {0}")]
     UnsuccessfulResponse(#[from] UnsuccessfulResponseError),
+    #[error("Invariant error: {0}")]
+    Invariant(#[from] InvariantError),
+}
+
+#[derive(Error, Debug)]
+#[error("Invariant error: {message}")]
+pub struct InvariantError {
+    #[source]
+    pub source: Option<Box<dyn std::error::Error>>,
+    pub message: String,
 }
 
 #[derive(Error, Debug)]

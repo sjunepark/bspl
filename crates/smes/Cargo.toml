@@ -12,6 +12,7 @@ cookie = { workspace = true }
 derive_builder = { workspace = true }
 derive_more = { workspace = true, features = ["display"] }
 image = { workspace = true }
+minify-html = { workspace = true }
 reqwest = { workspace = true, features = ["json"] }
 scraper = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
@@ -21,7 +22,6 @@ thiserror = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true, features = ["log"] }
 utils = { workspace = true }
-log = "0.4.22"
 
 # Workspace crates
 model = { workspace = true }
