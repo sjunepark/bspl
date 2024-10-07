@@ -165,6 +165,10 @@ async fn submit_captchas(
                             );
                         });
                     }
+                    Err(SmesError::Nopecha(NopechaError::OutOfCredit(e))) => {
+                        tracing::warn!(?e, "Nopecha API out of credit. Stopping.");
+                        break;
+                    }
                     Err(e) => {
                         tracing::warn!(?e, "Error received from submit_captcha. Skipping.");
                     }

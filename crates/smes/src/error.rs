@@ -45,7 +45,7 @@ pub enum NopechaError {
 
 impl From<NopechaErrorBody> for NopechaError {
     fn from(body: NopechaErrorBody) -> Self {
-        match body.code {
+        match body.error {
             14 => NopechaError::IncompleteJob(body),
             16 => NopechaError::OutOfCredit(body),
             _ => NopechaError::Other(body),
@@ -54,9 +54,9 @@ impl From<NopechaErrorBody> for NopechaError {
 }
 
 #[derive(Error, Debug, Serialize, Deserialize, PartialEq)]
-#[error("Nopecha error body: code: {code}, message: {message}")]
+#[error("Nopecha error body: error: {error}, message: {message}")]
 pub struct NopechaErrorBody {
-    code: usize,
+    error: usize,
     message: String,
 }
 
@@ -133,22 +133,22 @@ mod tests {
     #[test]
     fn serialize_nopecha_error_body() {
         let body = NopechaErrorBody {
-            code: 14,
+            error: 14,
             message: "Incomplete job".to_string(),
         };
 
         let serialized = serde_json::to_string(&body).unwrap();
-        assert_eq!(serialized, r#"{"code":14,"message":"Incomplete job"}"#);
+        assert_eq!(serialized, r#"{"error":14,"message":"Incomplete job"}"#);
     }
 
     #[test]
     fn deserialize_nopecha_error_body() {
-        let json = r#"{"code":14,"message":"Incomplete job"}"#;
+        let json = r#"{"error":14,"message":"Incomplete job"}"#;
         let body: NopechaErrorBody = serde_json::from_slice(json.as_bytes()).unwrap();
         assert_eq!(
             body,
             NopechaErrorBody {
-                code: 14,
+                error: 14,
                 message: "Incomplete job".to_string()
             }
         );

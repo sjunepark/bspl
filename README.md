@@ -1,6 +1,7 @@
 ## Todo
 
 - Check if `inspect_err`s are necessary
+- Check if channels are closing as expected.
 
 ## Pending
 

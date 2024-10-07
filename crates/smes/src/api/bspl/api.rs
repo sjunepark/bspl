@@ -1,6 +1,7 @@
 use crate::api::base::Api;
 use crate::api::header::HeaderMapExt;
-use crate::api::model::{Captcha, Html, Unsubmitted};
+use crate::api::model::{Captcha, Unsubmitted};
+use crate::html::Html;
 use crate::SmesError;
 use cookie::CookieJar;
 use reqwest::header::HeaderMap;

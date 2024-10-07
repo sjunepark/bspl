@@ -10,8 +10,6 @@ async fn get_bspl_htmls_should_work_as_expected() {
     let test_id = utils::function_id!();
     let _span = tracing::info_span!("test", ?test_id).entered();
 
-    tracing::info!("Starting test");
-
     let allow_external_api_call = std::env::var("GOLDRUST_ALLOW_EXTERNAL_API_CALL")
         .unwrap_or("false".to_string())
         .parse::<bool>()

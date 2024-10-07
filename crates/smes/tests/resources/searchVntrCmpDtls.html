@@ -1,0 +1,2683 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    
+
+
+
+
+
+
+<meta charset="UTF-8">
+<meta name="_csrf" content=""/>
+<meta name="_csrf_header" content=""/>
+<meta name="Author" content="중소벤처기업부">
+<meta name="Keywords" content="중소벤처기업부, 벤처확인시스템, 벤처확인종합관리시스템, 중소벤처24">
+<meta name="Description" content="벤처확인 온라인 신청 사이트, 벤처기업 정보공시, 벤처확인기관 운영.">
+<meta property="og:title" content="벤처확인시스템, 벤처확인종합관리시스템">
+<meta property="og:description" content="벤처확인 온라인 신청 사이트, 벤처기업 정보공시, 벤처확인기관 운영.">
+<meta property="og:image" content="/venturein/resources/images/common/head_logo.png">
+<meta property="og:url" content="url">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<script src="/venturein/resources/js/webfont.js"></script>
+<link rel="shortcut icon" type="image/x-icon" href="/venturein/resources/images/common/favicon.ico">
+
+    
+    
+    
+    <title>중소벤처기업 벤처확인시스템</title>
+
+
+<!-- 공통 css -->
+<link rel="stylesheet" type="text/css" href="/venturein/resources/js/bootstrap-3.4.1/css/bootstrap.min.css?timeStamp=20210107" >
+<link rel="stylesheet" type="text/css" href="/venturein/resources/js/summernote-0.8.18/summernote.min.css">
+<link rel="stylesheet" type="text/css" href="/venturein/resources/css/reset.css">
+
+<link rel="stylesheet" type="text/css" href="/venturein/resources/css/notosans.css">
+
+<link rel="stylesheet" type="text/css" href="/venturein/resources/css/board.css?timeStamp=20210111">
+
+<link rel="stylesheet" type="text/css" href="/venturein/resources/css/board_respond.css?timeStamp=20210107"> <!-- 모바일 전용 -->
+
+<link rel="stylesheet" type="text/css" href="/venturein/resources/css/common.css?timeStamp=20220209">
+
+<link rel="stylesheet" type="text/css" href="/venturein/resources/css/common_respond.css?timeStamp=20210107"> <!-- 모바일 전용 -->
+
+<!-- 서브 css -->
+
+<link rel="stylesheet" type="text/css" href="/venturein/resources/css/main_new.css?timeStamp=20220624">
+
+
+<link rel="stylesheet" type="text/css" href="/venturein/resources/css/main_respond_new.css?timeStamp=20220624">
+
+<link rel="stylesheet" type="text/css" href="/venturein/resources/css/sub.css?timeStamp=20220501">
+
+ <!-- 모바일 전용 -->
+<link rel="stylesheet" type="text/css" href="/venturein/resources/css/sub_respond.css?timeStamp=20220501"> <!-- 모바일 전용 -->
+
+<link rel="stylesheet" type="text/css" href="/venturein/resources/css/slick.css" />
+<link rel="stylesheet" type="text/css" href="/venturein/resources/css/slick-theme.css" />
+
+<link href="/venturein/resources/js/SBGrid/css/SBGrid.css" rel="stylesheet" type="text/css">
+<link href="/venturein/resources/js/SBGrid/css/SBGrid_Default.css" rel="stylesheet" type="text/css">
+<link href="/venturein/resources/js/SBChart/sbchart.css" rel="stylesheet" type="text/css">
+
+<!-- 통계 css -->
+<link rel="stylesheet" type="text/css" href="/venturein/resources/css/statistics.css?timeStamp=20220501">
+
+<link href="/venturein/resources/js/jquery-datetimepicker-2.5.21/jquery.datetimepicker.min.css" rel="stylesheet" type="text/css">
+
+<!-- <link href="/venturein/resources/js/SBGrid/css/SBGrid_Orange.css" rel="stylesheet" type="text/css"> -->
+<!-- <link href="/venturein/resources/js/SBGrid/css/SBGrid_Orange_Default.css" rel="stylesheet" type="text/css"> -->
+
+<script type="text/javascript" src="/venturein/resources/js/app/app.polyfill.js"></script>
+
+<!-- 코어JS -->
+<script type="text/javascript" src="/venturein/resources/js/bluebird-3.5.0/bluebird.min.js"></script>
+<script type="text/javascript" src="/venturein/resources/js/underscore-1.11.0/underscore-min.js"></script>
+
+<script language="javascript">
+var SBpath = "/venturein/resources/js/";
+var __APP__  = {
+	context : _.isEmpty( "/venturein") ? "" : "/venturein",
+    system : "F",
+    baseUrl : "https://www.smes.go.kr/venturein",
+    phase : "prd"
+}
+</script>
+
+<!-- 솔루션 -->
+<script type="text/javascript" src="/venturein/resources/js/SBGrid/SBGrid_Lib.js"></script>
+<script type="text/javascript" src="/venturein/resources/js/SBGrid/SBGrid_min.js"></script>
+<script type="text/javascript" src="/venturein/resources/raonkupload/js/raonkupload.js" > </script>
+
+<!-- 제이쿼리 및 플러그인 -->
+<script type="text/javascript" src="/venturein/resources/js/jquery-3.5.1/jquery.min.js"></script>
+<script type="text/javascript" src="/venturein/resources/js/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/venturein/resources/js/jquery-validation-1.19.2/jquery.validate.min.js"></script>
+<script type="text/javascript" src="/venturein/resources/js/jquery-validation-1.19.2/additional-methods.min.js"></script>
+<script type="text/javascript" src="/venturein/resources/js/jquery-validation-1.19.2/localization/messages_ko.js"></script>
+<script type="text/javascript" src="/venturein/resources/js/jquery-datetimepicker-2.5.21/jquery.datetimepicker.full.min.js"></script>
+<script type="text/javascript" src="/venturein/resources/js/jquery-fileDownload.js/jquery.fileDwonload.min.js"></script>
+<script type="text/javascript" src="/venturein/resources/js/moment.js/moment.js"></script>
+<script type="text/javascript" src="/venturein/resources/js/jquery.easing.1.3.js"></script>
+
+<!-- App js -->
+<script type="text/javascript" src="/venturein/resources/js/app/app.utils.js"></script>
+<script type="text/javascript" src="/venturein/resources/js/app/app.common.js?timeStamp=20220418"></script>
+<script type="text/javascript" src="/venturein/resources/js/app/app.validate.js?timeStamp=20220520"></script>
+<script type="text/javascript" src="/venturein/resources/js/app/app.grid.js"></script>
+
+<!-- Publish  -->
+<script type="text/javascript" src="/venturein/resources/js/common_publish.js"></script>
+<script type="text/javascript" src="/venturein/resources/js/slick/slick.min.js"></script>
+<!-- SFR 회원가입/회원수정 > 패스워드 강화 표시 -->
+<script type="text/javascript" src="/venturein/resources/js/pwdmeter.js"></script>
+
+<script>
+var _G_MENU_ID = "X"; 
+(function($){
+	_AC.initialize();
+	_AV.initialize();
+})(jQuery);
+
+/**
+ * 현재화면의 메뉴아이디 Getter
+ */
+function getMenuId() {
+    return _G_MENU_ID ? _G_MENU_ID : "";
+}
+
+/**
+ * 현재화면의 메뉴아이디 get방식 파라미터 Getter
+ */
+function getMenuIdGetParam(pIsFirst) {
+    if (!pIsFirst) {
+        pIsFirst = false;
+    }
+    return (pIsFirst ? "?" : "&") + "menuId=" + getMenuId();
+}
+</script>
+
+
+
+</head>
+<body>
+	
+
+
+
+
+<script type="text/template" id="layer-template"> 	
+<div id="{{= id}}" class="layer_pop_box" tabindex="0" style="display: block;" >
+	<!-- layer_pop -->
+	<div class="layer_pop" style="width:{{= width}};height:{{= height}};">		
+		
+		{{ if(isStock){ }}
+			<div class="layer_pop_con"></div>
+		{{ } }}
+
+		
+		{{ if(!isStock){ }}
+			<div class="layer_con_box">
+			{{ if(title){ }}
+				<h4 class="layer_pop_tit">{{= title}}</h4>
+			{{ } }}
+				<div class="layer_pop_con"></div>
+			</div>
+			{{ if(showClsBtn){ }}
+				<button class="layer_pop_close"><span class="hide">레이어 창 닫기</span></button>
+			{{ } }}
+
+			<div class="customPopAplyDtlsHtml" id="customPopAplyDtlsHtml"></div>
+		{{ } }}
+	</div>
+	<!-- // layer_pop -->
+</div>
+</script>
+
+<script type="text/template" id="noti-template"> 	
+	<div id="{{= id}}" class="noti_pop" style="width:{{= width}};left:{{= left}};top:{{= top}};" >
+		<div class="noti_con_box" style="height:{{= height}}">
+			
+		</div>
+		<div class="noti_pop_bottom">
+		    <span class="chk_each">
+			   <input type="checkbox" id="c_{{= id}}" class="hide">
+			   <label for="c_{{= id}}"><span class="vchkbox"></span>오늘 하루 이창을 열지 않음</label>
+		    </span>
+			<button class="noti_pop_close"><span class="hide">레이어 창 닫기</span></button>
+		</div>
+	</div>
+</script>
+
+
+<script type="text/template" id="alert-template">
+<div id="{{= id}}" class="layer_pop_box" tabindex="0" style="display: block;">
+	<!-- layer_pop -->
+	<div class="layer_pop" style="width: 700px;">
+		
+		<p class="layer_pop_sub_txt">{{= message}}</p>
+
+		<div class="common_btn_box">
+			<a class="common_btn next">확인</a>
+		</div>
+		
+		<button class="layer_pop_close"><span class="hide">레이어 창 닫기</span></button>
+	</div>	
+	<!-- // layer_pop -->
+</div>
+</script>  
+
+
+
+<script type="text/template" id="confirm-template"> 	
+<!-- layer_pop_box -->
+<div id="{{= id}}" class="layer_pop_box" tabindex="0" style="display: block;">
+	<!-- layer_pop -->
+	<div class="layer_pop" style="width: 950px;">
+		<div class="layer_con_box">
+			{{ if(title){ }}
+				<h4 class="layer_pop_tit">{{= title}}</h4>
+			{{ } }}
+
+			<!-- 문구 필요 없을 시 sub_each2 태그 전체 삭제 -->
+			<!-- sub_each2 -->
+			<div class="sub_each2">
+				<p class="layer_pop_sub_txt">
+					{{= message}}
+				</p>
+			</div>
+			<!-- // sub_each2 -->
+
+			<div class="agree_box">
+				<p class="agree_all_txt">{{= mainMsg}}</p>
+				<div class="common_btn_box">
+					<a class="common_btn out" data-layerclose="true">아니오</a>
+					<a class="common_btn positive">예</a>
+				</div>
+			</div>
+		</div>
+		<button class="layer_pop_close"><span class="hide">레이어 창 닫기</span></button>
+	</div>
+	<!-- // layer_pop -->
+</div>
+<!-- // layer_pop_box -->
+
+</script> 
+
+
+
+<script type="text/template" id="isgen-confirm-template"> 	
+<!-- layer_pop_box -->
+<div id="{{= id}}" class="layer_pop_box" tabindex="0" style="display: block;">
+	<!-- layer_pop -->
+	<div class="layer_pop" style="width: 950px;">
+		<div class="layer_con_box">
+			{{ if(title){ }}
+				<h4 class="layer_pop_tit">{{= title}}</h4>
+			{{ } }}
+
+			<!-- 문구 필요 없을 시 sub_each2 태그 전체 삭제 -->
+			<!-- sub_each2 -->
+			<div class="sub_each2" style="margin-bottom: 20px !important;">
+				<p class="layer_pop_sub_txt fw_700">
+					{{= message}}
+				</p>
+			</div>
+			<div class="sub_each2" style="margin-bottom: 20px !important;">
+				<table class="board_write">
+					<caption>확인유형별 제출서류를 안내 하는 확인창</caption>
+					<colgroup>
+						<col style="width: 45%;">
+						<col style="width: auto;">
+					</colgroup>
+					<tbody>
+						<tr>
+							<th class="ta_c" style="font-weight: bold;">확인유형</th>
+							<th class="ta_c" style="font-weight: bold;">제출서류</th>
+						</tr>
+						<tr>
+							<td class="ta_c">벤처투자유형</td>
+							<td>·합병 이후 중소기업확인서</td>
+						</tr>
+						<tr>
+							<td class="ta_c">연구개발유형</td>
+							<td>
+								·연구개발 조직 보유 인정서<br>
+								·합병 이후 중소기업확인서
+							</td>
+						</tr>
+						<tr>
+							<td class="ta_c">혁신성장유형</td>
+							<td>·합병 이후 중소기업확인서</td>
+						</tr>
+						<tr>
+							<td class="ta_c">보증·대출유형</td>
+							<td>·합병 이후 중소기업확인서</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<!-- // sub_each2 -->
+
+			<div class="agree_box">
+				<p class="agree_all_txt">{{= mainMsg}}</p>
+				<div class="common_btn_box">
+					<a class="common_btn out" data-layerclose="true">아니오</a>
+					<a class="common_btn positive">예</a>
+				</div>
+			</div>
+		</div>
+		<button class="layer_pop_close"><span class="hide">레이어 창 닫기</span></button>
+	</div>
+	<!-- // layer_pop -->
+</div>
+<!-- // layer_pop_box -->
+
+</script> 
+
+
+	<!-- wrapper -->
+	<div class="wrapper">
+	
+		
+
+
+
+
+
+
+
+
+<!-- header -->
+<div class="header prd">
+	<!-- skip_navi -->
+	<dl class="skip_navi">
+		<dt class="hide"><strong>바로가기 메뉴</strong></dt>
+		<dd><a href="#real_contents">본문 바로가기</a></dd>
+		<dd><a href="#gnb">주메뉴 바로가기</a></dd>
+	</dl>
+	<!-- // skip_navi -->
+
+	<!-- logo_header -->
+	<!-- style="position: fixed; top: 0; left: 0; width: 100%; z-index: 100; /* 다른 요소 위에 표시되도록 z-index 설정 */" -->
+	<div class="logo_header">
+		<!-- container -->
+		<div class="container clearfix" id="containerDiv"> <!--[20240429] 송기범 : id 추가-->
+
+			<h1 class="head_logo">
+				<a href="/venturein/home/viewHome" title="홈으로 이동">
+					<img src="/venturein/resources/images/common/head_logo.png" alt="벤처기업확인기관 벤처확인종합관리시스템">
+				</a>
+			</h1>
+
+			
+
+			<div class="head_sch_box" >
+				<input id="totalSearch" type="text" title="검색어 입력">
+				<button id="btnTotalSearch" type="button">
+					<img src="/venturein/resources/images/common/ico_head_sch.png" alt="검색하기">
+				</button>
+			</div>
+
+			<ul class="head_util_menu">
+				
+					<li>
+						<a href="/venturein/auth/viewLogin">로그인</a>
+					</li>
+					<li>
+						<a href="/venturein/register/viewRegisterStep1">회원가입</a>
+					</li>
+				
+				
+			</ul>
+
+			<a href="javascript:void(0)" onclick="doAuthProcess();" class="m_login_btn ">
+				<span class="hide">로그인<!-- 로그아웃 --></span>
+			</a>
+
+			<button type="button" class="m_gnb_btn">
+				<span class="hide">모바일 주 메뉴 열기</span>
+				<span class="top"></span>
+				<span class="mid"></span>
+				<span class="btm"></span>
+			</button>
+		</div>
+		<!-- // container -->
+	</div>
+	<!-- // logo_header -->
+
+	<!-- gnb_header -->
+	<!-- style="margin-top : 75px;" 헤더를 고정하려면 해당 코드를 gnb_header에 삽입 -->
+	<div class="gnb_header" >
+		<!-- container -->
+		<div class="container clearfix">
+			<!-- gnb -->
+			<ul id="gnb" class="gnb clearfix">
+			
+				
+				<li>
+					<a href="javascript:void(0)">제도 안내</a>
+					<div class="sub_gnb_box">
+						<div class="row">
+							<div class="sub_gnb_tit">
+								
+								<h2>제도 안내</h2>
+								<p class="icon">
+									<img src="/venturein/resources/images/main/icon_5000000.png" alt="제도 안내">
+								</p>
+								
+							</div>
+							<div class="sub_gnb_cont">
+							
+								
+								<dl>
+									<dt>벤처확인 제도</dt>
+									
+									<dd>
+										
+										<a href="/venturein/institution/ventureGuide">확인제도 개요</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/law/ventureLaw">관련 법령</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/institution/preferGuide">우대지원제도</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/institution/requireGuide">유형별 안내</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/institution/processGuide">확인절차</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/institution/ventureMark">벤처기업 확인마크</a>
+										
+									</dd>
+									
+								</dl>
+								
+							
+								
+							
+								
+							
+								
+							
+								
+								<dl>
+									<dt>복수의결권주식 제도</dt>
+									
+									<dd>
+										
+										<a href="/venturein/stock/multiVotingGuide">복수의결권주식 개요</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/stock/multiVotingLaw">복수의결권주식 관련 법령</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/stock/onskSwtcGuide">복수의결권주식 보통주 전환</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/stock/cfisuGuide">복수의결권주식 허위발행죄</a>
+										
+									</dd>
+									
+								</dl>
+								
+							
+								
+								<dl>
+									<dt>주식매수선택권 제도</dt>
+									
+									<dd>
+										
+										<a href="/venturein/stkopt/stkoptGuide">주식매수선택권 개요</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/stkopt/stkoptLaw">주식매수선택권 관련 법령</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/stkopt/taxInstitutionGuide">주식매수선택권 조세제도</a>
+										
+									</dd>
+									
+								</dl>
+								
+							
+								
+								<dl>
+									<dt>성과조건부주식 제도</dt>
+									
+									<dd>
+										
+										<a href="/venturein/rsu/rsuGuide">성과조건부주식 개요</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/rsu/rsuLaw">성과조건부주식 관련 법령</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/rsu/rsuKind">성과조건부주식 종류</a>
+										
+									</dd>
+									
+								</dl>
+								
+							
+							</div>
+						</div>
+						<!-- <div class="second_back"></div> -->
+					</div>
+				</li>
+				
+			
+				
+				<li>
+					<a href="javascript:void(0)">확인신청</a>
+					<div class="sub_gnb_box">
+						<div class="row">
+							<div class="sub_gnb_tit">
+								
+								<h2>확인신청</h2>
+								<p class="icon">
+									<img src="/venturein/resources/images/main/icon_5000150.png" alt="확인신청">
+								</p>
+								
+							</div>
+							<div class="sub_gnb_cont">
+							
+								
+								<dl>
+									<dt>확인신청</dt>
+									
+									<dd>
+										
+										<a href="/venturein/self/viewDiagnosis">나에게 맞는 벤처유형</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/aply/v2">확인신청</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/cnfmt/cnfmtVrfc/">확인서 진위확인</a>
+										
+									</dd>
+									
+								</dl>
+								
+							
+								
+								<dl>
+									<dt>발급관리</dt>
+									
+									<dd>
+										
+										<a href="/venturein/isgen/cnfmtMlng">확인서 재발급</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/isgen/engCnfmtMlng">영/중문 확인서 발급</a>
+										
+									</dd>
+									
+								</dl>
+								
+							
+							</div>
+						</div>
+						<!-- <div class="second_back"></div> -->
+					</div>
+				</li>
+				
+			
+				
+				<li>
+					<a href="javascript:void(0)">보고·신고</a>
+					<div class="sub_gnb_box">
+						<div class="row">
+							<div class="sub_gnb_tit">
+								
+								<h2>보고·신고</h2>
+								<p class="icon">
+									<img src="/venturein/resources/images/main/icon_5000210.png" alt="보고·신고">
+								</p>
+								
+							</div>
+							<div class="sub_gnb_cont">
+							
+								
+								<dl>
+									<dt>복수의결권주식</dt>
+									
+									<dd>
+										
+										<a href="/venturein/stock/mvstkReqstIdnty">복수의결권 주식 보고</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/stock/mvstkChgReqstIdnty">복수의결권 주식 변경</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/stock/dclrCntr/dclrCntrGuide">복수의결권주식 허위발행 신고</a>
+										
+									</dd>
+									
+								</dl>
+								
+							
+								
+								<dl>
+									<dt>주식매수선택권</dt>
+									
+									<dd>
+										
+										<a href="/venturein/stkopt/dclr/stkoptDclrVntiInfo">주식매수선택권 부여 신고</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/stkopt/rtrcn/stkoptReqstIdnty">주식매수선택권 취소·철회</a>
+										
+									</dd>
+									
+								</dl>
+								
+							
+								
+								<dl>
+									<dt>성과조건부주식</dt>
+									
+									<dd>
+										
+										<a href="/venturein/rsu/viewRsuDclr">성과조건부주식 신고</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/rsu/viewRsuCncltnDclrDtlsList">성과조건부주식 해지·해제</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/rsu/viewRsuTesstkAcqsDclr">성과조건부주식 자기주식 취득신고</a>
+										
+									</dd>
+									
+								</dl>
+								
+							
+							</div>
+						</div>
+						<!-- <div class="second_back"></div> -->
+					</div>
+				</li>
+				
+			
+				
+				<li>
+					<a href="javascript:void(0)">공시·통계</a>
+					<div class="sub_gnb_box">
+						<div class="row">
+							<div class="sub_gnb_tit">
+								
+								<h2>공시·통계</h2>
+								<p class="icon">
+									<img src="/venturein/resources/images/main/icon_5000240.png" alt="공시·통계">
+								</p>
+								
+							</div>
+							<div class="sub_gnb_cont">
+							
+								
+								<dl>
+									<dt>공시</dt>
+									
+									<dd>
+										
+										<a href="/venturein/pbntc/searchVntrCmp">벤처확인기업 공시</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/pbntc/searchMvstk">복수의결권주식 공시</a>
+										
+									</dd>
+									
+								</dl>
+								
+							
+								
+								<dl>
+									<dt>벤처통계</dt>
+									
+									<dd>
+										
+										<a href="/venturein/statistics/viewVentureCurrent">벤처확인기업 현황</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/board/viewVentureStatsArchBoardList">통계자료실</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/board/viewIssueBriefBoardList">이슈브리프</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/statistics/watchTotalVntr/viewWatchTotalVntr">한눈에보는 벤처기업</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/statistics/watchDetailVntr/viewWatchDetailStatsVntr">자세히보는 벤처기업</a>
+										
+									</dd>
+									
+								</dl>
+								
+							
+								
+								<dl>
+									<dt>주식매수선택권 통계</dt>
+									
+									<dd>
+										
+										<a href="/venturein/statistics/viewStkoptCurrent">주식매수선택권 현황</a>
+										
+									</dd>
+									
+								</dl>
+								
+							
+							</div>
+						</div>
+						<!-- <div class="second_back"></div> -->
+					</div>
+				</li>
+				
+			
+				
+				<li>
+					<a href="javascript:void(0)">기관소개</a>
+					<div class="sub_gnb_box">
+						<div class="row">
+							<div class="sub_gnb_tit">
+								
+								<h2>기관소개</h2>
+								<p class="icon">
+									<img src="/venturein/resources/images/main/icon_5000090.png" alt="기관소개">
+								</p>
+								
+							</div>
+							<div class="sub_gnb_cont">
+							
+								
+								<dl>
+									<dt>벤처기업확인위원회</dt>
+									
+									<dd>
+										
+										<a href="/venturein/introduce/cc">벤처기업확인위원회</a>
+										
+									</dd>
+									
+								</dl>
+								
+							
+								
+								<dl>
+									<dt>벤처기업확인기관</dt>
+									
+									<dd>
+										
+										<a href="/venturein/introduce/greetings">기관장 인사말</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/introduce/history">연혁·CI</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/introduce/organization">조직도 및 연락처</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/introduce/wayTocome">오시는 길</a>
+										
+									</dd>
+									
+								</dl>
+								
+							
+							</div>
+						</div>
+						<!-- <div class="second_back"></div> -->
+					</div>
+				</li>
+				
+			
+				
+				<li>
+					<a href="javascript:void(0)">고객지원</a>
+					<div class="sub_gnb_box">
+						<div class="row">
+							<div class="sub_gnb_tit">
+								
+								<h2>고객지원</h2>
+								<p class="icon">
+									<img src="/venturein/resources/images/main/icon_4050000.png" alt="고객지원">
+								</p>
+								
+							</div>
+							<div class="sub_gnb_cont">
+							
+								
+								<dl>
+									<dt>공지사항</dt>
+									
+									<dd>
+										
+										<a href="/venturein/board/viewNotiBoardList">공지사항</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/board/viewArchBoardList">자료실</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/board/viewFaqBoardList">자주묻는 질문</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/board/viewQnaBoardList">Q&amp;A</a>
+										
+									</dd>
+									
+								</dl>
+								
+							
+								
+								<dl>
+									<dt>홍보·보도 자료</dt>
+									
+									<dd>
+										
+										<a href="/venturein/board/viewMovieCardBoardList">홍보자료</a>
+										
+									</dd>
+									
+									<dd>
+										
+										<a href="/venturein/board/viewPressBoardList">보도자료</a>
+										
+									</dd>
+									
+								</dl>
+								
+							
+								
+								<dl>
+									<dt>상담센터</dt>
+									
+									<dd>
+										
+										<a href="/venturein/cs/counselingCenter">상담센터</a>
+										
+									</dd>
+									
+								</dl>
+								
+							
+								
+							
+							</div>
+						</div>
+						<!-- <div class="second_back"></div> -->
+					</div>
+				</li>
+				
+			
+				<button type="button" class="sitemap_btn">
+					<span class="hide">사이트맵 열기</span>
+					<span class="top"></span>
+					<span class="mid"></span>
+					<span class="btm"></span>
+				</button>
+			</ul>
+			<!-- // gnb -->
+		</div>
+		<!-- // container -->
+
+		<div class="gnb_bg">
+			<div class="container"></div>
+		</div>
+	</div>
+	<!-- // gnb_header -->
+
+	<!-- 3depth 메뉴 hover시 dt에 css추가 -->
+	<script>
+		$('.gnb > li .sub_gnb_cont > dl').hover(function (e) {
+			$(this).find('dt').css('background-color', '#003994');
+			$(this).find('dt').css('color', '#fff');
+		}, function (e) {
+			$(this).find('dt').css('background-color', 'transparent');
+			$(this).find('dt').css('color', '#000');
+		});
+      </script>
+	<!-- // 3depth 메뉴 hover시 dt에 css추가 -->
+
+	<!-- m_gnb_wrap -->
+	<div class="m_gnb_wrap">
+		<!-- m_gnb_top -->
+		<div class="m_gnb_top">
+			<h2 class="m_logo">
+				<a href="/venturein/" title="홈으로">
+					<img src="/venturein/resources/images/common/head_logo.png" alt="벤처기업확인기관 벤처확인종합관리시스템">
+				</a>
+			</h2>
+			<span class="mid_helper"></span>
+		</div>
+		<!-- // m_gnb_top -->
+
+		
+
+		<!-- m_gnb 내부 태그는 쿼리로 들어감. -->
+		<ul class="m_gnb">
+
+		</ul>
+		<!-- // m_gnb -->
+
+		<button type="button" class="m_gnb_close">
+			<i class="xi-close"></i><span class="hide">모바일 주 메뉴 닫기</span>
+		</button>
+	</div>
+	<!-- // m_gnb_wrap -->
+	<div class="m_gnb_bg"></div>
+</div>
+<!-- // header -->
+
+<!-- 헤더 -->
+<!-- <a href="/">흠으로</a> -->
+
+
+<!-- 	<a href="/auth/logout">로그아웃</a> -->
+
+
+<!-- 	<a href="/register/viewRegisterStep1">회원가입</a> -->
+<!-- 	<a href="/auth/viewLogin">로그인</a> -->
+
+
+<!-- <a href="javascript:void(0)" onclick="showPopup();">통합로그인</a> -->
+
+
+<script>
+
+$(document).ready(function() {
+	//[20240429] 송기범 추가 : 퀵메뉴 생성
+	if("NORMAL" == "NORMAL"){
+		_AC.quickMenu.createQuickMenuDiv("containerDiv");		
+	}
+	
+	//[20240429 송기범] 화살표 클릭시 focus
+	$(".upArrw").on("click", function(){
+		var offset = $('#containerDiv').offset(); //선택한 태그의 위치를 반환
+		$('html,body').animate({scrollTop:offset.top}, 100);
+	});
+	$(".downArrw").on("click", function(){
+		var offset = $('.copyright').offset(); //선택한 태그의 위치를 반환
+		$('html,body').animate({scrollTop:offset.top}, 500);
+	});
+
+
+	// 통합검색
+	$("#btnTotalSearch").on("click", function(){
+		selectTotalSearchList();
+	})
+
+	$("#totalSearch").enterKey(function () {
+		selectTotalSearchList();
+	});
+
+});
+
+//[20240507 송기범]
+function doTempSave(){
+	switch (_AC.quickMenu.getQuickMenuDvsn()){
+	case "aplyTempSave" :
+		doSave();
+		break;
+	case "aplyFileTempSave" :
+		doAtchFileSave('SAVE');
+		break;
+	default :
+	}
+}
+
+function popIntgrLogin(){
+	_AC.popup.open("/venturein/connApi/html/popup/popIntgrLogin.jsp", "POP_INTGR_LOGIN", 820, 600);
+}
+
+// 통합검색화면
+function selectTotalSearchList(){
+	var keyword= $("#totalSearch").val();
+	if(!keyword) {
+		alert("검색어를 입력하세요.")
+		return false;
+	}
+	location.href = "/venturein/totalSearch/viewTotalSearchList?keyword=" + encodeURIComponent(keyword);
+}
+
+function doAuthProcess(){
+
+	location.href = "/venturein/auth/viewLogin";
+
+
+}
+
+</script>
+
+
+		<!-- contents -->
+		<div class="contents">
+			<!-- sub_top -->
+			<div class="sub_top">
+				<!-- 사이트 1차메뉴에 따라 'sub_visual' 태그에 menu2, menu3.. 클래스 추가 -->
+				<!-- SFR 띠배너 제거  -->
+				<!-- <div class="sub_visual menu3">
+					<p class="txt"><b>민간주도 벤처기업확인제도</b>를 통한 벤처다운 혁신 기업 선별</p>
+				</div> -->
+
+				<!-- 3depth 메뉴가 없거나 탭이 필요없는 페이지의 경우 'tab_row' 태그 전체 삭제 -->
+				
+
+				<div class="bread_area">
+					<div class="container" id="divPathNavi">
+						<ul class="breadcrumb">
+							<li>Home</li>
+							<li></li>
+							
+														
+						</ul>
+					</div>
+				</div>
+			</div>
+			<!-- //sub_top -->
+		    <div id="divTopTitle" >
+		    
+		    		    
+				
+					
+					
+					
+					
+							
+			
+			</div>
+			<div id="real_contents" class="container clearfix">
+			
+				
+
+
+
+
+
+<h2 class="sub_main_tit">벤처기업 상세정보</h2>
+
+<!-- <h3 class="sub_tit2">벤처기업 상세정보</h3> -->
+<!-- board_write_box -->
+<div class="board_write_box">
+	<!-- tab onoff 스크립트는 common_publish.js 참고 -->
+	<ul class="board_tab li_4p onoff">
+		<li class="on"><a href="#">일반정보</a></li>
+		<li><a href="#">재무정보</a></li>
+		<li><a href="#">투자정보</a></li>
+		<li><a href="#">벤처기업확인서</a></li>
+	</ul>
+
+	<!-- board_tab_con_box -->
+	<div class="board_tab_con_box">
+		<!-- board_tab_con 개요 -->
+		<div class="board_tab_con">
+			<!-- board_write -->
+			<table class="board_write">
+				<caption>업체명, 대표자, 법인번호, 업종, 주생산품, 본사 사업자번호, 본사 전화번호, 본사 주소를 확인할 수 있는 폼</caption>
+				<colgroup>
+					<col style="width: 22.65%;">
+					<col style="width: 27.35%;">
+					<col style="width: 22.65%;">
+					<col style="width: 27.35%;">
+				</colgroup>
+				<tbody>
+					<tr>
+						<th scope="row">업체명</th>
+						<td colspan="3">주식회사 주드</td>
+					</tr>
+					<tr>
+						<th scope="row">대표자</th>
+						<td>권주용</td>
+						<th scope="row">법인번호</th>
+						<td>284111-*******</td>
+						
+						<!-- 김경대 [20220726] 법인등록번호 *표시 제거, 테스트 코드 주석처리 -->
+						
+					</tr>
+					<tr>
+						<th scope="row">업종</th>
+						<td>기타 목재가구 제조업</td>
+						<th scope="row">주생산품</th>
+						<td>LED 관련 제작품/  특수 주문제작 가구 제작품 </td>
+					</tr>
+					<tr>
+						<th scope="row">본사 사업자번호</th>
+						
+						
+						<td>740-81-02352</td>						
+						<th scope="row">본사 전화번호</th>
+						<td>
+						
+							
+						        
+						        02-499-****
+						        
+						        
+						           
+						    
+						 
+						  </td>
+					</tr>
+					<tr>
+						<th scope="row">본사 주소</th>
+						<td colspan="3">경기도 남양주시</td>
+					</tr>
+				</tbody>
+			</table>
+			<!-- // board_write -->
+		</div>
+		<!-- // board_tab_con 개요 -->
+
+		<!-- board_tab_con 재무상황 -->
+		<div class="board_tab_con">
+			<!-- tab onoff 스크립트는 common_publish.js 참고 -->
+			<ul class="board_tab2 onoff">
+				<!-- <li class="on"><a href="#">재무정보요약</a></li> -->
+				<li class="on"><a href="#">대차대조표</a></li>
+				<li><a href="#">손익계산서</a></li>
+				<!-- <li><a href="#">백분율재무제표</a></li> -->
+			</ul>
+			
+			<!-- board_tab2_con_box -->
+			<div class="board_tab2_con_box">
+				<!-- board_tab2_con 대차대조표 -->
+				<div class="board_tab2_con">
+					<!-- sub_each2 -->
+					<div class="sub_each2">
+						<!-- board_write -->
+						<table class="board_write">
+							<caption>사업자명, 대표자명을 확인할 수 있는 폼</caption>
+							<colgroup>
+								<col style="width: 22.65%;">
+								<col style="width: 27.35%;">
+								<col style="width: 22.65%;">
+								<col style="width: 27.35%;">
+							</colgroup>
+							<tbody>
+								<tr>
+							      <th scope="row">사업자명</th>
+							      <td>주식회사 주드</td>
+							      <th scope="row">대표자명</th>
+							      <td>권주용</td>
+								</tr>
+								
+							</tbody>
+						</table>
+						<!-- // board_write -->
+					</div>
+					<!-- // sub_each2 -->
+
+					<!-- sub_each2 -->
+					<div class="sub_each2">
+						
+						
+							
+							
+								<div class="bw_top_tit_box">
+									<h4 class="sub_tit3">대차대조표</h4>
+									<p class="bw_top_txt ta_r">단위 : 원</p>
+								</div>
+		
+								<div class="sofp_tbl2_box">
+									<div class="each">
+										<!-- board_write -->
+										<table class="board_write sofp">
+											<caption>년도에 따른 유동자산[당좌자산(현금 및 현금 등가물, 단기금융상품, 단기투자증권, 매출채권, (받을어음), 단기대여금, 미수금, 미수수익, 선급금, 선급비용, 선급법인세, 기타), 재고자산(상품,제품,원재료,기타)], 비유동자산[투자자산(장기금융상품,장기투자증권,장기대여금,기타), 유형자산(토지,건물,기계장치,차량운반구,건설중인자산,기타), 무형자산(영업권,개발비,기타), 기타비유동자산(보증금,장기성매출채권,이연법인세자산,부도어음,기타)], 자산총계를 확인할 수 있는 폼</caption>
+											<colgroup>
+												<col style="width: auto;">
+												<col style="width: 19%;">
+												<col style="width: 19%;">
+												<col style="width: 19%;">
+											</colgroup>
+											<thead>
+												<tr>
+													<th scope="col">년도</th>
+													<th scope="col">2023</th>
+													<th scope="col">2022</th>
+													<th scope="col">2021</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr class="dep1">
+													<th scope="row">Ⅰ. 유동자산</th>
+													<td>543,858,000</td>
+													<td>504,274,000</td>
+													<td>217,228,000</td>
+												</tr>
+												<tr class="dep2">
+													<th scope="row">1. 당좌자산</th>
+													<td>472,608,000</td>
+													<td>386,033,000</td>
+													<td>217,228,000</td>
+												</tr>
+												<tr>
+													<th scope="row">(1) 현금 및 현금성자산</th>
+													<td>308,131,000</td>
+													<td>330,783,000</td>
+													<td>163,202,000</td>
+												</tr>
+												<tr>
+													<th scope="row">(2) 단기금융상품</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(3) 단기투자증권</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(4) 단기대여금</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(5) 기타단기대여금</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(6) 매출채권</th>
+													<td>78,656,000</td>
+													<td>52,074,000</td>
+													<td>51,898,000</td>
+												</tr>
+												<tr>
+													<th scope="row">(7) 선급금</th>
+													<td>1,221,000</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(8) 미수금</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(9) 기타미수금</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(10) 선급비용</th>
+													<td>2,363,000</td>
+													<td>3,176,000</td>
+													<td>2,128,000</td>
+												</tr>
+												<tr>
+													<th scope="row">(11) 기타당좌자산</th>
+													<td>81,900,000</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(12) 기타</th>
+													<td>337,000</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep2">
+													<th scope="row">2. 재고자산</th>
+													<td>71,250,000</td>
+													<td>118,241,000</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(1) 상품</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(2) 제품</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(3) 반제품 및 재공품</th>
+													<td>0</td>
+													<td>78,987,000</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(4) 원재료</th>
+													<td>71,250,000</td>
+													<td>39,254,000</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(5) 부재료</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(6) 미착상품(미착재료)</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(7) 건설용지</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(8) 완성건물</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(9) 미완성공사</th>
+													<td>0</td>
+													<td>78,987,000</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(10) 임대주택자산</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(11) 기타</th>
+													<td>0</td>
+													<td>-78,987,000</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep1">
+													<th scope="row">Ⅱ. 비유동자산</th>
+													<td>89,932,000</td>
+													<td>14,575,000</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep2">
+													<th scope="row">1. 투자자산</th>
+													<td>72,631,000</td>
+													<td>4,035,000</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(1) 장기금융상품</th>
+													<td>72,631,000</td>
+													<td>4,035,000</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(2) 장기투자증권</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(3) 장기대여금</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">&nbsp;&nbsp;① 관계회사</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">&nbsp;&nbsp;② 임원 및 종업원</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(4) 기타</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep2">
+													<th scope="row">2. 유형자산</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(1) 토지</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(2) 건물</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(3) 구축물(시설장치 포함)</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(4) 기계장치</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(5) 선박</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(6) 건설용 장비</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(7) 차량운반구</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(8) 공구 및 기구</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(9) 건설 중인 자산</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(10) 기타</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep2">
+													<th scope="row">3. 무형자산</th>
+													<td>6,761,000</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(1) 영업권</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(2) 산업재산권(특허권, 상표권 등)</th>
+													<td>6,761,000</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(3) 개발비</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(4) 기타</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep2">
+													<th scope="row">4. 기타 비유동자산</th>
+													<td>10,540,000</td>
+													<td>10,540,000</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(1) 장기매출채권</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(2) 장기선급금</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(3) 장기미수금</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(4) 임차보증금</th>
+													<td>10,540,000</td>
+													<td>10,540,000</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">(5) 기타</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep1">
+													<th scope="row">자산총계</th>
+													<td>633,790,000</td>
+													<td>518,849,000</td>
+													<td>217,228,000</td>
+												</tr>
+											</tbody>
+										</table>
+										<!-- // board_write -->
+									</div>
+		
+									<div class="each">
+										<!-- board_write -->
+										<table class="board_write sofp">
+											<caption>년도에 따른 유동부채[매입채무, (지급어음), 단기차입금, 미지급금, 선수금, 예수금, 미지급비용, 미지급법인세, 미지급배당금, 유동성장기부채, 선수수익, 단기부채성충당부채, 기타], 비유동부채[사채, 장기차입금, 자기성매입채무, 장기부채성충당부채, (퇴직급여충당부채), 이연법인세부채, 기타], 부채총계, 평가기관접수, 자본금, 자본잉여금[주식발행초과금, 재평가적립금, 기타자본잉여금], 자본조정[주식할인발행차금, 자기주식, 기타자본조정], 기타포괄손익누계액[매도가능증권평가손익, 해외사업환산손익, 현금흐름회피 파생상품평가손익, 기타], 이익잉여금(또는 결손금)[법정적립금, 임의적립금, 미처분이익잉여금(미처리결손금), (당기순이익)], 자본총계[평가완료], 부채와자본총계를 확인할 수 있는 폼</caption>
+											<colgroup>
+												<col style="width: auto;">
+												<col style="width: 19%;">
+												<col style="width: 19%;">
+												<col style="width: 19%;">
+											</colgroup>
+											<thead>
+												<tr>
+													<th scope="col">년도</th>
+													<th scope="col">2023</th>
+													<th scope="col">2022</th>
+													<th scope="col">2021</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr class="dep1">
+													<th scope="row">Ⅰ. 유동부채</th>
+													<td>72,307,000</td>
+													<td>365,725,000</td>
+													<td>115,359,000</td>
+												</tr>
+												<tr>
+													<th scope="row">1. 단기차입금</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">2. 매입채무</th>
+													<td>9,141,000</td>
+													<td>262,764,000</td>
+													<td>38,845,000</td>
+												</tr>
+												<tr>
+													<th scope="row">3. 선수금</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">4. 미지급금</th>
+													<td>39,465,000</td>
+													<td>64,719,000</td>
+													<td>34,362,000</td>
+												</tr>
+												<tr>
+													<th scope="row">5. 예수금</th>
+													<td>4,068,000</td>
+													<td>8,275,000</td>
+													<td>4,009,000</td>
+												</tr>
+												<tr>
+													<th scope="row">6. 미지급비용</th>
+													<td>19,633,000</td>
+													<td>3,017,000</td>
+													<td>5,143,000</td>
+												</tr>
+												<tr>
+													<th scope="row">7. 유동성장기부채</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">8. 유동성충당부채</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">9. 기타</th>
+													<td>0</td>
+													<td>26,950,000</td>
+													<td>33,000,000</td>
+												</tr>
+												<tr class="dep1">
+													<th scope="row">Ⅱ. 비유동부채</th>
+													<td>400,000,000</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep2">
+													<th scope="row">1. 장기차입금</th>
+													<td>400,000,000</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr>
+													<th scope="row">  특수관계자장기차입금</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep2">
+													<th scope="row">2. 장기매입채무</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep2">
+													<th scope="row">3. 장기선수금</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep2">
+													<th scope="row">4. 장기미지급금</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep2">
+													<th scope="row">5. 임대보증금</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep2">
+													<th scope="row">6. 기타보증금</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep2">
+													<th scope="row">7. 퇴직급여충당부채</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep2">
+													<th scope="row">8. 기타충당부채</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep2">
+													<th scope="row">9. 제준비금</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep2">
+													<th scope="row">10. 기타</th>
+													<td>0</td>
+													<td>0</td>
+													<td>0</td>
+												</tr>
+												<tr class="dep1">
+													<th scope="row">부채총계</th>
+													<td>472,307,000</td>
+													<td>365,725,000</td>
+													<td>115,359,000</td>
+												</tr>
+												<tr class="dep1">
+													<th scope="row">Ⅲ. 자본금</th>
+													<td>50,000,000</td>
+													<td>50,000,000</td>
+													<td>50,000,000</td>
+												</tr>
+												<tr class="dep1">
+													<th scope="row">Ⅳ. 당기순손익</th>
+													<td>8,359,000</td>
+													<td>51,255,000</td>
+													<td>51,869,000</td>
+												</tr>
+												<tr class="dep1">
+													<th scope="row">자본총계</th>
+													<td>161,483,000</td>
+													<td>153,124,000</td>
+													<td>101,869,000</td>
+												</tr>
+												<tr class="dep1">
+													<th scope="row">부채 및 자본총계</th>
+													<td>633,790,000</td>
+													<td>518,849,000</td>
+													<td>217,228,000</td>
+												</tr>
+											</tbody>
+										</table>
+										<!-- // board_write -->
+									</div>
+								</div>
+									
+							
+						
+						
+
+					</div>
+					<!-- // sub_each2 -->
+				</div>
+				<!-- // board_tab2_con 대차대조표 -->
+
+				<!-- board_tab2_con 손익계산서 -->
+				<div class="board_tab2_con">
+					<!-- sub_each2 -->
+					<div class="sub_each2">
+						<!-- board_write -->
+						<table class="board_write">
+							<caption>사업자명, 대표자명을 확인할 수 있는 폼</caption>
+							<colgroup>
+								<col style="width: 22.65%;">
+								<col style="width: 27.35%;">
+								<col style="width: 22.65%;">
+								<col style="width: 27.35%;">
+							</colgroup>
+							<tbody>
+								<tr>
+							      <th scope="row">사업자명</th>
+							      <td>주식회사 주드</td>
+							      <th scope="row">대표자명</th>
+							      <td>권주용</td>
+								</tr>
+								
+							</tbody>
+						</table>
+						<!-- // board_write -->
+					</div>
+					<!-- // sub_each2 -->
+					
+					<!-- sub_each2 -->
+					<div class="sub_each2">
+						
+							
+							
+							
+								<div class="bw_top_tit_box">
+									<h4 class="sub_tit3">손익계산서</h4>
+									<p class="bw_top_txt ta_r">단위 : 원</p>
+								</div>
+		
+								<!-- board_write -->
+								<table class="board_write sofp">
+									<caption>연도에 따른 매출액[상품매출, 제품매출, 기타], 매출원가[상품매출원가, 제품매출원가], 매출총이익, 판매비와 관리비[급여, 퇴직급여, 복리후생비, 통신비, 임차료, 접대비, 감가상각비, 보험료, 세금과 공과, 광고선전비, 연구비, 경상개발비, 대손상각비, 무형자산상각비, 기타부채성충당부채전입액, 기타], 영업이익, 영업외수익[이자수익, 배당금수익, 외환차익, 외화환산이익, 투자자산처분이익, 유형자산처분이익, 법인세환급액, 기타], 영업외비용[이자비용, 외환차손, 외화환산손실, 투자자산처분손실, 유형자산처분손실, 법인세추납액, 기타], 법인세비용차감전순이익(계속사업손익), (계속사업손익)법인세비용, 계속사업이익, 중단사업이익, 당기순이익, 주당손익[기본주당계속사업손익, 기본주당순손익, 희석주당계속사업손익, 희석주당순손익]을 확인할 수 있는 폼</caption>
+									<colgroup>
+										<col style="width: auto;">
+										<col style="width: 22%;">
+										<col style="width: 22%;">
+										<col style="width: 22%;">
+									</colgroup>
+									<thead>
+										<tr>
+											<th scope="col">계정과목/연도</th>
+											<th scope="col">2023</th>
+											<th scope="col">2022</th>
+											<th scope="col">2021</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr class="dep1">
+											<th scope="row">Ⅰ. 매출액</th>
+											<td>1,299,721,000</td>
+											<td>2,427,764,000</td>
+											<td>1,457,255,000</td>
+										</tr>
+										<tr>
+											<th scope="row">1. 상품매출</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr>
+											<th scope="row">2. 제품매출</th>
+											<td>1,145,727,000</td>
+											<td>1,339,000,000</td>
+											<td>0</td>
+										</tr>
+										<tr>
+											<th scope="row">3. 공사수입</th>
+											<td>153,994,000</td>
+											<td>1,088,764,000</td>
+											<td>1,457,255,000</td>
+										</tr>
+										<tr>
+											<th scope="row">4. 분양수입</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr>
+											<th scope="row">5. 임대수입</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr>
+											<th scope="row">6. 서비스수입</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr>
+											<th scope="row">7. 기타</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep1">
+											<th scope="row">Ⅱ. 매출원가</th>
+											<td>1,081,778,000</td>
+											<td>2,160,131,000</td>
+											<td>1,290,183,000</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">1. 상품매출원가</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr>
+											<th scope="row">① 기초재고액</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr>
+											<th scope="row">② 당기매입액</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr>
+											<th scope="row">③ 기말재고액</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr>
+											<th scope="row">④ 타계정대체액</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr>
+											<th scope="row">⑤ 기타</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">2. 제조·공사·분양·기타원가</th>
+											<td>78,987,000</td>
+											<td>954,847,000</td>
+											<td>1,290,183,000</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">3. 기타</th>
+											<td>1,002,791,000</td>
+											<td>1,205,284,000</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep1">
+											<th scope="row">Ⅲ. 매출총이익(Ⅰ - Ⅱ)</th>
+											<td>217,943,000</td>
+											<td>267,633,000</td>
+											<td>167,072,000</td>
+										</tr>
+										<tr class="dep1">
+											<th scope="row">Ⅳ. 판매비와 관리비</th>
+											<td>205,880,000</td>
+											<td>215,741,000</td>
+											<td>110,552,000</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">1. 급여와 임금·제수당</th>
+											<td>133,116,000</td>
+											<td>133,224,000</td>
+											<td>79,709,000</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">2. 일용급여</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">3. 퇴직급여(충당부채 전입·환입액 포함)</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">4. 복리후생비</th>
+											<td>7,942,000</td>
+											<td>18,714,000</td>
+											<td>10,872,000</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">5. 여비교통비</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">6. 임차료</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">7. 통신비</th>
+											<td>282,000</td>
+											<td>50,000</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">8. 전력비</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">9. 수도광열비</th>
+											<td>1,725,000</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">10. 유류비</th>
+											<td>19,564,000</td>
+											<td>12,143,000</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">11. 보험료</th>
+											<td>7,181,000</td>
+											<td>1,180,000</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">12. 리스료</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">13. 세금과공과</th>
+											<td>5,628,000</td>
+											<td>5,164,000</td>
+											<td>6,841,000</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">14. 감가상각비</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">15. 무형자산상각비</th>
+											<td>356,000</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">16. 수선비</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">17. 건물관리비</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">18. 접대비</th>
+											<td>16,027,000</td>
+											<td>24,360,000</td>
+											<td>9,474,000</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">19. 광고선전비</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">20. 도서인쇄비</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">21. 운반비</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">22. 차량유지비</th>
+											<td>19,564,000</td>
+											<td>12,143,000</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">23. 교육훈련비</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">24. 지급수수료</th>
+											<td>6,648,000</td>
+											<td>7,911,000</td>
+											<td>1,761,000</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">25. 판매수수료</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">26. 대손상각비(충당금 전입·환입액 포함)</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">27. 경상개발비</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">28. 소모품비</th>
+											<td>7,411,000</td>
+											<td>12,995,000</td>
+											<td>1,895,000</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">29. 경영위탁수수료(프랜차이즈 수수료 포함)</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">30. 용역비</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">31. 기타소계</th>
+											<td>-19,564,000</td>
+											<td>-12,143,000</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep1">
+											<th scope="row">Ⅴ. 영업손익(Ⅲ - Ⅳ)</th>
+											<td>12,063,000</td>
+											<td>51,892,000</td>
+											<td>56,520,000</td>
+										</tr>
+										<tr class="dep1">
+											<th scope="row">Ⅵ. 영업외수익</th>
+											<td>427,000</td>
+											<td>4,666,000</td>
+											<td>581,000</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">1. 이자수익</th>
+											<td>89,000</td>
+											<td>85,000</td>
+											<td>59,000</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">2. 배당금수익</th>
+											<td>0</td>
+											<td>85,000</td>
+											<td>59,000</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">3. 외환차익</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">4. 외화환산이익</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">5. 단기투자자산 처분이익</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">6. 투자자산 처분이익</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">7. 유·무형자산 처분이익</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">8. 보험차익</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">9. 충당금·준비금 환입액</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">10. 전기오류수정이익</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">11. 기타 소계</th>
+											<td>338,000</td>
+											<td>4,581,000</td>
+											<td>522,000</td>
+										</tr>
+										<tr class="dep1">
+											<th scope="row">Ⅶ. 영업외비용</th>
+											<td>3,987,000</td>
+											<td>0</td>
+											<td>89,000</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">1. 이자비용</th>
+											<td>3,967,000</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">2. 외환차손</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">3. 외화환산손실</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">4. 기타 대손상각비(충당금전입액 포함)</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">5. 기부금</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">6. 단기투자자산 처분손실</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">7. 투자자산 처분손실</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">8. 유·무형자산 처분손실</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">9. 재고자산 감모손실</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">10. 재해손실</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">11. 충당금·준비금 전입액</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">12. 전기오류수정손실</th>
+											<td>0</td>
+											<td>0</td>
+											<td>0</td>
+										</tr>
+										<tr class="dep2">
+											<th scope="row">13. 기타 소계</th>
+											<td>20,000</td>
+											<td>0</td>
+											<td>89,000</td>
+										</tr>
+										<tr class="dep1">
+											<th scope="row">Ⅷ. 당기순손익(Ⅴ+Ⅵ-Ⅶ)</th>
+											<td>8,503,000</td>
+											<td>56,558,000</td>
+											<td>57,012,000</td>
+										</tr>
+									</tbody>
+								</table>
+								<!-- // board_write -->
+							
+							
+						
+					</div>
+					<!-- // sub_each2 -->
+					
+					
+				</div>
+				<!-- // board_tab2_con 손익계산서 -->
+			</div>
+			<!-- // board_tab2_con_box -->
+		</div>
+		<!-- // board_tab_con 재무상황 -->
+
+		<!-- board_tab_con 투자/대출/보증내역 -->
+		<div class="board_tab_con">
+			<!-- sub_each2 -->
+			<div class="sub_each2">
+				<!-- board_write -->
+				<table class="board_write">
+					<caption>사업자명, 대표자명을 확인할 수 있는 폼</caption>
+					<colgroup>
+						<col style="width: 22.65%;">
+						<col style="width: 27.35%;">
+						<col style="width: 22.65%;">
+						<col style="width: 27.35%;">
+					</colgroup>
+					<tbody>
+						<tr>
+							<th scope="row">사업자명</th>
+							<td>주식회사 주드</td>
+							<th scope="row">대표자명</th>
+							<td>권주용</td>
+						</tr>
+					</tbody>
+				</table>
+				<!-- // board_write -->
+			</div>
+			<!-- // sub_each2 -->
+
+			<!-- sub_each2 -->
+			<div class="sub_each2">
+				<div class="bw_top_tit_box">
+					<h4 class="sub_tit3">투자정보</h4>
+					<p class="bw_top_txt ta_r"> 단위 : 원</p>
+				</div>
+				<!-- board_write -->
+				<table class="board_write">
+					<caption>투자일자, 투자금액, 변경사항(잔액)을 확인할 수 있는 폼</caption>
+					<colgroup>
+						<col style="width: 25%;">
+						<!-- <col style="width: 25%;"> -->
+						<col style="width: 25%;">
+						<col style="width: 25%;">
+					</colgroup>
+					<thead>
+						<tr>
+							<th scope="col">투자일자</th>
+							<!-- <th scope="col">투자(대출,보증)기관</th> -->
+							<th scope="col">투자금액</th>
+							<th scope="col">변경사항(잔액)</th>
+						</tr>
+					</thead>
+					<tbody>
+					
+					
+					
+						<tr>
+							<td class="ta_c" colspan="3">투자정보 내용이 없습니다.</td>
+						</tr>
+					
+					
+					
+					</tbody>
+				</table>
+				<!-- // board_write -->
+			</div>
+			<!-- // sub_each2 -->
+		</div>
+		<!-- // board_tab_con 투자/대출/보증내역 -->
+
+		<!-- board_tab_con 벤처기업확인서 -->
+		<div class="board_tab_con">
+			<!-- sub_each2 -->
+			<div class="sub_each2">
+				<!-- board_write -->
+				<table class="board_write">
+					<caption>사업자명, 대표자명을 확인할 수 있는 폼</caption>
+					<colgroup>
+						<col style="width: 22.65%;">
+						<col style="width: 27.35%;">
+						<col style="width: 22.65%;">
+						<col style="width: 27.35%;">
+					</colgroup>
+					<tbody>
+						<tr>
+							<th scope="row">사업자명</th>
+							<td>주식회사 주드</td>
+							<th scope="row">대표자명</th>
+							<td>권주용</td>
+						</tr>
+					</tbody>
+				</table>
+				<!-- // board_write -->
+			</div>
+			<!-- // sub_each2 -->
+
+			<!-- sub_each2 -->
+			<div class="sub_each2">
+				<div class="bw_top_tit_box">
+					<h4 class="sub_tit3">벤처기업확인</h4>
+				</div>
+				<!-- board_write_scroll -->
+				<div class="board_write_scroll">
+					<!-- board_write -->
+					<table class="board_write ta_c">
+						<caption>번호, 유형, 공시일, 유효기간, 벤처확인번호, 최초확인일, 변경사항을 확인할 수 있는 폼</caption>
+						<colgroup>
+							<col style="width: 4%;">
+							<col style="width: 19.2%;">
+							<col style="width: 11.2%;">
+							<col style="width: 18.2%;">
+							<col style="width: 20.2%;">
+							<col style="width: 11%;">
+							<col style="width: 17.2%;">
+						</colgroup>
+						<thead>
+							<tr>
+								<th scope="col">No</th>
+								<th scope="col">유형</th>
+								<th scope="col">공시일</th>
+								<th scope="col">유효기간</th>
+								<th scope="col">벤처확인번호</th>
+								<th scope="col">최초확인일</th>
+								<th scope="col">변경사항</th>
+							</tr>
+						</thead>
+						<tbody>
+						
+						
+						
+							<tr>
+								<td>1</td>
+								<td>혁신성장유형</td>
+								<td>2023-12-20</td>
+								<td>2023-12-20 ~ 2026-12-19</td>
+								<td>
+									20231220030017
+									
+										
+										
+											<span style="float:right;"><a class="bw_in_btn apply" href="#" id="submit" onclick="cnfmtVrfcBtn('20231220030017');">진위확인</a></span>
+										
+									
+								</td>
+								<td>2023-12-20</td>
+								<td></td>
+							</tr>
+                        
+						
+						
+						
+						</tbody>
+						
+					</table>
+					<!-- // board_write -->
+				</div>
+				<!-- // board_write_scroll -->
+			</div>
+			<!-- // sub_each2 -->
+		</div>
+		<!-- // board_tab_con 벤처기업확인서 -->
+	</div>
+	<!-- // board_tab_con_box -->
+	<div class="common_btn_box ta_r">
+	    <a href="javascript:goBack();" class="common_btn positive">목록</a>
+	    
+	    
+	    <input type="hidden" name="hidParam" id="hidParam" value="">
+	    
+	</div>
+</div>
+<!-- // board_write_box -->
+
+<form id="GlobalForm" method="post" action="/venturein/cnfmt/cnfmtVrfc/info?menuId=5000200" onsubmit="return false;" style="display: none;">
+	<input type="hidden" id="srchVniaSn" name="srchVniaSn" value=""/>
+</form>
+
+<script>
+$(document).ready(function() {
+
+	var tmp_obj = document.getElementById("divPathNavi");
+	tmp_obj.innerHTML = '<ul class="breadcrumb"><li>Home</li><li>벤처공시</li><li>벤처확인기업 공시</li><li>벤처기업 상세정보</li></ul>';
+    
+	var tmp_toptitle = document.getElementById("divTopTitle");
+	tmp_toptitle.innerHTML = "";
+});
+
+function goBack() {
+	if ($("#hidParam").val() != "") {
+	    location.href = "/venturein/pbntc/searchVntrCmp" + encodeURI($("#hidParam").val());
+	} else {
+		location.href = "/venturein/pbntc/searchVntrCmp"
+	}
+}
+
+//SFR 벤처확인기업 공시 > 기업 상세 > 벤처기업확인서 진위확인 팝업 추가
+function cnfmtVrfcBtn(srchCnfmtIssuNo){
+	let formData = {"srchCnfmtIssuNo": srchCnfmtIssuNo}; 
+	_AC.ajaxPost(
+			"/venturein/cnfmt/cnfmtVrfc/issuNo"
+			,formData
+			,function(data){
+				if("" == data){
+					alert("해당 발급번호로 조회되는 벤처기업확인서 내역이 없습니다.");
+					return;
+				}else{
+					$("#srchVniaSn").val(data.srchVniaSn);
+					$("#GlobalForm").attr("onsubmit","");
+					$("#GlobalForm").submit();
+				}
+           }
+	)
+}
+</script>
+				<!-- container -->
+<!-- 				<div class="container clearfix"> -->
+<!-- 				</div> -->
+				<!-- // container -->
+			</div>
+		</div>
+		<!-- // contents -->
+
+		 
+
+
+<!-- footer -->
+<div id="footer" class="footer">
+	<!-- container -->
+	<div class="container clearfix">
+		<ul class="foot_util_menu">
+			<li><a href="/venturein/cmmn/terms">이용약관</a></li>
+			<li class="priv"><a href="/venturein/cmmn/priv">개인정보처리방침</a></li>
+			<li><a href="/venturein/cmmn/reportCenter">신고센터</a></li>
+		</ul>
+		<div class="foot_con_box">
+			<div class="left_box">
+				<div class="img_box">
+					<img src="/venturein/resources/images/common/foot_logo.png" alt="중소벤처기업부">
+					<img src="/venturein/resources/images/common/foot_logo2.png" alt="(사) 벤처기업협회">
+				</div>
+				<p class="txt">벤처기업확인기관</p>
+				<p class="txt">사업자등록번호 : 398-82-00505&nbsp;&nbsp;|&nbsp;&nbsp;벤처기업확인기관장 : 성 상 엽</p>
+				<p class="txt">(06151) 서울 강남구 테헤란로 309 삼성제일빌딩 10층</p>
+				<p class="copyright">
+					<!-- COPYRIGHT (C) VENTURE.ALL.RIGHTS RESERVED. -->
+					COPYRIGHT(C) VENTURE ALL RIGHTS RESERVED.
+				</p>
+			</div>
+			<div class="right_box">
+				<dl class="foot_info_list">
+					<dt class="ars_tit">상담센터</dt>
+					<dd class="ars_num"><a href="/venturein/cs/counselingCenter" title="상담센터 페이지로 이동">1566-6487</a></dd>
+					<!-- <dt>시스템 문의</dt>
+					<dd>(02) 6009-9631</dd> -->
+					<dt>운영시간</dt>
+					<dd>09:00 ~ 18:00 (주말/공휴일 휴무)</dd>
+
+					<dt>점심시간</dt>
+					<dd>12:00 ~ 13:00</dd>
+				</dl>
+			</div>
+			<a href="http://pf.kakao.com/_xouEmK" target="_blank" title="새 창 열림" class="foot_kakao_ch">카카오 상담채널 바로가기</a>
+		</div>
+	</div>
+	<!-- // container -->
+</div>
+<!-- // footer -->
+
+
+<!-- 로딩바  -->
+<div class="loading_layer" style="display: none">
+	<div class="ico_area">
+		<img src="/venturein/resources/images/common/emblem.png" alt="">
+		<span class="line"></span>
+	</div>
+</div>
+
+<!-- 연장  -->
+<div id="timer_expire_noti_layer" style="display: none">
+	<p class="layer_pop_sub_txt">
+	고객님의 정보보호를 위해 로그인 후 30분간 사용이 없으실 경우 자동으로 로그아웃 될 예정입니다.<br>
+	로그아웃을 원하지 않으시면 [연장하기]를 클릭해 주세요.
+	</p>
+	<span class="extend_time_frame">남은시간 <span class="time">[ 05:00 ]</span></span>
+
+	<div class="common_btn_box">
+		<a href="#" class="common_btn positive">연장하기</a>
+		<a href="#" class="common_btn out">로그아웃</a>
+	</div>
+</div>
+
+
+	<script>
+	$(function(){
+		var $footer = $(".footer"),
+			$contents = $(".contents"),
+			footerH = 0;
+		$(window).on("load",function(){
+			setTimeout(footerPaddControl, 50);
+		});
+		$(window).on("resize", function(){
+			footerPaddControl();
+		});
+		function footerPaddControl() {
+			footerH = $footer.outerHeight();
+			//$contents.css({"padding-bottom":footerH});
+		}
+	})
+</script>
+	</div>
+	<!-- // wrapper -->
+</body>
+
+</html>
