@@ -1,5 +1,4 @@
 use crate::api::model::{BsPl, Captcha, Solved, Submitted, Unsubmitted};
-use crate::api::nopecha;
 use crate::api::nopecha::NopechaApi;
 use crate::error::NopechaError;
 use crate::{BsplApi, SmesError, VniaSn};
@@ -186,8 +185,13 @@ async fn get_answers(
 
     tokio::spawn(
         async move {
+            let api = NopechaApi::default();
+
             while let Some(captcha) = captchas.recv().await {
-                match nopecha::get_answer_with_retries(&captcha, 10, Duration::from_secs(1)).await {
+                match api
+                    .get_answer_with_retries(&captcha, 10, Duration::from_secs(1))
+                    .await
+                {
                     Ok(captcha) => {
                         tx.send(captcha).unwrap_or_else(|e| {
                             tracing::warn!(

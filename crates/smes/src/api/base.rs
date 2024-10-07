@@ -1,6 +1,6 @@
 use crate::error::UnsuccessfulResponseError;
-use crate::SmesError;
-use reqwest::header::{HeaderMap, CONTENT_TYPE, SET_COOKIE};
+use crate::{api, SmesError};
+use reqwest::header::{HeaderMap, CONTENT_TYPE};
 use reqwest::StatusCode;
 
 pub(crate) struct ParsedResponse {
@@ -11,15 +11,7 @@ pub(crate) struct ParsedResponse {
 
 impl ParsedResponse {
     pub(crate) fn cookies(&self) -> Result<cookie::CookieJar, SmesError> {
-        let mut jar = cookie::CookieJar::new();
-
-        for header in self.headers.get_all(SET_COOKIE) {
-            let header = header.to_str()?.to_string();
-            let cookie = cookie::Cookie::parse(header)?;
-            jar.add(cookie);
-        }
-
-        Ok(jar)
+        api::cookie::parse_cookies(&self.headers)
     }
 
     pub(crate) async fn with_reqwest_response(

@@ -1,9 +1,15 @@
+use crate::SmesError;
 use reqwest::header::{
     HeaderMap, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, CONNECTION, CONTENT_TYPE,
-    HOST, ORIGIN, PRAGMA, REFERER, USER_AGENT,
+    COOKIE, HOST, ORIGIN, PRAGMA, REFERER, USER_AGENT,
 };
 
 pub(crate) trait HeaderMapExt {
+    fn append_cookies(
+        &mut self,
+        path: &str,
+        cookies: &cookie::CookieJar,
+    ) -> Result<&mut Self, SmesError>;
     fn with_base() -> HeaderMap;
     fn with_list() -> HeaderMap;
     fn with_bspl_captcha() -> HeaderMap;
@@ -23,6 +29,44 @@ macro_rules! header_map {
 }
 
 impl HeaderMapExt for HeaderMap {
+    /// Append cookies to the header, for the given url path.
+    ///
+    /// * `path` - The path to append the cookies to.(e.g. `/posts`)
+    fn append_cookies(
+        &mut self,
+        path: &str,
+        cookies: &cookie::CookieJar,
+    ) -> Result<&mut Self, SmesError> {
+        let cookies = cookies
+            .iter()
+            .filter(|&cookie| {
+                if let Some(cookie_path) = cookie.path() {
+                    let starts_with = path.starts_with(cookie_path);
+                    tracing::trace!(
+                        ?cookie,
+                        ?path,
+                        ?cookie_path,
+                        insert = ?starts_with,
+                        "Evaluating whether to insert the current cookie"
+                    );
+                    starts_with
+                } else {
+                    tracing::trace!("Cookie has no path");
+                    false
+                }
+            })
+            .map(|c| {
+                let (name, value) = c.name_value_trimmed();
+                format!("{}={}", name, value)
+            })
+            .collect::<Vec<String>>()
+            .join("; ");
+
+        tracing::trace!(?cookies, "Inserting cookie to request header");
+        self.insert(COOKIE, cookies.parse()?);
+        Ok(self)
+    }
+
     fn with_base() -> HeaderMap {
         let mut headers = HeaderMap::new();
         header_map!(headers,

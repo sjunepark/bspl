@@ -34,6 +34,16 @@ impl Default for NopechaApi {
 }
 
 impl NopechaApi {
+    #[cfg(test)]
+    pub(crate) fn new(domain: &str) -> Self {
+        NopechaApi::default();
+
+        Self {
+            domain: domain.to_string(),
+            ..NopechaApi::default()
+        }
+    }
+
     /// * `image_data` - Image data encoded in base64
     /// Submit a captcha and get a captcha with a `nopecha_id`.
     /// The `nopecha_id` should be later submitted to get the answer.
@@ -87,6 +97,9 @@ impl NopechaApi {
             .await?;
         let response = ParsedResponse::with_reqwest_response(response).await?;
 
+        let text = std::str::from_utf8(&response.bytes)?;
+        tracing::trace!(?text, "Response from Nopecha API");
+
         #[derive(Deserialize)]
         #[serde(untagged)]
         enum ApiResponse {
@@ -118,29 +131,27 @@ impl NopechaApi {
             ApiResponse::Error(error) => Err(NopechaError::from(error).into()),
         }
     }
-}
 
-// This is not in the NopechaApi
-// because we need a new instance of the api instance
-// to make multiple retries in the async environment.
-#[tracing::instrument(skip(captcha))]
-pub(crate) async fn get_answer_with_retries(
-    captcha: &Captcha<Submitted>,
-    max_retry: usize,
-    delay: Duration,
-) -> Result<Captcha<Solved>, SmesError> {
-    (|| async {
-        let api = NopechaApi::default();
-        api.get_answer(captcha.clone()).await
-    })
-    .retry(
-        ConstantBuilder::default()
-            .with_delay(delay)
-            .with_max_times(max_retry),
-    )
-    .when(|e| matches!(e, SmesError::Nopecha(NopechaError::IncompleteJob(_))))
-    .notify(|e, duration| tracing::warn!(?e, ?duration, "Retrying get_answer"))
-    .await
+    // This is not in the NopechaApi
+    // because we need a new instance of the api instance
+    // to make multiple retries in the async environment.
+    #[tracing::instrument(skip(captcha))]
+    pub(crate) async fn get_answer_with_retries(
+        &self,
+        captcha: &Captcha<Submitted>,
+        max_retry: usize,
+        delay: Duration,
+    ) -> Result<Captcha<Solved>, SmesError> {
+        (|| async { self.get_answer(captcha.clone()).await })
+            .retry(
+                ConstantBuilder::default()
+                    .with_delay(delay)
+                    .with_max_times(max_retry),
+            )
+            .when(|e| matches!(e, SmesError::Nopecha(NopechaError::IncompleteJob(_))))
+            .notify(|e, duration| tracing::warn!(?e, ?duration, "Retrying get_answer"))
+            .await
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -159,13 +170,94 @@ fn image_to_base64(image: &DynamicImage) -> Result<String, SmesError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::api::cookie::parse_cookies;
+    use crate::api::header::HeaderMapExt;
     use crate::api::model::Captcha;
     use backon::{ConstantBuilder, Retryable};
     use cookie::CookieJar;
     use goldrust::{goldrust, Content, Goldrust, ResponseSource};
     use tracing::Instrument;
-    use wiremock::Mock;
+    use wiremock::http::HeaderMap;
+    use wiremock::{Mock, Request};
 
+    mod retry {
+        use super::*;
+
+        #[tokio::test]
+        // todo: make the test more accurate(align cookies, align answer values, etc.)
+        async fn get_answers_with_retries_should_success_on_proper_response() {
+            tracing_setup::subscribe();
+            let test_id = utils::function_id!();
+            let _span = tracing::info_span!("test", ?test_id).entered();
+
+            let mock_server = wiremock::MockServer::start().in_current_span().await;
+            let api = NopechaApi::new(mock_server.uri().as_str());
+
+            mock(
+                &mock_server,
+                Scenario {
+                    n_times: 3,
+                    body: r#"{"code":14,"message":"Incomplete job"}"#.to_string(),
+                },
+            )
+            .await;
+
+            mock(
+                &mock_server,
+                Scenario {
+                    n_times: 1,
+                    body: r#"{"data":["160665"]}"#.to_string(),
+                },
+            )
+            .await;
+
+            let answer = api
+                .get_answer_with_retries(
+                    // todo: give proper cookies
+                    &Captcha::new(DynamicImage::new_rgb8(1, 1), CookieJar::new()).submit("test"),
+                    4,
+                    Duration::from_secs(1),
+                )
+                .in_current_span()
+                .await
+                .expect("Failed to get answer");
+
+            assert_eq!(answer.answer(), "160665");
+        }
+
+        struct Scenario {
+            n_times: u64,
+            body: String,
+        }
+
+        async fn mock(mock_server: &wiremock::MockServer, scenario: Scenario) {
+            Mock::given(wiremock::matchers::method("GET"))
+                .and(wiremock::matchers::path("/"))
+                .respond_with(move |req: &Request| {
+                    create_response_with_request(req.to_owned(), scenario.body.as_str())
+                })
+                .up_to_n_times(scenario.n_times)
+                .expect(scenario.n_times)
+                .mount(mock_server)
+                .in_current_span()
+                .await;
+        }
+
+        fn create_response_with_request(req: Request, body: &str) -> wiremock::ResponseTemplate {
+            let response = wiremock::ResponseTemplate::new(200).set_body_string(body);
+
+            let cookies = parse_cookies(&req.headers).expect("Failed to parse cookies");
+            let response = HeaderMap::new()
+                .append_cookies("/", &cookies)
+                .expect("Failed to append cookies")
+                .iter()
+                .fold(response, |response, (name, value)| {
+                    response.append_header(name, value)
+                });
+
+            response
+        }
+    }
     #[tokio::test]
     async fn submit_challenge_should_get_nopecha_id() {
         tracing_setup::subscribe();

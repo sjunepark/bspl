@@ -53,7 +53,7 @@ impl From<NopechaErrorBody> for NopechaError {
     }
 }
 
-#[derive(Error, Debug, Serialize, Deserialize)]
+#[derive(Error, Debug, Serialize, Deserialize, PartialEq)]
 #[error("Nopecha error body: code: {code}, message: {message}")]
 pub struct NopechaErrorBody {
     code: usize,
@@ -124,4 +124,33 @@ pub struct UnsuccessfulResponseError {
     pub status: reqwest::StatusCode,
     pub headers: reqwest::header::HeaderMap,
     pub body: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn serialize_nopecha_error_body() {
+        let body = NopechaErrorBody {
+            code: 14,
+            message: "Incomplete job".to_string(),
+        };
+
+        let serialized = serde_json::to_string(&body).unwrap();
+        assert_eq!(serialized, r#"{"code":14,"message":"Incomplete job"}"#);
+    }
+
+    #[test]
+    fn deserialize_nopecha_error_body() {
+        let json = r#"{"code":14,"message":"Incomplete job"}"#;
+        let body: NopechaErrorBody = serde_json::from_slice(json.as_bytes()).unwrap();
+        assert_eq!(
+            body,
+            NopechaErrorBody {
+                code: 14,
+                message: "Incomplete job".to_string()
+            }
+        );
+    }
 }
