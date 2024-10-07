@@ -2,7 +2,7 @@ use db::{Companies, LibsqlDb};
 
 #[tokio::main]
 async fn main() {
-    tracing_setup::subscribe();
+    tracing_setup::span!("main");
 
     let json = std::fs::read_to_string(concat!(
         env!("CARGO_MANIFEST_DIR"),

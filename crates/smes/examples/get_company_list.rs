@@ -2,7 +2,7 @@ use smes::{ListApi, ListPayloadBuilder};
 
 #[tokio::main]
 async fn main() {
-    tracing_setup::subscribe();
+    tracing_setup::span!("main");
     let mut api = ListApi::new();
 
     let payload = ListPayloadBuilder::default()

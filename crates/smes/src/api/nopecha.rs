@@ -182,65 +182,115 @@ mod tests {
 
     mod retry {
         use super::*;
+        use crate::api::cookie::test_impl::CookieJarExt;
+        use wiremock::MockServer;
 
         #[tokio::test]
-        // todo: make the test more accurate(align cookies, align answer values, etc.)
         async fn get_answers_with_retries_should_success_on_proper_response() {
-            tracing_setup::subscribe();
-            let test_id = utils::function_id!();
-            let _span = tracing::info_span!("test", ?test_id).entered();
+            // region: Arrange
+            tracing_setup::span!("test");
 
-            let mock_server = wiremock::MockServer::start().in_current_span().await;
-            let api = NopechaApi::new(mock_server.uri().as_str());
-
-            mock(
-                &mock_server,
+            const ANSWER: &str = "160665";
+            let scenarios = vec![
                 Scenario {
                     n_times: 3,
                     body: r#"{"code":14,"message":"Incomplete job"}"#.to_string(),
                 },
-            )
-            .await;
-
-            mock(
-                &mock_server,
                 Scenario {
                     n_times: 1,
-                    body: r#"{"data":["160665"]}"#.to_string(),
+                    body: format!(r#"{{"data":["{}"]}}"#, ANSWER),
                 },
-            )
-            .await;
+            ];
+            let test_context = TestContext::new(scenarios).await;
+            // endregion: Arrange
 
-            let answer = api
-                .get_answer_with_retries(
-                    // todo: give proper cookies
-                    &Captcha::new(DynamicImage::new_rgb8(1, 1), CookieJar::new()).submit("test"),
-                    4,
-                    Duration::from_secs(1),
-                )
-                .in_current_span()
-                .await
-                .expect("Failed to get answer");
+            // region: Act
+            // set the retry number to be greater than
+            // the number of requests which the mock server will respond to
+            let result = test_context.test(10).await;
+            // endregion: Act
 
-            assert_eq!(answer.answer(), "160665");
+            // region: Assert
+            let response = result.response.expect("Failed to get response");
+
+            // Each session cookie should be present in the response
+            result.session_cookies.iter().for_each(|session_cookie| {
+                let response_cookie_value = response
+                    .cookies()
+                    .get(session_cookie.name())
+                    .expect("Cookie not found")
+                    .value();
+
+                assert_eq!(session_cookie.value(), response_cookie_value);
+            });
+
+            // The response answer should be the same as the mocked response
+            assert_eq!(response.answer(), ANSWER);
+            // endregion: Assert
         }
 
+        struct TestContext {
+            _mock_server: MockServer,
+            api: NopechaApi,
+        }
+
+        impl TestContext {
+            async fn new(scenarios: Vec<Scenario>) -> Self {
+                let mock_server = wiremock::MockServer::start().in_current_span().await;
+                let api = NopechaApi::new(mock_server.uri().as_str());
+                mock(&mock_server, scenarios).await;
+
+                Self {
+                    _mock_server: mock_server,
+                    api,
+                }
+            }
+
+            async fn test(&self, max_retry: usize) -> TestResult {
+                let session_cookies = CookieJar::fake_smes_session();
+
+                let response = self
+                    .api
+                    .get_answer_with_retries(
+                        &Captcha::new(DynamicImage::new_rgb8(1, 1), session_cookies.to_owned())
+                            .submit("fake_id"),
+                        max_retry,
+                        Duration::from_secs(1),
+                    )
+                    .in_current_span()
+                    .await;
+
+                TestResult {
+                    response,
+                    session_cookies,
+                }
+            }
+        }
+
+        struct TestResult {
+            response: Result<Captcha<Solved>, SmesError>,
+            session_cookies: CookieJar,
+        }
+
+        #[derive(Clone)]
         struct Scenario {
             n_times: u64,
             body: String,
         }
 
-        async fn mock(mock_server: &wiremock::MockServer, scenario: Scenario) {
-            Mock::given(wiremock::matchers::method("GET"))
-                .and(wiremock::matchers::path("/"))
-                .respond_with(move |req: &Request| {
-                    create_response_with_request(req.to_owned(), scenario.body.as_str())
-                })
-                .up_to_n_times(scenario.n_times)
-                .expect(scenario.n_times)
-                .mount(mock_server)
-                .in_current_span()
-                .await;
+        async fn mock(mock_server: &wiremock::MockServer, scenarios: Vec<Scenario>) {
+            for scenario in scenarios {
+                Mock::given(wiremock::matchers::method("GET"))
+                    .and(wiremock::matchers::path("/"))
+                    .respond_with(move |req: &Request| {
+                        create_response_with_request(req.to_owned(), scenario.body.as_str())
+                    })
+                    .up_to_n_times(scenario.n_times)
+                    .expect(scenario.n_times)
+                    .mount(mock_server)
+                    .in_current_span()
+                    .await;
+            }
         }
 
         fn create_response_with_request(req: Request, body: &str) -> wiremock::ResponseTemplate {
@@ -258,14 +308,11 @@ mod tests {
             response
         }
     }
+
     #[tokio::test]
     async fn submit_challenge_should_get_nopecha_id() {
-        tracing_setup::subscribe();
-
         // region: Arrange
-        tracing_setup::subscribe();
-        let test_id = utils::function_id!();
-        let _span = tracing::info_span!("test", ?test_id).entered();
+        tracing_setup::span!("test");
         let mut goldrust = goldrust!("json");
 
         let mock_server = wiremock::MockServer::start().in_current_span().await;
@@ -321,7 +368,7 @@ mod tests {
 
     #[tokio::test]
     async fn get_answer_should_work() {
-        tracing_setup::subscribe();
+        tracing_setup::span!("test");
 
         let allow_external_api_call = std::env::var("GOLDRUST_ALLOW_EXTERNAL_API_CALL")
             .unwrap_or("false".to_string())

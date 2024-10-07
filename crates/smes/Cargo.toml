@@ -26,7 +26,9 @@ log = "0.4.22"
 model = { workspace = true }
 
 [dev-dependencies]
+fake = { workspace = true }
 goldrust = { workspace = true, features = ["image"] }
+rand = { workspace = true }
 tracing-setup = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 wiremock = { workspace = true }

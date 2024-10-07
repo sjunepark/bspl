@@ -6,7 +6,7 @@ use tracing::Instrument;
 async fn get_bspl_htmls_should_work_as_expected() {
     const TEST_COUNT: usize = 5;
 
-    tracing_setup::subscribe();
+    tracing_setup::span!("test");
     let test_id = utils::function_id!();
     let _span = tracing::info_span!("test", ?test_id).entered();
 

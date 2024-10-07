@@ -431,6 +431,7 @@ dependencies = [
  "tracing",
  "tracing-setup",
  "tracing-subscriber",
+ "utils",
 ]
 
 [[package]]
@@ -3435,10 +3436,12 @@ dependencies = [
  "cookie",
  "derive_builder",
  "derive_more",
+ "fake",
  "goldrust",
  "image",
  "log",
  "model",
+ "rand",
  "reqwest",
  "serde",
  "serde-aux",

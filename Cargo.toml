@@ -17,6 +17,7 @@ tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true, features = ["log"] }
 tracing-setup = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
+utils = { workspace = true }
 
 [workspace.dependencies]
 anyhow = "1.0.89"
