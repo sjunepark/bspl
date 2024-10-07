@@ -1,4 +1,4 @@
-use crate::smes::model::Params;
+use crate::smes::company::Params;
 use crate::{Company, DbError, LibsqlDb};
 use hashbrown::HashSet;
 use serde::Deserialize;

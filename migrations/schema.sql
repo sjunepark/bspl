@@ -6,7 +6,8 @@
 CREATE TABLE schema_migrations (id VARCHAR(255) PRIMARY KEY);
 CREATE TABLE smes_company
 (
-    id                           TEXT PRIMARY KEY NOT NULL CHECK ( length(id) = 7 AND id GLOB replace(HEX(ZEROBLOB(7)), '00', '[0-9]') ),
+    smes_id                      TEXT PRIMARY KEY NOT NULL CHECK ( length(smes_id) = 7 AND smes_id GLOB
+                                                                                           replace(HEX(ZEROBLOB(7)), '00', '[0-9]') ),
     representative_name          TEXT             NOT NULL,
     headquarters_address         TEXT             NOT NULL,
     business_registration_number TEXT             NOT NULL CHECK (business_registration_number = '' OR
@@ -19,4 +20,12 @@ CREATE TABLE smes_company
     industry_name                TEXT             NOT NULL,
     create_date                  TEXT             NOT NULL CHECK ( update_date GLOB '2[0-1][0-9][0-9]-[0-9][0-9]-[0-3][0-9]'),
     update_date                  TEXT             NOT NULL CHECK ( update_date GLOB '2[0-1][0-9][0-9]-[0-9][0-9]-[0-3][0-9]' )
+);
+CREATE TABLE smes_html
+(
+    smes_id     TEXT PRIMARY KEY NOT NULL CHECK ( length(smes_id) = 7 AND
+                                                  smes_id GLOB replace(HEX(ZEROBLOB(7)), '00', '[0-9]') ),
+    html        BLOB             NOT NULL,
+    create_date TEXT             NOT NULL CHECK ( update_date GLOB '2[0-1][0-9][0-9]-[0-9][0-9]-[0-3][0-9]'),
+    update_date TEXT             NOT NULL CHECK ( update_date GLOB '2[0-1][0-9][0-9]-[0-9][0-9]-[0-3][0-9]' )
 );

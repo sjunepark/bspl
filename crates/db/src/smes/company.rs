@@ -1,10 +1,11 @@
+use crate::smes::utils::length_10_or_empty;
 use crate::DbError;
 use chrono::{NaiveDate, Utc};
 use chrono_tz::Asia;
 use libsql::params::IntoParams;
 use serde::{Deserialize, Serialize};
 use std::ops::Deref;
-use validator::{Validate, ValidationError};
+use validator::Validate;
 
 pub trait Params {
     fn params(&self) -> impl IntoParams;
@@ -50,14 +51,6 @@ pub struct Company {
     pub industry_name: String,
     pub create_date: NaiveDate,
     pub update_date: NaiveDate,
-}
-
-fn length_10_or_empty(value: &str) -> Result<(), validator::ValidationError> {
-    if value.is_empty() || value.len() == 10 {
-        Ok(())
-    } else {
-        Err(ValidationError::new("invalid_length"))
-    }
 }
 
 impl TryFrom<smes::Company> for Company {
