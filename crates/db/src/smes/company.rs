@@ -18,7 +18,7 @@ pub trait Params {
 /// use db::Company;
 ///
 /// let company = Company {
-///   id: String::from("1071180"),
+///   smes_id: String::from("1071180"),
 ///   representative_name: String::from("김성국"),
 ///   headquarters_address: String::from("경기도 김포시"),
 ///   business_registration_number: String::from("5632000760"),
@@ -33,7 +33,7 @@ pub trait Params {
 pub struct Company {
     /// 고유번호 (Unique Number)
     #[validate(length(min = 7, max = 7))]
-    pub id: String,
+    pub smes_id: String,
     /// 대표자명 (Representative Name)
     pub representative_name: String,
     /// 본사주소 (Headquarters Address)
@@ -59,7 +59,7 @@ impl TryFrom<smes::Company> for Company {
         let now = Utc::now().with_timezone(&Asia::Seoul).date_naive();
 
         let company = Self {
-            id: value.vnia_sn.to_string(),
+            smes_id: value.vnia_sn.to_string(),
             representative_name: value.rprsv_nm,
             headquarters_address: value.hdofc_addr,
             business_registration_number: value.bizrno,
@@ -77,7 +77,7 @@ impl TryFrom<smes::Company> for Company {
 impl Params for Company {
     fn params(&self) -> impl IntoParams {
         libsql::named_params! {
-            ":id": self.id.as_str(),
+            ":smes_id": self.smes_id.as_str(),
             ":representative_name": self.representative_name.as_str(),
             ":headquarters_address": self.headquarters_address.as_str(),
             ":business_registration_number": self.business_registration_number.as_str(),
@@ -108,7 +108,7 @@ mod test_impl {
             let now = Utc::now().with_timezone(&Asia::Seoul).date_naive();
 
             Company {
-                id: NumberWithFormat(EN, "^######").fake::<String>(),
+                smes_id: NumberWithFormat(EN, "^######").fake::<String>(),
                 representative_name: Name().fake_with_rng(rng),
                 headquarters_address: format!(
                     "{}, South Korea",
