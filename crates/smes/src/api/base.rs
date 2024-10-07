@@ -1,4 +1,4 @@
-use crate::error::UnsuccessfulResponseError;
+use crate::error::{NopechaError, NopechaErrorBody, UnsuccessfulResponseError};
 use crate::{api, SmesError};
 use reqwest::header::{HeaderMap, CONTENT_TYPE};
 use reqwest::StatusCode;
@@ -35,6 +35,21 @@ impl ParsedResponse {
 
         // Check status code
         if !status.is_success() {
+            // Check if the response body can be successfully deserialized to a known NopechaError
+            // This is necessary
+            // because nopecha api also returns a non 2XX status code with an error body.
+            // If this block is not set,
+            // the error will be returned as an `UnsuccessfulResponseError` below,
+            // which is not helpful, losing some context.
+            if let Ok(e) = serde_json::from_slice::<NopechaErrorBody>(&bytes) {
+                match NopechaError::from(e) {
+                    NopechaError::Other(_) => {}
+                    NopechaError::IncompleteJob(e) | NopechaError::OutOfCredit(e) => {
+                        return Err(NopechaError::from(e).into());
+                    }
+                }
+            }
+
             return Err(SmesError::UnsuccessfulResponse(UnsuccessfulResponseError {
                 message: "Request returned an unsuccessful status code",
                 status,

@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::fmt::Debug;
 use std::io::Cursor;
+use std::ops::Index;
 use std::time::Duration;
 
 /// API for solving captcha using the Nopecha API
@@ -68,8 +69,11 @@ impl NopechaApi {
             .await?;
         let response = ParsedResponse::with_reqwest_response(response).await?;
 
-        let answer: ChallengeAnswer = serde_json::from_slice(&response.bytes)?;
-        let nopecha_id = answer.data;
+        let response: ApiResponse = serde_json::from_slice(&response.bytes)?;
+        let nopecha_id = match response {
+            ApiResponse::Answer(answer) => answer.data().to_string(),
+            ApiResponse::Error(e) => return Err(NopechaError::from(e).into()),
+        };
 
         let captcha = captcha.submit(&nopecha_id);
         tracing::trace!(?captcha, "Captcha submitted");
@@ -100,21 +104,11 @@ impl NopechaApi {
         let text = std::str::from_utf8(&response.bytes)?;
         tracing::trace!(?text, "Response from Nopecha API");
 
-        #[derive(Deserialize)]
-        #[serde(untagged)]
-        enum ApiResponse {
-            Answer(Answer),
-            Error(NopechaErrorBody),
-        }
-        #[derive(Deserialize, Debug)]
-        struct Answer {
-            data: Vec<String>,
-        }
         let api_response: ApiResponse = serde_json::from_slice(&response.bytes)?;
 
         match api_response {
             ApiResponse::Answer(answer) => Ok({
-                let answer = answer.data[0].clone();
+                let answer = answer.data();
 
                 if answer.is_empty() {
                     return Err(ExternalApiError {
@@ -124,7 +118,7 @@ impl NopechaApi {
                     .into());
                 }
 
-                let captcha = captcha.solve(answer);
+                let captcha = captcha.solve(answer.to_string());
                 tracing::trace!(?captcha, "Captcha solved");
                 captcha
             }),
@@ -154,9 +148,21 @@ impl NopechaApi {
     }
 }
 
-#[derive(Serialize, Deserialize)]
-struct ChallengeAnswer {
-    data: String,
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum ApiResponse {
+    Answer(Answer),
+    Error(NopechaErrorBody),
+}
+#[derive(Debug, Serialize, Deserialize)]
+struct Answer {
+    data: [String; 1],
+}
+
+impl Answer {
+    fn data(&self) -> &str {
+        self.data.index(0)
+    }
 }
 
 #[tracing::instrument]
@@ -194,7 +200,7 @@ mod tests {
             let scenarios = vec![
                 Scenario {
                     n_times: 3,
-                    body: r#"{"code":14,"message":"Incomplete job"}"#.to_string(),
+                    body: r#"{"error":14,"message":"Incomplete job"}"#.to_string(),
                 },
                 Scenario {
                     n_times: 1,
@@ -224,11 +230,11 @@ mod tests {
             let scenarios = vec![
                 Scenario {
                     n_times: 3,
-                    body: r#"{"code":14,"message":"Incomplete job"}"#.to_string(),
+                    body: r#"{"error":14,"message":"Incomplete job"}"#.to_string(),
                 },
                 Scenario {
                     n_times: 1,
-                    body: r#"{"code":16, "message":"Out of credit"}"#.to_string(),
+                    body: r#"{"error":16, "message":"Out of credit"}"#.to_string(),
                 },
             ];
             let test_context = TestContext::new(scenarios).await;
@@ -261,7 +267,7 @@ mod tests {
 
             let scenarios = vec![Scenario {
                 n_times: MAX_RETRY + 1,
-                body: r#"{"code":14,"message":"Incomplete job"}"#.to_string(),
+                body: r#"{"error":14,"message":"Incomplete job"}"#.to_string(),
             }];
             let test_context = TestContext::new(scenarios).await;
             // endregion: Arrange
@@ -414,8 +420,8 @@ mod tests {
         // endregion: Act
 
         // region: Cleanup
-        let challenge_answer = ChallengeAnswer {
-            data: nopecha_id.to_string(),
+        let challenge_answer = Answer {
+            data: [nopecha_id.to_string()],
         };
         goldrust
             .save(Content::Json(
