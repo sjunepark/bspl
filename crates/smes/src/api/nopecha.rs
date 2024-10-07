@@ -101,9 +101,6 @@ impl NopechaApi {
             .await?;
         let response = ParsedResponse::with_reqwest_response(response).await?;
 
-        let text = std::str::from_utf8(&response.bytes)?;
-        tracing::trace!(?text, "Response from Nopecha API");
-
         let api_response: ApiResponse = serde_json::from_slice(&response.bytes)?;
 
         match api_response {
