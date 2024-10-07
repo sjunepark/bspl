@@ -21,7 +21,6 @@ thiserror = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true, features = ["log"] }
 utils = { workspace = true }
-log = "0.4.22"
 
 # Workspace crates
 model = { workspace = true }
