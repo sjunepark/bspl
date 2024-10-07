@@ -1,5 +1,5 @@
 use crate::api::model::{Captcha, Solved, Submitted, Unsubmitted};
-use crate::api::nopecha::NopechaApi;
+use crate::api::NopechaApi;
 use crate::error::NopechaError;
 use crate::{BsplApi, SmesError};
 use std::time::Duration;
