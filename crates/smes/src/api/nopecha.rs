@@ -212,20 +212,74 @@ mod tests {
 
             // region: Assert
             let response = result.response.expect("Failed to get response");
-
-            // Each session cookie should be present in the response
-            result.session_cookies.iter().for_each(|session_cookie| {
-                let response_cookie_value = response
-                    .cookies()
-                    .get(session_cookie.name())
-                    .expect("Cookie not found")
-                    .value();
-
-                assert_eq!(session_cookie.value(), response_cookie_value);
-            });
-
-            // The response answer should be the same as the mocked response
             assert_eq!(response.answer(), ANSWER);
+            // endregion: Assert
+        }
+
+        #[tokio::test]
+        async fn get_answers_with_retries_should_fail_when_out_of_credit() {
+            // region: Arrange
+            tracing_setup::span!("test");
+
+            let scenarios = vec![
+                Scenario {
+                    n_times: 3,
+                    body: r#"{"code":14,"message":"Incomplete job"}"#.to_string(),
+                },
+                Scenario {
+                    n_times: 1,
+                    body: r#"{"code":16, "message":"Out of credit"}"#.to_string(),
+                },
+            ];
+            let test_context = TestContext::new(scenarios).await;
+            // endregion: Arrange
+
+            // region: Act
+            // set the retry number to be greater than
+            // the number of requests which the mock server will respond to
+            let result = test_context.test(10).await;
+            // endregion: Act
+
+            // region: Assert
+
+            match result.response {
+                Err(SmesError::Nopecha(NopechaError::OutOfCredit(e))) => {
+                    tracing::trace!(?e, "Expected error and got error")
+                }
+                Err(e) => panic!("Unexpected error: {:?}", e),
+                Ok(value) => panic!("Expected error, but got: {:?}", value),
+            }
+            // endregion: Assert
+        }
+
+        #[tokio::test]
+        async fn get_answers_with_retries_should_fail_when_max_retry_reached() {
+            // region: Arrange
+            tracing_setup::span!("test");
+
+            const MAX_RETRY: u64 = 3;
+
+            let scenarios = vec![Scenario {
+                n_times: MAX_RETRY + 1,
+                body: r#"{"code":14,"message":"Incomplete job"}"#.to_string(),
+            }];
+            let test_context = TestContext::new(scenarios).await;
+            // endregion: Arrange
+
+            // region: Act
+            // set the retry number to be greater than
+            // the number of requests which the mock server will respond to
+            let result = test_context.test(MAX_RETRY as usize).await;
+            // endregion: Act
+
+            // region: Assert
+            match result.response {
+                Err(SmesError::Nopecha(NopechaError::IncompleteJob(e))) => {
+                    tracing::trace!(?e, "Expected error and got error")
+                }
+                Err(e) => panic!("Unexpected error: {:?}", e),
+                Ok(value) => panic!("Expected error, but got: {:?}", value),
+            }
             // endregion: Assert
         }
 
@@ -260,16 +314,24 @@ mod tests {
                     .in_current_span()
                     .await;
 
-                TestResult {
-                    response,
-                    session_cookies,
+                if let Ok(response) = &response {
+                    session_cookies.iter().for_each(|session_cookie| {
+                        let response_cookie_value = response
+                            .cookies()
+                            .get(session_cookie.name())
+                            .expect("Cookie not found")
+                            .value();
+
+                        assert_eq!(session_cookie.value(), response_cookie_value);
+                    });
                 }
+
+                TestResult { response }
             }
         }
 
         struct TestResult {
             response: Result<Captcha<Solved>, SmesError>,
-            session_cookies: CookieJar,
         }
 
         #[derive(Clone)]
