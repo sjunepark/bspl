@@ -28,8 +28,6 @@ impl TestContext {
     /// 2. Copies the actual local db to a test db
     #[tracing::instrument]
     pub(crate) async fn new(function_name: &str, db_source: DbSource) -> Self {
-        tracing_setup::subscribe();
-
         let project_root = Path::new(env!("CARGO_MANIFEST_DIR"));
         let workspace_root = project_root
             .parent()

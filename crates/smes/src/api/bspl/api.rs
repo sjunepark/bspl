@@ -3,7 +3,7 @@ use crate::api::header::HeaderMapExt;
 use crate::api::model::{Captcha, Html, Unsubmitted};
 use crate::SmesError;
 use cookie::CookieJar;
-use reqwest::header::{HeaderMap, COOKIE};
+use reqwest::header::HeaderMap;
 use reqwest::{Client, Method};
 
 pub struct BsplApi {
@@ -72,33 +72,7 @@ impl BsplApi {
         const PATH: &str = "/venturein/pbntc/searchVntrCmpDtls";
 
         let mut headers = HeaderMap::with_bspl();
-        let cookies = cookies
-            .iter()
-            .filter(|&cookie| {
-                if let Some(path) = cookie.path() {
-                    let starts_with = PATH.starts_with(path);
-                    tracing::trace!(
-                        cookie = ?cookie,
-                        ?PATH,
-                        ?path,
-                        ?starts_with,
-                        "Evaluating whether to insert the current cookie"
-                    );
-                    starts_with
-                } else {
-                    tracing::trace!("Cookie has no path");
-                    false
-                }
-            })
-            .map(|c| {
-                let (name, value) = c.name_value_trimmed();
-                format!("{}={}", name, value)
-            })
-            .collect::<Vec<String>>()
-            .join("; ");
-
-        tracing::trace!(?cookies, "Inserting cookie to request header");
-        headers.insert(COOKIE, cookies.parse()?);
+        headers.append_cookies(PATH, cookies)?;
 
         let response = self
             .request(
@@ -133,9 +107,7 @@ mod tests {
     #[tokio::test]
     async fn get_captcha_image_should_get_valid_image() {
         // region: Arrange
-        tracing_setup::subscribe();
-        let test_id = utils::function_id!();
-        let _span = tracing::info_span!("test", ?test_id).entered();
+        tracing_setup::span!("test");
         let mut goldrust = goldrust!("png");
 
         let mock_server = wiremock::MockServer::start().in_current_span().await;

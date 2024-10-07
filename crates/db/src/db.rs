@@ -33,7 +33,7 @@ mod tests {
 
     #[tokio::test]
     async fn db_should_connect() {
-        tracing_setup::subscribe();
+        tracing_setup::span!("test");
 
         let db = LibsqlDb::new_local(":memory:")
             .await

@@ -73,7 +73,7 @@ mod tests {
 
     #[test]
     fn list_payload_default_page_size_should_be_as_expected() {
-        tracing_setup::subscribe();
+        tracing_setup::span!("test");
 
         let payload = ListPayloadBuilder::default()
             .build()
@@ -84,7 +84,7 @@ mod tests {
 
     #[test]
     fn deserialize_list_response() {
-        tracing_setup::subscribe();
+        tracing_setup::span!("test");
 
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
@@ -98,7 +98,7 @@ mod tests {
 
     #[test]
     fn serialize_list_response() {
-        tracing_setup::subscribe();
+        tracing_setup::span!("test");
 
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
@@ -120,7 +120,7 @@ mod tests {
 
     #[test]
     fn deserialize_fail_list_response() {
-        tracing_setup::subscribe();
+        tracing_setup::span!("test");
 
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
@@ -134,7 +134,7 @@ mod tests {
 
     #[test]
     fn serialize_fail_list_response() {
-        tracing_setup::subscribe();
+        tracing_setup::span!("test");
 
         let json = include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),

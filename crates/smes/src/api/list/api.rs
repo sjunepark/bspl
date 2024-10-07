@@ -113,9 +113,7 @@ mod tests {
     #[tokio::test]
     async fn list_api_make_request_should_succeed() {
         // region: Arrange
-        tracing_setup::subscribe();
-        let test_id = utils::function_id!();
-        let _span = tracing::info_span!("test", ?test_id).entered();
+        tracing_setup::span!("test");
         let mut goldrust = goldrust!("json");
 
         let mock_server = wiremock::MockServer::start().in_current_span().await;
@@ -188,7 +186,7 @@ mod tests {
     #[tokio::test]
     async fn list_api_total_count_should_succeed() {
         // region: Arrange
-        tracing_setup::subscribe();
+        tracing_setup::span!("test");
         let test_id = utils::function_id!();
         let _span = tracing::info_span!("test", ?test_id).entered();
 

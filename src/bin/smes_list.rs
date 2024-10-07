@@ -3,7 +3,7 @@ use smes::{ListApi, ListPayloadBuilder};
 
 #[tokio::main]
 async fn main() {
-    tracing_setup::subscribe();
+    tracing_setup::span!("main");
 
     let db = LibsqlDb::new_local("db/local.db")
         .await

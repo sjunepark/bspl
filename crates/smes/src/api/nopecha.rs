@@ -34,6 +34,16 @@ impl Default for NopechaApi {
 }
 
 impl NopechaApi {
+    #[cfg(test)]
+    pub(crate) fn new(domain: &str) -> Self {
+        NopechaApi::default();
+
+        Self {
+            domain: domain.to_string(),
+            ..NopechaApi::default()
+        }
+    }
+
     /// * `image_data` - Image data encoded in base64
     /// Submit a captcha and get a captcha with a `nopecha_id`.
     /// The `nopecha_id` should be later submitted to get the answer.
@@ -87,6 +97,9 @@ impl NopechaApi {
             .await?;
         let response = ParsedResponse::with_reqwest_response(response).await?;
 
+        let text = std::str::from_utf8(&response.bytes)?;
+        tracing::trace!(?text, "Response from Nopecha API");
+
         #[derive(Deserialize)]
         #[serde(untagged)]
         enum ApiResponse {
@@ -118,29 +131,27 @@ impl NopechaApi {
             ApiResponse::Error(error) => Err(NopechaError::from(error).into()),
         }
     }
-}
 
-// This is not in the NopechaApi
-// because we need a new instance of the api instance
-// to make multiple retries in the async environment.
-#[tracing::instrument(skip(captcha))]
-pub(crate) async fn get_answer_with_retries(
-    captcha: &Captcha<Submitted>,
-    max_retry: usize,
-    delay: Duration,
-) -> Result<Captcha<Solved>, SmesError> {
-    (|| async {
-        let api = NopechaApi::default();
-        api.get_answer(captcha.clone()).await
-    })
-    .retry(
-        ConstantBuilder::default()
-            .with_delay(delay)
-            .with_max_times(max_retry),
-    )
-    .when(|e| matches!(e, SmesError::Nopecha(NopechaError::IncompleteJob(_))))
-    .notify(|e, duration| tracing::warn!(?e, ?duration, "Retrying get_answer"))
-    .await
+    // This is not in the NopechaApi
+    // because we need a new instance of the api instance
+    // to make multiple retries in the async environment.
+    #[tracing::instrument(skip(captcha))]
+    pub(crate) async fn get_answer_with_retries(
+        &self,
+        captcha: &Captcha<Submitted>,
+        max_retry: usize,
+        delay: Duration,
+    ) -> Result<Captcha<Solved>, SmesError> {
+        (|| async { self.get_answer(captcha.clone()).await })
+            .retry(
+                ConstantBuilder::default()
+                    .with_delay(delay)
+                    .with_max_times(max_retry),
+            )
+            .when(|e| matches!(e, SmesError::Nopecha(NopechaError::IncompleteJob(_))))
+            .notify(|e, duration| tracing::warn!(?e, ?duration, "Retrying get_answer"))
+            .await
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -159,28 +170,215 @@ fn image_to_base64(image: &DynamicImage) -> Result<String, SmesError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::api::cookie::parse_cookies;
+    use crate::api::header::HeaderMapExt;
     use crate::api::model::Captcha;
     use backon::{ConstantBuilder, Retryable};
     use cookie::CookieJar;
     use goldrust::{goldrust, Content, Goldrust, ResponseSource};
     use tracing::Instrument;
-    use wiremock::Mock;
+    use wiremock::http::HeaderMap;
+    use wiremock::{Mock, Request};
+
+    mod retry {
+        use super::*;
+        use crate::api::cookie::test_impl::CookieJarExt;
+        use wiremock::MockServer;
+
+        #[tokio::test]
+        async fn get_answers_with_retries_should_success_on_proper_response() {
+            // region: Arrange
+            tracing_setup::span!("test");
+
+            const ANSWER: &str = "160665";
+            let scenarios = vec![
+                Scenario {
+                    n_times: 3,
+                    body: r#"{"code":14,"message":"Incomplete job"}"#.to_string(),
+                },
+                Scenario {
+                    n_times: 1,
+                    body: format!(r#"{{"data":["{}"]}}"#, ANSWER),
+                },
+            ];
+            let test_context = TestContext::new(scenarios).await;
+            // endregion: Arrange
+
+            // region: Act
+            // set the retry number to be greater than
+            // the number of requests which the mock server will respond to
+            let result = test_context.test(10).await;
+            // endregion: Act
+
+            // region: Assert
+            let response = result.response.expect("Failed to get response");
+            assert_eq!(response.answer(), ANSWER);
+            // endregion: Assert
+        }
+
+        #[tokio::test]
+        async fn get_answers_with_retries_should_fail_when_out_of_credit() {
+            // region: Arrange
+            tracing_setup::span!("test");
+
+            let scenarios = vec![
+                Scenario {
+                    n_times: 3,
+                    body: r#"{"code":14,"message":"Incomplete job"}"#.to_string(),
+                },
+                Scenario {
+                    n_times: 1,
+                    body: r#"{"code":16, "message":"Out of credit"}"#.to_string(),
+                },
+            ];
+            let test_context = TestContext::new(scenarios).await;
+            // endregion: Arrange
+
+            // region: Act
+            // set the retry number to be greater than
+            // the number of requests which the mock server will respond to
+            let result = test_context.test(10).await;
+            // endregion: Act
+
+            // region: Assert
+
+            match result.response {
+                Err(SmesError::Nopecha(NopechaError::OutOfCredit(e))) => {
+                    tracing::trace!(?e, "Expected error and got error")
+                }
+                Err(e) => panic!("Unexpected error: {:?}", e),
+                Ok(value) => panic!("Expected error, but got: {:?}", value),
+            }
+            // endregion: Assert
+        }
+
+        #[tokio::test]
+        async fn get_answers_with_retries_should_fail_when_max_retry_reached() {
+            // region: Arrange
+            tracing_setup::span!("test");
+
+            const MAX_RETRY: u64 = 3;
+
+            let scenarios = vec![Scenario {
+                n_times: MAX_RETRY + 1,
+                body: r#"{"code":14,"message":"Incomplete job"}"#.to_string(),
+            }];
+            let test_context = TestContext::new(scenarios).await;
+            // endregion: Arrange
+
+            // region: Act
+            // set the retry number to be greater than
+            // the number of requests which the mock server will respond to
+            let result = test_context.test(MAX_RETRY as usize).await;
+            // endregion: Act
+
+            // region: Assert
+            match result.response {
+                Err(SmesError::Nopecha(NopechaError::IncompleteJob(e))) => {
+                    tracing::trace!(?e, "Expected error and got error")
+                }
+                Err(e) => panic!("Unexpected error: {:?}", e),
+                Ok(value) => panic!("Expected error, but got: {:?}", value),
+            }
+            // endregion: Assert
+        }
+
+        struct TestContext {
+            _mock_server: MockServer,
+            api: NopechaApi,
+        }
+
+        impl TestContext {
+            async fn new(scenarios: Vec<Scenario>) -> Self {
+                let mock_server = wiremock::MockServer::start().in_current_span().await;
+                let api = NopechaApi::new(mock_server.uri().as_str());
+                mock(&mock_server, scenarios).await;
+
+                Self {
+                    _mock_server: mock_server,
+                    api,
+                }
+            }
+
+            async fn test(&self, max_retry: usize) -> TestResult {
+                let session_cookies = CookieJar::fake_smes_session();
+
+                let response = self
+                    .api
+                    .get_answer_with_retries(
+                        &Captcha::new(DynamicImage::new_rgb8(1, 1), session_cookies.to_owned())
+                            .submit("fake_id"),
+                        max_retry,
+                        Duration::from_secs(1),
+                    )
+                    .in_current_span()
+                    .await;
+
+                if let Ok(response) = &response {
+                    session_cookies.iter().for_each(|session_cookie| {
+                        let response_cookie_value = response
+                            .cookies()
+                            .get(session_cookie.name())
+                            .expect("Cookie not found")
+                            .value();
+
+                        assert_eq!(session_cookie.value(), response_cookie_value);
+                    });
+                }
+
+                TestResult { response }
+            }
+        }
+
+        struct TestResult {
+            response: Result<Captcha<Solved>, SmesError>,
+        }
+
+        #[derive(Clone)]
+        struct Scenario {
+            n_times: u64,
+            body: String,
+        }
+
+        async fn mock(mock_server: &wiremock::MockServer, scenarios: Vec<Scenario>) {
+            for scenario in scenarios {
+                Mock::given(wiremock::matchers::method("GET"))
+                    .and(wiremock::matchers::path("/"))
+                    .respond_with(move |req: &Request| {
+                        create_response_with_request(req.to_owned(), scenario.body.as_str())
+                    })
+                    .up_to_n_times(scenario.n_times)
+                    .expect(scenario.n_times)
+                    .mount(mock_server)
+                    .in_current_span()
+                    .await;
+            }
+        }
+
+        fn create_response_with_request(req: Request, body: &str) -> wiremock::ResponseTemplate {
+            let response = wiremock::ResponseTemplate::new(200).set_body_string(body);
+
+            let cookies = parse_cookies(&req.headers).expect("Failed to parse cookies");
+            let response = HeaderMap::new()
+                .append_cookies("/", &cookies)
+                .expect("Failed to append cookies")
+                .iter()
+                .fold(response, |response, (name, value)| {
+                    response.append_header(name, value)
+                });
+
+            response
+        }
+    }
 
     #[tokio::test]
     async fn submit_challenge_should_get_nopecha_id() {
-        tracing_setup::subscribe();
-
         // region: Arrange
-        tracing_setup::subscribe();
-        let test_id = utils::function_id!();
-        let _span = tracing::info_span!("test", ?test_id).entered();
+        tracing_setup::span!("test");
         let mut goldrust = goldrust!("json");
 
         let mock_server = wiremock::MockServer::start().in_current_span().await;
 
-        if matches!(goldrust.response_source, ResponseSource::Local) {
-            std::env::set_var("NOPECHA_KEY", "test");
-        }
         let mut api = NopechaApi::default();
 
         match goldrust.response_source {
@@ -229,7 +427,7 @@ mod tests {
 
     #[tokio::test]
     async fn get_answer_should_work() {
-        tracing_setup::subscribe();
+        tracing_setup::span!("test");
 
         let allow_external_api_call = std::env::var("GOLDRUST_ALLOW_EXTERNAL_API_CALL")
             .unwrap_or("false".to_string())

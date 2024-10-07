@@ -144,7 +144,7 @@ mod tests {
 
     #[tokio::test]
     async fn insert_and_get_companies_should_work() {
-        tracing_setup::subscribe();
+        tracing_setup::span!("test");
 
         let ctx = text_context!(DbSource::Migration).await;
         let db = &ctx.db;
@@ -161,7 +161,7 @@ mod tests {
 
     #[tokio::test]
     async fn insert_and_get_company_ids_should_work() {
-        tracing_setup::subscribe();
+        tracing_setup::span!("test");
 
         let ctx = text_context!(DbSource::Migration).await;
         let db = &ctx.db;
@@ -181,7 +181,7 @@ mod tests {
     #[tokio::test]
     async fn upsert_companies_should_work() {
         // region: Arrange
-        tracing_setup::subscribe();
+        tracing_setup::span!("test");
 
         let ctx = text_context!(DbSource::Migration).await;
         let db = &ctx.db;

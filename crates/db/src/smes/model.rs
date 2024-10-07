@@ -139,7 +139,6 @@ mod test_impl {
 
     impl<T> Dummy<T> for Company {
         fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
-            tracing_setup::subscribe();
             let now = Utc::now().with_timezone(&Asia::Seoul).date_naive();
 
             Company {
