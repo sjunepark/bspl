@@ -1,9 +1,10 @@
-use crate::api::Company;
 use crate::utils::{
     deserialize_optional_number_from_string, serialize_number_as_string,
     serialize_optional_number_as_string,
 };
+use crate::SmesError;
 use derive_builder::Builder;
+use model::db;
 use serde::{Deserialize, Serialize};
 use serde_aux::prelude::deserialize_number_from_string;
 
@@ -49,21 +50,29 @@ pub struct ListResponse {
     #[serde(deserialize_with = "deserialize_optional_number_from_string")]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
-    pub total_count: Option<usize>,
+    pub(crate) total_count: Option<usize>,
     #[serde(serialize_with = "serialize_optional_number_as_string")]
     #[serde(deserialize_with = "deserialize_optional_number_from_string")]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
-    pub now_page: Option<usize>,
-    pub result: String,
+    pub(crate) now_page: Option<usize>,
+    pub(crate) result: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
-    pub data_list: Option<Vec<Company>>,
+    pub(crate) data_list: Option<Vec<crate::Company>>,
 }
 
 impl ListResponse {
-    pub fn is_success(&self) -> bool {
+    pub(crate) fn is_success(&self) -> bool {
         self.result == "SUCCESS"
+    }
+
+    pub fn companies(self) -> Result<Vec<db::Company>, SmesError> {
+        if let Some(data_list) = self.data_list {
+            data_list.into_iter().map(|c| c.try_into()).collect()
+        } else {
+            Ok(Vec::new())
+        }
     }
 }
 

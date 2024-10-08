@@ -252,7 +252,6 @@ mod tests {
                         .expect("failed to create proper dummy smes_id"),
                     ..company
                 }
-                .into()
             })
             .collect();
 

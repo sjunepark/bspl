@@ -17,8 +17,9 @@ async fn main() {
         .await
         .expect("Failed to get companies")
         .into_iter()
-        .map(|c| c.smes_id.try_into().expect("Failed to convert id"))
+        .map(|c| c.smes_id)
         .collect::<Vec<_>>();
 
-    let htmls = smes::get_bspl_htmls(ids).await;
+    // todo
+    let _htmls = smes::get_bspl_htmls(ids).await;
 }

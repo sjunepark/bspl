@@ -34,7 +34,7 @@ macro_rules! string {
 #[macro_export]
 macro_rules! bytes {
     // Pattern for structs with additional nutype attributes
-        ($name:ident, $($custom_derives:ident),* => { $($nutype_attrs:tt)+ }) => {
+    ($name:ident, $($custom_derives:ident),* => { $($nutype_attrs:tt)+ }) => {
         #[nutype::nutype(
             $(
                 $nutype_attrs
@@ -45,7 +45,13 @@ macro_rules! bytes {
                 Into, Hash, $($custom_derives),*
             ),
         )]
-         pub struct $name(Vec<u8>);
+        pub struct $name(Vec<u8>);
+
+        impl std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(f, "0x{}", std::ops::Deref::deref(self).iter().map(|b| format!("{:02x}", b)).collect::<String>())
+            }
+        }
     };
     // Pattern for structs without additional nutype attributes
     ($name:ident, $($custom_derives:ident),*) => {
@@ -57,6 +63,12 @@ macro_rules! bytes {
             ),
         )]
         pub struct $name(Vec<u8>);
+
+        impl std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(f, "0x{}", std::ops::Deref::deref(self).iter().map(|b| format!("{:02x}", b)).collect::<String>())
+            }
+        }
     };
 }
 

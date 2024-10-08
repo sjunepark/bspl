@@ -4011,7 +4011,6 @@ dependencies = [
  "bytes",
  "cookie",
  "derive_builder",
- "derive_more 1.0.0",
  "fake",
  "goldrust",
  "image",

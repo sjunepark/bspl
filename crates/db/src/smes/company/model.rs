@@ -23,24 +23,22 @@ impl TryFrom<Company> for db::Company {
     type Error = DbError;
 
     fn try_from(value: Company) -> Result<Self, Self::Error> {
-        Ok(model::db::Company {
+        Ok(db::Company {
             smes_id: company::Id::try_from(value.smes_id).map_err(ConversionError::new)?,
-            representative_name: company::RepresentativeName::try_from(value.representative_name)
-                .map_err(ConversionError::new)?,
-            headquarters_address: company::HeadquartersAddress::try_from(
+            representative_name: Into::<company::RepresentativeName>::into(
+                value.representative_name,
+            ),
+            headquarters_address: Into::<company::HeadquartersAddress>::into(
                 value.headquarters_address,
-            )
-            .map_err(ConversionError::new)?,
+            ),
             business_registration_number: company::BusinessRegistrationNumber::try_from(
                 value.business_registration_number,
             )
             .map_err(ConversionError::new)?,
-            company_name: company::CompanyName::try_from(value.company_name)
-                .map_err(ConversionError::new)?,
+            company_name: Into::<company::CompanyName>::into(value.company_name),
             industry_code: company::IndustryCode::try_from(value.industry_code)
                 .map_err(ConversionError::new)?,
-            industry_name: company::IndustryName::try_from(value.industry_name)
-                .map_err(ConversionError::new)?,
+            industry_name: Into::<company::IndustryName>::into(value.industry_name),
             created_date: value.created_date,
             updated_date: value.updated_date,
         })

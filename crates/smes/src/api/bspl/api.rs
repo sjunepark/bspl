@@ -2,7 +2,6 @@ use crate::api::base::Api;
 use crate::api::header::HeaderMapExt;
 use crate::api::model::{Captcha, Unsubmitted};
 use crate::error::InvariantError;
-use crate::html::Html;
 use crate::SmesError;
 use cookie::CookieJar;
 use minify_html::Cfg;
@@ -70,7 +69,7 @@ impl BsplApi {
         cookies: &CookieJar,
         company_id: &str,
         captcha_answer: &str,
-    ) -> Result<Html, SmesError> {
+    ) -> Result<String, SmesError> {
         tracing::trace!("Getting bspl html");
         let domain = self.domain.to_string();
         const PATH: &str = "/venturein/pbntc/searchVntrCmpDtls";
@@ -100,7 +99,7 @@ impl BsplApi {
 ///
 /// * `html` - The full HTML page such as <https://www.smes.go.kr/venturein/pbntc/searchVntrCmpDtls?vniaSn=1071180&captcha=302398>
 /// * Returns the HTML content of the `#real_contents` element in String format.
-fn minify_and_trim_html(html: &[u8]) -> Result<Html, SmesError> {
+fn minify_and_trim_html(html: &[u8]) -> Result<String, SmesError> {
     let html = minify_html::minify(html, &Cfg::spec_compliant());
     let html = scraper::Html::parse_document(std::str::from_utf8(&html)?);
     let selector = Selector::parse("#real_contents")?;

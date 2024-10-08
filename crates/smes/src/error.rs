@@ -101,6 +101,12 @@ impl TypeConversionError {
     }
 }
 
+impl From<TypeConversionError> for SmesError {
+    fn from(e: TypeConversionError) -> Self {
+        SmesError::Conversion(ConversionError::TypeConversion(e))
+    }
+}
+
 impl From<Utf8Error> for SmesError {
     fn from(e: Utf8Error) -> Self {
         SmesError::Conversion(ConversionError::Utf8(e))
