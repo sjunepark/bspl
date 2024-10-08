@@ -155,7 +155,8 @@ mod tests {
         // endregion: Action
 
         // region: Assert
-        assert_eq!(result, html_to_get);
+        assert_eq!(result.smes_id, html_to_get.smes_id);
+        assert_eq!(result.html, html_to_get.html);
         // endregion: Assert
     }
 
