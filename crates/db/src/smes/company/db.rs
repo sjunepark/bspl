@@ -1,8 +1,7 @@
 use crate::db::Params;
-use crate::error::ConversionError;
 use crate::{DbError, LibsqlDb};
 use hashbrown::HashSet;
-use model::{company, table};
+use model::{company, table, ModelError};
 use serde::Deserialize;
 
 impl LibsqlDb {
@@ -30,7 +29,7 @@ impl LibsqlDb {
 
         while let Some(row) = rows.next().await? {
             let id_struct: IdStruct = libsql::de::from_row(&row)?;
-            company_ids.insert(id_struct.smes_id.try_into().map_err(ConversionError::new)?);
+            company_ids.insert(id_struct.smes_id.try_into().map_err(ModelError::from)?);
         }
 
         Ok(company_ids)

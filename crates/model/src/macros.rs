@@ -57,7 +57,7 @@ macro_rules! bytes {
             type Err = $crate::error::FromStrError;
 
             fn from_str(s: &str) -> Result<Self, Self::Err> {
-                Ok($name::try_new(s.as_bytes().to_vec()))
+                Ok($name::try_new(s.as_bytes().to_vec())?)
             }
         }
     };

@@ -1,9 +1,8 @@
 use crate::db::Params;
-use crate::error::ConversionError;
 use crate::DbError;
 use chrono::NaiveDate;
 use libsql::params::IntoParams;
-use model::{company, table};
+use model::{company, table, ModelError};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -24,7 +23,7 @@ impl TryFrom<Company> for table::Company {
 
     fn try_from(value: Company) -> Result<Self, Self::Error> {
         Ok(table::Company {
-            smes_id: company::Id::try_from(value.smes_id).map_err(ConversionError::new)?,
+            smes_id: company::Id::try_from(value.smes_id).map_err(ModelError::from)?,
             representative_name: Into::<company::RepresentativeName>::into(
                 value.representative_name,
             ),
@@ -34,10 +33,10 @@ impl TryFrom<Company> for table::Company {
             business_registration_number: company::BusinessRegistrationNumber::try_from(
                 value.business_registration_number,
             )
-            .map_err(ConversionError::new)?,
+            .map_err(ModelError::from)?,
             company_name: Into::<company::CompanyName>::into(value.company_name),
             industry_code: company::IndustryCode::try_from(value.industry_code)
-                .map_err(ConversionError::new)?,
+                .map_err(ModelError::from)?,
             industry_name: Into::<company::IndustryName>::into(value.industry_name),
             created_date: value.created_date,
             updated_date: value.updated_date,

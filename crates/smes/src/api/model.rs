@@ -1,9 +1,8 @@
-use crate::error::TypeConversionError;
 use crate::SmesError;
 use cookie::CookieJar;
 use image::DynamicImage;
 use model::company::RepresentativeName;
-use model::{company, table};
+use model::{company, table, ModelError};
 use serde::{Deserialize, Serialize};
 
 // region: Captcha
@@ -136,17 +135,16 @@ impl TryFrom<Company> for table::Company {
 
     fn try_from(value: Company) -> Result<Self, Self::Error> {
         Ok(table::Company {
-            smes_id: company::Id::try_from(value.vnia_sn.to_string())
-                .map_err(TypeConversionError::new)?,
+            smes_id: company::Id::try_from(value.vnia_sn.to_string()).map_err(ModelError::from)?,
             representative_name: Into::<RepresentativeName>::into(value.rprsv_nm),
             headquarters_address: Into::<company::HeadquartersAddress>::into(value.hdofc_addr),
             business_registration_number: company::BusinessRegistrationNumber::try_from(
                 value.bizrno,
             )
-            .map_err(TypeConversionError::new)?,
+            .map_err(ModelError::from)?,
             company_name: Into::<company::CompanyName>::into(value.cmp_nm),
             industry_code: company::IndustryCode::try_from(value.indsty_cd)
-                .map_err(TypeConversionError::new)?,
+                .map_err(ModelError::from)?,
             industry_name: Into::<company::IndustryName>::into(value.indsty_nm),
             created_date: None,
             updated_date: None,
@@ -174,7 +172,7 @@ impl TryFrom<Html> for table::Html {
 
     fn try_from(value: Html) -> Result<Self, Self::Error> {
         Ok(table::Html {
-            smes_id: company::Id::try_from(value.vnia_sn).map_err(TypeConversionError::new)?,
+            smes_id: company::Id::try_from(value.vnia_sn).map_err(ModelError::from)?,
             html: Into::<company::HtmlContent>::into(value.html),
             created_date: None,
             updated_date: None,

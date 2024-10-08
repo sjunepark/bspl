@@ -2,7 +2,6 @@
 
 - Check if `inspect_err`s are necessary
 - Check if channels are closing as expected.
-- Use `Infallible` for errors
 
 ## Pending
 

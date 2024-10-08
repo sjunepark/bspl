@@ -1,8 +1,8 @@
 use crate::db::Params;
-use crate::error::ConversionError;
 use crate::DbError;
 use chrono::NaiveDate;
 use libsql::params::IntoParams;
+use model::ModelError;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -29,7 +29,7 @@ impl TryFrom<Html> for model::table::Html {
 
     fn try_from(value: Html) -> Result<Self, Self::Error> {
         Ok(model::table::Html {
-            smes_id: value.smes_id.try_into().map_err(ConversionError::new)?,
+            smes_id: value.smes_id.try_into().map_err(ModelError::from)?,
             html: value.html.into(),
             created_date: value.created_date,
             updated_date: value.updated_date,

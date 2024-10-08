@@ -1,4 +1,5 @@
 use cookie::ParseError;
+use model::ModelError;
 use reqwest::header::{InvalidHeaderValue, ToStrError};
 use serde::{Deserialize, Serialize};
 use std::str::Utf8Error;
@@ -21,6 +22,8 @@ pub enum SmesError {
     InvalidHeaderValue(#[from] InvalidHeaderValue),
     #[error("Missing expected field: {0}")]
     MissingExpectedField(String),
+    #[error("Model error: {0}")]
+    Model(#[from] ModelError),
     #[error("Nopecha error: {0}")]
     Nopecha(#[from] NopechaError),
     #[error("Parse error: {0}")]
