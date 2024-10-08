@@ -45,30 +45,3 @@ impl Params for Html {
         }
     }
 }
-
-// This implementation is necessary to create fake `Html` structs for tests,
-// such as `().fake::<Html>().`
-#[cfg(test)]
-mod test_impl {
-    use super::*;
-    use chrono::Utc;
-    use chrono_tz::Asia;
-    use fake::faker::number::raw::NumberWithFormat;
-    use fake::locales::EN;
-    use fake::{Dummy, Fake};
-    use rand::Rng;
-
-    impl<T> Dummy<T> for Html {
-        fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, _rng: &mut R) -> Self {
-            let html: &str = "<<html><body>Dummy</body></html>";
-            let now = Utc::now().with_timezone(&Asia::Seoul).date_naive();
-
-            Html {
-                smes_id: NumberWithFormat(EN, "^######").fake::<String>(),
-                html: html.as_bytes().to_owned(),
-                created_date: Some(now),
-                updated_date: Some(now),
-            }
-        }
-    }
-}

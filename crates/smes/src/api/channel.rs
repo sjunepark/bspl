@@ -51,7 +51,7 @@ pub async fn get_bspl_htmls(companies: Vec<model::company::Id>) -> UnboundedRece
 
                 let html = crate::Html {
                     vnia_sn: id.to_string(),
-                    html: html.as_bytes().to_vec(),
+                    html: html.into(),
                 }
                 .try_into();
 

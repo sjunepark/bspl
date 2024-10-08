@@ -52,6 +52,14 @@ macro_rules! bytes {
                 write!(f, "0x{}", std::ops::Deref::deref(self).iter().map(|b| format!("{:02x}", b)).collect::<String>())
             }
         }
+
+       impl std::str::FromStr for $name {
+            type Err = $crate::error::FromStrError;
+
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                Ok($name::try_new(s.as_bytes().to_vec()))
+            }
+        }
     };
     // Pattern for structs without additional nutype attributes
     ($name:ident, $($custom_derives:ident),*) => {
@@ -67,6 +75,12 @@ macro_rules! bytes {
         impl std::fmt::Display for $name {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 write!(f, "0x{}", std::ops::Deref::deref(self).iter().map(|b| format!("{:02x}", b)).collect::<String>())
+            }
+        }
+
+       impl From<&str> for $name {
+            fn from(s: &str) -> Self {
+                $name::new(s.as_bytes().to_vec())
             }
         }
     };

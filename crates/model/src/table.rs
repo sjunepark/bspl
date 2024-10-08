@@ -1,6 +1,5 @@
 use crate::company;
-use chrono::{NaiveDate, Utc};
-use chrono_tz::Asia;
+use chrono::NaiveDate;
 use fake::faker::address::ja_jp::CityName;
 use fake::faker::company::ja_jp::{CompanyName, Industry};
 use fake::faker::name::ja_jp::Name;
@@ -22,18 +21,37 @@ pub struct Company {
     pub updated_date: Option<NaiveDate>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Html {
     pub smes_id: company::Id,
     pub html: company::HtmlContent,
-    pub created_date: Option<chrono::NaiveDate>,
-    pub updated_date: Option<chrono::NaiveDate>,
+    pub created_date: Option<NaiveDate>,
+    pub updated_date: Option<NaiveDate>,
+}
+
+impl<T> Dummy<T> for Html {
+    fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
+        Html {
+            smes_id: NumberWithFormat(EN, "^######")
+                .fake::<String>()
+                .try_into()
+                .expect("failed to create dummy smes_id"),
+            html: format!(
+                "<html><head><title>{}</title></head><body>{}</body></html>",
+                CompanyName().fake_with_rng::<String, R>(rng),
+                Name().fake_with_rng::<String, R>(rng)
+            )
+            .as_bytes()
+            .to_vec()
+            .into(),
+            created_date: None,
+            updated_date: None,
+        }
+    }
 }
 
 impl<T> Dummy<T> for Company {
     fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
-        let now = Utc::now().with_timezone(&Asia::Seoul).date_naive();
-
         Company {
             smes_id: NumberWithFormat(EN, "^######")
                 .fake::<String>()
@@ -55,8 +73,8 @@ impl<T> Dummy<T> for Company {
                 .try_into()
                 .expect("failed to create dummy industry_code"),
             industry_name: Industry().fake_with_rng::<String, R>(rng).into(),
-            created_date: Some(now),
-            updated_date: Some(now),
+            created_date: None,
+            updated_date: None,
         }
     }
 }
