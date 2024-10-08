@@ -6,6 +6,7 @@ mod html;
 mod utils;
 
 pub use api::{
-    BsPl, BsplApi, Company, ListApi, ListPayload, ListPayloadBuilder, ListResponse, VniaSn,
+    get_bspl_htmls, BsPl, BsplApi, Company, ListApi, ListPayload, ListPayloadBuilder, ListResponse,
+    VniaSn,
 };
 pub use error::SmesError;

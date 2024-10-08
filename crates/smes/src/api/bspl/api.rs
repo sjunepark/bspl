@@ -68,7 +68,7 @@ impl BsplApi {
     pub(crate) async fn get_bspl_html(
         &mut self,
         cookies: &CookieJar,
-        company_id: usize,
+        company_id: &str,
         captcha_answer: &str,
     ) -> Result<Html, SmesError> {
         tracing::trace!("Getting bspl html");
@@ -84,10 +84,7 @@ impl BsplApi {
                 &domain,
                 PATH,
                 headers,
-                Some(&[
-                    ("vniaSn", company_id.to_string().as_str()),
-                    ("captcha", captcha_answer),
-                ]),
+                Some(&[("vniaSn", company_id), ("captcha", captcha_answer)]),
                 None,
             )
             .await?;

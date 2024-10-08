@@ -468,11 +468,11 @@ dependencies = [
  "db",
  "hashbrown 0.15.0",
  "libsql",
+ "model",
  "smes",
  "tokio",
  "tracing",
  "tracing-setup",
- "tracing-subscriber",
  "utils",
 ]
 
