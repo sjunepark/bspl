@@ -4,7 +4,7 @@ use crate::utils::{
 };
 use crate::SmesError;
 use derive_builder::Builder;
-use model::db;
+use model::table;
 use serde::{Deserialize, Serialize};
 use serde_aux::prelude::deserialize_number_from_string;
 
@@ -67,7 +67,7 @@ impl ListResponse {
         self.result == "SUCCESS"
     }
 
-    pub fn companies(self) -> Result<Vec<db::Company>, SmesError> {
+    pub fn companies(self) -> Result<Vec<table::Company>, SmesError> {
         if let Some(data_list) = self.data_list {
             data_list.into_iter().map(|c| c.try_into()).collect()
         } else {

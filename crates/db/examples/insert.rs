@@ -17,7 +17,7 @@ async fn main() {
 
     let db = LibsqlDb::new_local(":memory:").await.unwrap();
 
-    let companies: Vec<model::db::Company> = response
+    let companies: Vec<model::table::Company> = response
         .companies()
         .unwrap_or_default()
         .into_iter()

@@ -1,5 +1,5 @@
 use crate::BsplApi;
-use model::db;
+use model::table;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver};
 use tracing::Instrument;
 
@@ -23,8 +23,8 @@ mod captcha;
 ///
 /// The skipped operations should be inspected and re-scraped in the future if necessary.
 #[tracing::instrument(skip(companies))]
-pub async fn get_bspl_htmls(companies: Vec<model::company::Id>) -> UnboundedReceiver<db::Html> {
-    let (tx, rx) = unbounded_channel::<db::Html>();
+pub async fn get_bspl_htmls(companies: Vec<model::company::Id>) -> UnboundedReceiver<table::Html> {
+    let (tx, rx) = unbounded_channel::<table::Html>();
     let size = companies.len();
     let mut captcha_cookies = captcha::get_solved_captchas(size).await;
     let mut ids = companies.into_iter();
@@ -34,8 +34,6 @@ pub async fn get_bspl_htmls(companies: Vec<model::company::Id>) -> UnboundedRece
             let mut api = BsplApi::default();
             let mut index = 0;
 
-            // todo: refactor code to use an iterator for companies,
-            // and call `next`, to prevent out of bounds access
             while let Some(captcha) = captcha_cookies.recv().await {
                 let Some(id) = ids.next() else { continue };
                 tracing::trace!("Getting {}/{} company's bspl html", index + 1, size);

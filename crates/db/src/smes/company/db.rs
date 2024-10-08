@@ -2,12 +2,12 @@ use crate::db::Params;
 use crate::error::ConversionError;
 use crate::{DbError, LibsqlDb};
 use hashbrown::HashSet;
-use model::{company, db};
+use model::{company, table};
 use serde::Deserialize;
 
 impl LibsqlDb {
     #[tracing::instrument(skip(self))]
-    pub async fn get_companies(&self) -> Result<Vec<db::Company>, DbError> {
+    pub async fn get_companies(&self) -> Result<Vec<table::Company>, DbError> {
         self.get_all_from::<crate::Company>("smes_company")
             .await?
             .into_iter()
@@ -40,7 +40,7 @@ impl LibsqlDb {
     /// Insert companies into the company table.
     ///
     /// The whole operation is processed in a single transaction.
-    pub async fn insert_companies(&self, companies: Vec<db::Company>) -> Result<(), DbError> {
+    pub async fn insert_companies(&self, companies: Vec<table::Company>) -> Result<(), DbError> {
         let tx = self.connection.transaction().await?;
         let mut stmt = tx
             .prepare(
@@ -71,7 +71,7 @@ VALUES (:smes_id,
     }
 
     #[tracing::instrument(skip(self, companies))]
-    pub async fn upsert_companies(&self, companies: Vec<db::Company>) -> Result<(), DbError> {
+    pub async fn upsert_companies(&self, companies: Vec<table::Company>) -> Result<(), DbError> {
         let tx = self.connection.transaction().await?;
         let mut stmt = tx
             .prepare(
@@ -114,7 +114,7 @@ mod tests {
     use crate::test_utils::{text_context, DbSource, TestContext};
     use crate::LibsqlDb;
     use fake::Fake;
-    use model::{company, db};
+    use model::{company, table};
     use serde::Deserialize;
     use std::str::FromStr;
 
@@ -182,14 +182,14 @@ mod tests {
         const UPDATED_REPRESENTATIVE_NAME: &str = "Updated";
         let mut updated_companies = companies
             .iter()
-            .map(|c| db::Company {
+            .map(|c| table::Company {
                 representative_name: UPDATED_REPRESENTATIVE_NAME.into(),
                 ..c.clone()
             })
             .collect::<Vec<_>>();
 
         // Add a new company to see that this company was properly updated
-        let mut new_company = ().fake::<db::Company>();
+        let mut new_company = ().fake::<table::Company>();
         const NEW_COMPANY_ID: &str = "2000000";
         new_company.smes_id = NEW_COMPANY_ID
             .try_into()
@@ -239,14 +239,14 @@ mod tests {
         // endregion: Assert
     }
 
-    async fn populate_companies(db: &LibsqlDb, size: usize) -> Vec<db::Company> {
+    async fn populate_companies(db: &LibsqlDb, size: usize) -> Vec<table::Company> {
         let mut incremental_id: usize = 1000000;
-        let companies: Vec<db::Company> = (0..size)
+        let companies: Vec<table::Company> = (0..size)
             .map(|_| {
-                let company = ().fake::<db::Company>();
+                let company = ().fake::<table::Company>();
                 let id = incremental_id.to_string();
                 incremental_id += 1;
-                db::Company {
+                table::Company {
                     smes_id: id
                         .try_into()
                         .expect("failed to create proper dummy smes_id"),

@@ -58,7 +58,6 @@ impl BsplApi {
         Ok(Captcha::new(image, cookies))
     }
 
-    // todo: Has to be tested via integration tests because of captcha solving process
     /// Get the HTML of the bspl page.
     ///
     /// You need to submit the pre-solved captcha answer together with the cookies.

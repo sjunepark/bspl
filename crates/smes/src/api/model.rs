@@ -3,7 +3,7 @@ use crate::SmesError;
 use cookie::CookieJar;
 use image::DynamicImage;
 use model::company::RepresentativeName;
-use model::{company, db};
+use model::{company, table};
 use serde::{Deserialize, Serialize};
 
 // region: Captcha
@@ -131,11 +131,11 @@ pub(crate) struct Company {
     pub(crate) indsty_nm: String,
 }
 
-impl TryFrom<Company> for db::Company {
+impl TryFrom<Company> for table::Company {
     type Error = SmesError;
 
     fn try_from(value: Company) -> Result<Self, Self::Error> {
-        Ok(db::Company {
+        Ok(table::Company {
             smes_id: company::Id::try_from(value.vnia_sn.to_string())
                 .map_err(TypeConversionError::new)?,
             representative_name: Into::<RepresentativeName>::into(value.rprsv_nm),
@@ -160,8 +160,8 @@ pub(crate) struct Html {
     pub(crate) html: Vec<u8>,
 }
 
-impl From<db::Html> for Html {
-    fn from(value: db::Html) -> Self {
+impl From<table::Html> for Html {
+    fn from(value: table::Html) -> Self {
         Self {
             vnia_sn: value.smes_id.to_string(),
             html: value.html.into(),
@@ -169,11 +169,11 @@ impl From<db::Html> for Html {
     }
 }
 
-impl TryFrom<Html> for db::Html {
+impl TryFrom<Html> for table::Html {
     type Error = SmesError;
 
     fn try_from(value: Html) -> Result<Self, Self::Error> {
-        Ok(db::Html {
+        Ok(table::Html {
             smes_id: company::Id::try_from(value.vnia_sn).map_err(TypeConversionError::new)?,
             html: Into::<company::HtmlContent>::into(value.html),
             created_date: None,

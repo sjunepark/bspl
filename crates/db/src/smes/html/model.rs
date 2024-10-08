@@ -13,8 +13,8 @@ pub struct Html {
     pub updated_date: Option<NaiveDate>,
 }
 
-impl From<model::db::Html> for Html {
-    fn from(value: model::db::Html) -> Self {
+impl From<model::table::Html> for Html {
+    fn from(value: model::table::Html) -> Self {
         Self {
             smes_id: value.smes_id.to_string(),
             html: value.html.to_vec(),
@@ -24,11 +24,11 @@ impl From<model::db::Html> for Html {
     }
 }
 
-impl TryFrom<Html> for model::db::Html {
+impl TryFrom<Html> for model::table::Html {
     type Error = DbError;
 
     fn try_from(value: Html) -> Result<Self, Self::Error> {
-        Ok(model::db::Html {
+        Ok(model::table::Html {
             smes_id: value.smes_id.try_into().map_err(ConversionError::new)?,
             html: value.html.into(),
             created_date: value.created_date,

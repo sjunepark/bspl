@@ -3,7 +3,7 @@ use crate::error::ConversionError;
 use crate::DbError;
 use chrono::NaiveDate;
 use libsql::params::IntoParams;
-use model::{company, db};
+use model::{company, table};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -19,11 +19,11 @@ pub struct Company {
     pub updated_date: Option<NaiveDate>,
 }
 
-impl TryFrom<Company> for db::Company {
+impl TryFrom<Company> for table::Company {
     type Error = DbError;
 
     fn try_from(value: Company) -> Result<Self, Self::Error> {
-        Ok(db::Company {
+        Ok(table::Company {
             smes_id: company::Id::try_from(value.smes_id).map_err(ConversionError::new)?,
             representative_name: Into::<company::RepresentativeName>::into(
                 value.representative_name,
@@ -45,8 +45,8 @@ impl TryFrom<Company> for db::Company {
     }
 }
 
-impl From<db::Company> for Company {
-    fn from(value: db::Company) -> Self {
+impl From<table::Company> for Company {
+    fn from(value: table::Company) -> Self {
         Self {
             smes_id: value.smes_id.to_string(),
             representative_name: value.representative_name.to_string(),
