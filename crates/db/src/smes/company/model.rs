@@ -1,3 +1,4 @@
+use crate::db::Params;
 use crate::smes::utils::length_10_or_empty;
 use crate::DbError;
 use chrono::{NaiveDate, Utc};
@@ -5,10 +6,6 @@ use chrono_tz::Asia;
 use libsql::params::IntoParams;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
-
-pub trait Params {
-    fn params(&self) -> impl IntoParams;
-}
 
 // todo: Maybe remove validation if `model` insures everything is initialized correctly.
 /// Represents a company with its details.
@@ -74,22 +71,6 @@ impl TryFrom<smes::Company> for Company {
     }
 }
 
-impl Params for Company {
-    fn params(&self) -> impl IntoParams {
-        libsql::named_params! {
-            ":smes_id": self.smes_id.as_str(),
-            ":representative_name": self.representative_name.as_str(),
-            ":headquarters_address": self.headquarters_address.as_str(),
-            ":business_registration_number": self.business_registration_number.as_str(),
-            ":company_name": self.company_name.as_str(),
-            ":industry_code": self.industry_code.as_str(),
-            ":industry_name": self.industry_name.as_str(),
-            ":create_date": self.create_date.to_string(),
-            ":update_date": self.update_date.to_string(),
-        }
-    }
-}
-
 // This implementation is necessary to create fake `Company` structs for tests,
 // such as `().fake::<Company>().`
 #[cfg(test)]
@@ -121,6 +102,22 @@ mod test_impl {
                 create_date: now,
                 update_date: now,
             }
+        }
+    }
+}
+
+impl Params for Company {
+    fn params(&self) -> impl IntoParams {
+        libsql::named_params! {
+            ":smes_id": self.smes_id.as_str(),
+            ":representative_name": self.representative_name.as_str(),
+            ":headquarters_address": self.headquarters_address.as_str(),
+            ":business_registration_number": self.business_registration_number.as_str(),
+            ":company_name": self.company_name.as_str(),
+            ":industry_code": self.industry_code.as_str(),
+            ":industry_name": self.industry_name.as_str(),
+            ":create_date": self.create_date.to_string(),
+            ":update_date": self.update_date.to_string(),
         }
     }
 }

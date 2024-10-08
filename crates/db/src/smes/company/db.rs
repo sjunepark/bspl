@@ -1,4 +1,4 @@
-use crate::smes::company::Params;
+use crate::db::Params;
 use crate::{Company, DbError, LibsqlDb};
 use hashbrown::HashSet;
 use serde::Deserialize;
@@ -6,20 +6,7 @@ use serde::Deserialize;
 impl LibsqlDb {
     #[tracing::instrument(skip(self))]
     pub async fn get_companies(&self) -> Result<Vec<Company>, DbError> {
-        let mut rows = self
-            .connection
-            .query("SELECT * from smes_company", ())
-            .await?;
-        let mut companies = Vec::new();
-
-        while let Some(row) = rows.next().await? {
-            let a = row.get_value(0).expect("Failed to get value");
-            tracing::info!(?a);
-            let company = libsql::de::from_row::<Company>(&row)?;
-            companies.push(company);
-        }
-
-        Ok(companies)
+        self.get_all_from::<Company>("smes_company").await
     }
 
     #[tracing::instrument(skip(self))]
@@ -44,6 +31,9 @@ impl LibsqlDb {
     }
 
     #[tracing::instrument(skip(self, companies))]
+    /// Insert companies into the company table.
+    ///
+    /// The whole operation is processed in a single transaction.
     pub async fn insert_companies(&self, companies: &[Company]) -> Result<(), DbError> {
         let tx = self.connection.transaction().await?;
         let mut stmt = tx
@@ -180,7 +170,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn upsert_companies_should_work() {
+    async fn upsdert_companies_should_work() {
         // region: Arrange
         tracing_setup::span!("test");
 

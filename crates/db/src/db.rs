@@ -1,4 +1,6 @@
 use crate::error::DbError;
+use libsql::params::IntoParams;
+use serde::Deserialize;
 use std::fmt::Debug;
 use std::path::Path;
 
@@ -24,6 +26,24 @@ impl LibsqlDb {
             .connect()?;
 
         Ok(Self { connection: db })
+    }
+
+    pub(crate) async fn get_all_from<T: for<'de> Deserialize<'de>>(
+        &self,
+        table: &str,
+    ) -> Result<Vec<T>, DbError> {
+        let mut rows = self
+            .connection
+            .query(&format!("SELECT * from {}", table), ())
+            .await?;
+        let mut items = Vec::new();
+
+        while let Some(row) = rows.next().await? {
+            let item = libsql::de::from_row::<T>(&row)?;
+            items.push(item);
+        }
+
+        Ok(items)
     }
 }
 
@@ -53,4 +73,8 @@ mod tests {
         }
         assert!(rows.next().await.expect("Unable to get row").is_none());
     }
+}
+
+pub(crate) trait Params {
+    fn params(&self) -> impl IntoParams;
 }
