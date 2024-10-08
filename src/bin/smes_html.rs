@@ -21,8 +21,4 @@ async fn main() {
         .collect::<Vec<_>>();
 
     let htmls = smes::get_bspl_htmls(ids).await;
-
-    db.upsert_htmls(htmls)
-        .await
-        .expect("Failed to insert htmls");
 }

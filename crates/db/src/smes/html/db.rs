@@ -37,7 +37,7 @@ impl LibsqlDb {
         self.get_all_from::<Html>("smes_html").await
     }
 
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(skip(self, htmls))]
     /// Insert HTMLs into the HTML table.
     ///
     /// Each HTML will be inserted one by one.
@@ -46,8 +46,8 @@ impl LibsqlDb {
         let mut statement = self
             .connection
             .prepare(
-                "INSERT into smes_html (smes_id, html, create_date, update_date)
-VALUES (:smes_id, :html, :create_date, :update_date);",
+                "INSERT into smes_html (smes_id, html)
+VALUES (:smes_id, :html);",
             )
             .await
             .inspect_err(|_e| tracing::error!("Failed to prepare statement for inserting HTMLs"))?;
@@ -72,16 +72,16 @@ VALUES (:smes_id, :html, :create_date, :update_date);",
     /// Each HTML will be upserted one by one.
     /// When an error occurs, the error will be logged in WARN level and the operation will continue.
     ///
-    /// When the upserting `smes_id` exists in the table, the `html` and `update_date` will be updated.
+    /// When the upserting `smes_id` exists in the table, the `html` and `updated_date` will be updated.
     #[tracing::instrument(skip(self))]
     pub async fn upsert_htmls(&self, mut htmls: UnboundedReceiver<Html>) -> Result<(), DbError> {
         let mut statement = self
             .connection
             .prepare(
-                "INSERT into smes_html (smes_id, html, create_date, update_date)
-VALUES (:smes_id, :html, :create_date, :update_date)
-ON CONFLICT (smes_id) DO UPDATE SET html        = excluded.html,
-                                    update_date = excluded.update_date;",
+                "INSERT into smes_html (smes_id, html)
+VALUES (:smes_id, :html)
+ON CONFLICT (smes_id) DO UPDATE SET html         = excluded.html,
+                                    updated_date = CURRENT_DATE;",
             )
             .await
             .inspect_err(|_e| tracing::error!("Failed to prepare statement for upserting HTMLs"))?;

@@ -1,7 +1,10 @@
+use crate::error::{ConversionError, TypeConversionError};
 use crate::html::Html;
+use crate::SmesError;
 use cookie::CookieJar;
 use derive_more::Display;
 use image::DynamicImage;
+use model::company;
 use serde::{Deserialize, Serialize};
 use std::ops::Deref;
 
@@ -129,6 +132,40 @@ pub struct Company {
     pub indsty_cd: String,
     /// 업종 (Industry Name)
     pub indsty_nm: String,
+}
+
+impl TryFrom<Company> for model::db::Company {
+    type Error = SmesError;
+
+    fn try_from(value: Company) -> Result<Self, Self::Error> {
+        Ok(model::db::Company {
+            smes_id: company::Id::try_from(value.vnia_sn.to_string())
+                .map_err(TypeConversionError::new)
+                .map_err(ConversionError::from)?,
+            representative_name: company::RepresentativeName::try_from(value.rprsv_nm)
+                .map_err(TypeConversionError::new)
+                .map_err(ConversionError::from)?,
+            headquarters_address: company::HeadquartersAddress::try_from(value.hdofc_addr)
+                .map_err(TypeConversionError::new)
+                .map_err(ConversionError::from)?,
+            business_registration_number: company::BusinessRegistrationNumber::try_from(
+                value.bizrno,
+            )
+            .map_err(TypeConversionError::new)
+            .map_err(ConversionError::from)?,
+            company_name: company::CompanyName::try_from(value.cmp_nm)
+                .map_err(TypeConversionError::new)
+                .map_err(ConversionError::from)?,
+            industry_code: company::IndustryCode::try_from(value.indsty_cd)
+                .map_err(TypeConversionError::new)
+                .map_err(ConversionError::from)?,
+            industry_name: company::IndustryName::try_from(value.indsty_nm)
+                .map_err(TypeConversionError::new)
+                .map_err(ConversionError::from)?,
+            created_date: None,
+            updated_date: None,
+        })
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Display, Copy, PartialEq)]

@@ -13,8 +13,8 @@ CREATE TABLE smes_company
     industry_code                TEXT             NOT NULL CHECK ( length(industry_code) = 5 AND industry_code GLOB
                                                                                                  replace(HEX(ZEROBLOB(5)), '00', '[0-9]') ),
     industry_name                TEXT             NOT NULL,
-    create_date                  TEXT             NOT NULL CHECK ( update_date GLOB '2[0-1][0-9][0-9]-[0-9][0-9]-[0-3][0-9]'),
-    update_date                  TEXT             NOT NULL CHECK ( update_date GLOB '2[0-1][0-9][0-9]-[0-9][0-9]-[0-3][0-9]' )
+    created_date                 TEXT DEFAULT CURRENT_DATE CHECK (date(created_date) IS NOT NULL),
+    updated_date                 TEXT DEFAULT CURRENT_DATE CHECK (date(updated_date) IS NOT NULL)
 );
 
 -- Represents a company with its details.
@@ -32,9 +32,9 @@ CREATE TABLE smes_company
 --
 CREATE TABLE smes_html
 (
-    smes_id     TEXT PRIMARY KEY NOT NULL CHECK ( length(smes_id) = 7 AND
-                                                  smes_id GLOB replace(HEX(ZEROBLOB(7)), '00', '[0-9]') ),
-    html        BLOB             NOT NULL,
-    create_date TEXT             NOT NULL CHECK ( update_date GLOB '2[0-1][0-9][0-9]-[0-9][0-9]-[0-3][0-9]'),
-    update_date TEXT             NOT NULL CHECK ( update_date GLOB '2[0-1][0-9][0-9]-[0-9][0-9]-[0-3][0-9]' )
+    smes_id      TEXT PRIMARY KEY NOT NULL CHECK ( length(smes_id) = 7 AND
+                                                   smes_id GLOB replace(HEX(ZEROBLOB(7)), '00', '[0-9]') ),
+    html         BLOB             NOT NULL,
+    created_date TEXT DEFAULT CURRENT_DATE CHECK (date(created_date) IS NOT NULL),
+    updated_date TEXT DEFAULT CURRENT_DATE CHECK (date(updated_date) IS NOT NULL)
 );

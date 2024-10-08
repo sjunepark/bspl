@@ -36,7 +36,7 @@ async fn main() {
         .map(|c| c.try_into().expect("Failed to convert company"))
         .collect();
 
-    db.upsert_companies(&companies)
+    db.upsert_companies(companies)
         .await
         .expect("Failed to upsert companies");
 }

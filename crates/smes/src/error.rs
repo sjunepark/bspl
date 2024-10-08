@@ -77,9 +77,28 @@ pub enum ConversionError {
     #[error("Utf8 error: {0}")]
     Utf8(#[from] Utf8Error),
     #[error("FromUtf8 error: {0}")]
-    FromUtf8Error(#[from] FromUtf8Error),
+    FromUtf8(#[from] FromUtf8Error),
     #[error("ToStr error: {0}")]
-    ToStrError(#[from] ToStrError),
+    ToStr(#[from] ToStrError),
+    #[error("Type conversion error: {0}")]
+    TypeConversion(#[from] TypeConversionError),
+}
+
+#[derive(Error, Debug)]
+#[error("Type conversion error: {message}")]
+pub struct TypeConversionError {
+    #[source]
+    pub source: Option<Box<dyn std::error::Error>>,
+    pub message: String,
+}
+
+impl TypeConversionError {
+    pub fn new(e: impl std::error::Error + 'static) -> Self {
+        Self {
+            source: Some(Box::new(e)),
+            message: "Conversion between types failed".to_string(),
+        }
+    }
 }
 
 impl From<Utf8Error> for SmesError {
@@ -90,13 +109,13 @@ impl From<Utf8Error> for SmesError {
 
 impl From<FromUtf8Error> for SmesError {
     fn from(e: FromUtf8Error) -> Self {
-        SmesError::Conversion(ConversionError::FromUtf8Error(e))
+        SmesError::Conversion(ConversionError::FromUtf8(e))
     }
 }
 
 impl From<ToStrError> for SmesError {
     fn from(e: ToStrError) -> Self {
-        SmesError::Conversion(ConversionError::ToStrError(e))
+        SmesError::Conversion(ConversionError::ToStr(e))
     }
 }
 

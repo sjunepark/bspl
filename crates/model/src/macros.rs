@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! string {
     // Pattern for structs with additional nutype attributes
-        ($name:ident => { $($nutype_attrs:tt)+ }) => {
+        ($name:ident, $($custom_derives:ident),* => { $($nutype_attrs:tt)+ }) => {
         #[nutype::nutype(
             $(
                 $nutype_attrs
@@ -9,7 +9,7 @@ macro_rules! string {
             derive(
                 Clone, Eq, PartialEq, Ord, PartialOrd,
                 Debug, Display, Serialize, Deserialize, Deref,
-                TryFrom, FromStr, Into, Hash
+                FromStr, Into, Hash, $($custom_derives),*
             ),
         )]
          pub struct $name(String);
@@ -17,12 +17,12 @@ macro_rules! string {
         $crate::assert_impl_commons_without_default!($name);
     };
     // Pattern for structs without additional nutype attributes
-    ($name:ident) => {
+    ($name:ident, $($custom_derives:ident),*) => {
         #[nutype::nutype(
             derive(
                 Clone, Eq, PartialEq, Ord, PartialOrd,
                 Debug, Display, Serialize, Deserialize, Deref,
-                TryFrom, FromStr, Into, Hash
+                FromStr, Into, Hash, $($custom_derives),*
             ),
         )]
         pub struct $name(String);
@@ -31,11 +31,40 @@ macro_rules! string {
     };
 }
 
+#[macro_export]
+macro_rules! bytes {
+    // Pattern for structs with additional nutype attributes
+        ($name:ident, $($custom_derives:ident),* => { $($nutype_attrs:tt)+ }) => {
+        #[nutype::nutype(
+            $(
+                $nutype_attrs
+            )+
+            derive(
+                Clone, Eq, PartialEq, Ord, PartialOrd,
+                Debug, Serialize, Deserialize, Deref,
+                Into, Hash, $($custom_derives),*
+            ),
+        )]
+         pub struct $name(Vec<u8>);
+    };
+    // Pattern for structs without additional nutype attributes
+    ($name:ident, $($custom_derives:ident),*) => {
+        #[nutype::nutype(
+            derive(
+                Clone, Eq, PartialEq, Ord, PartialOrd,
+                Debug, Serialize, Deserialize, Deref,
+                Into, Hash, $($custom_derives),*
+            ),
+        )]
+        pub struct $name(Vec<u8>);
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use serde::{Deserialize, Serialize};
 
-    string!(Inner);
+    string!(Inner, From);
 
     #[derive(Serialize, Deserialize)]
     struct SomeStruct {
