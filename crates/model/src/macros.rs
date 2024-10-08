@@ -47,9 +47,9 @@ macro_rules! bytes {
         )]
         pub struct $name(Vec<u8>);
 
-        impl std::fmt::Display for $name {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(f, "0x{}", std::ops::Deref::deref(self).iter().map(|b| format!("{:02x}", b)).collect::<String>())
+        impl $name {
+            pub fn utf8_string(&self) -> Result<String, std::string::FromUtf8Error> {
+                String::from_utf8(std::ops::Deref::deref(self).clone())
             }
         }
 
@@ -72,9 +72,9 @@ macro_rules! bytes {
         )]
         pub struct $name(Vec<u8>);
 
-        impl std::fmt::Display for $name {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(f, "0x{}", std::ops::Deref::deref(self).iter().map(|b| format!("{:02x}", b)).collect::<String>())
+        impl $name {
+            pub fn utf8_string(&self) -> Result<String, std::string::FromUtf8Error> {
+                String::from_utf8(std::ops::Deref::deref(self).clone())
             }
         }
 

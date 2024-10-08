@@ -35,10 +35,14 @@ async fn get_bspl_htmls_should_work_as_expected() {
 
     while let Some(bspl) = rx.recv().await {
         bspl_count += 1;
-        let success = bspl.html.to_string().contains("유동자산");
+        let html = bspl
+            .html
+            .utf8_string()
+            .expect("Failed to convert html to string");
+        let success = html.contains("유동자산");
 
         if !success {
-            tracing::error!(?bspl, "Invalid html received");
+            tracing::error!(?html, "Invalid html received");
         }
 
         assert!(success);
