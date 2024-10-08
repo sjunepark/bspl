@@ -30,13 +30,12 @@ async fn main() {
         .expect("Failed to make request");
 
     let companies: Vec<_> = response
-        .data_list
-        .expect("data_list is None")
+        .companies()
+        .expect("Failed to get companies")
         .into_iter()
-        .map(|c| c.try_into().expect("Failed to convert company"))
         .collect();
 
-    db.upsert_companies(&companies)
+    db.upsert_companies(companies)
         .await
         .expect("Failed to upsert companies");
 }

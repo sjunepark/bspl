@@ -1,5 +1,5 @@
-use crate::api::model::BsPl;
-use crate::{BsplApi, VniaSn};
+use crate::BsplApi;
+use model::table;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver};
 use tracing::Instrument;
 
@@ -23,54 +23,57 @@ mod captcha;
 ///
 /// The skipped operations should be inspected and re-scraped in the future if necessary.
 #[tracing::instrument(skip(companies))]
-pub async fn get_bspl_htmls(companies: &[VniaSn]) -> UnboundedReceiver<BsPl> {
-    let (tx, rx) = unbounded_channel::<BsPl>();
-    let captcha_count = companies.len();
-    let mut captcha_cookies = captcha::get_solved_captchas(captcha_count).await;
-
-    let companies_count = companies.len();
-    let companies = companies.to_owned();
+pub async fn get_bspl_htmls(companies: Vec<model::company::Id>) -> UnboundedReceiver<table::Html> {
+    let (tx, rx) = unbounded_channel::<table::Html>();
+    let size = companies.len();
+    let mut captcha_cookies = captcha::get_solved_captchas(size).await;
+    let mut ids = companies.into_iter();
 
     tokio::spawn(
         async move {
             let mut api = BsplApi::default();
             let mut index = 0;
 
-            // todo: refactor code to use an iterator for companies,
-            // and call `next`, to prevent out of bounds access
             while let Some(captcha) = captcha_cookies.recv().await {
-                if index >= companies_count {
-                    break;
-                }
+                let Some(id) = ids.next() else { continue };
+                tracing::trace!("Getting {}/{} company's bspl html", index + 1, size);
 
-                tracing::trace!(
-                    "Getting {}/{} company's bspl html",
-                    index + 1,
-                    companies_count
-                );
-                let vnia_sn: VniaSn = companies[index];
-                let html = api
-                    .get_bspl_html(captcha.cookies(), *vnia_sn, captcha.answer())
-                    .await;
-
-                match html {
-                    Ok(html) => {
-                        match tx.send(BsPl { vnia_sn, html }) {
-                            Ok(_) => {
-                                index += 1;
-                            }
-                            Err(e) => {
-                                tracing::warn!(
-                                ?e,
-                                "Failed to send bspl html. The channel has been closed. Skipping."
-                            );
-                            }
-                        };
-                    }
+                let html = match api
+                    .get_bspl_html(captcha.cookies(), id.as_str(), captcha.answer())
+                    .await
+                {
+                    Ok(html) => html,
                     Err(e) => {
                         tracing::warn!(?e, "Error received from get_bspl_html. Skipping.");
+                        continue;
                     }
+                };
+
+                let html = crate::Html {
+                    vnia_sn: id.to_string(),
+                    html: html.into(),
                 }
+                .try_into();
+
+                let html = match html {
+                    Ok(html) => html,
+                    Err(e) => {
+                        tracing::warn!(?e, "Error converting html to db::Html. Skipping.");
+                        continue;
+                    }
+                };
+
+                match tx.send(html) {
+                    Ok(_) => {
+                        index += 1;
+                    }
+                    Err(e) => {
+                        tracing::warn!(
+                            ?e,
+                            "Failed to send bspl html. The channel has been closed. Skipping."
+                        );
+                    }
+                };
             }
         }
         .in_current_span(),

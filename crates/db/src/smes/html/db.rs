@@ -1,10 +1,11 @@
 use crate::db::Params;
-use crate::{DbError, Html, LibsqlDb};
+use crate::{DbError, LibsqlDb};
 use libsql::named_params;
+use model::table;
 use tokio::sync::mpsc::UnboundedReceiver;
 
 impl LibsqlDb {
-    pub async fn get_html(&self, smes_id: &str) -> Result<Option<Html>, DbError> {
+    pub async fn get_html(&self, smes_id: &str) -> Result<Option<table::Html>, DbError> {
         let mut rows = self
             .connection
             .query(
@@ -15,12 +16,12 @@ impl LibsqlDb {
             )
             .await?;
 
-        let result = if let Some(row) = rows.next().await? {
-            let html = libsql::de::from_row::<Html>(&row)?;
-            Ok(Some(html))
-        } else {
-            Ok(None)
-        };
+        let row = rows.next().await?;
+        let result = row
+            .map(|r| libsql::de::from_row::<crate::Html>(&r))
+            .transpose()?
+            .map(TryInto::<table::Html>::try_into)
+            .transpose()?;
 
         if let Some(row) = rows.next().await? {
             panic!(
@@ -29,31 +30,41 @@ impl LibsqlDb {
             );
         }
 
-        result
+        Ok(result)
     }
 
     #[tracing::instrument(skip(self))]
-    pub async fn get_htmls(&self) -> Result<Vec<Html>, DbError> {
-        self.get_all_from::<Html>("smes_html").await
+    pub async fn get_htmls(&self) -> Result<Vec<table::Html>, DbError> {
+        self.get_all_from::<crate::Html>("smes_html")
+            .await?
+            .into_iter()
+            .map(TryInto::try_into)
+            .collect()
     }
 
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(skip(self, htmls))]
     /// Insert HTMLs into the HTML table.
     ///
     /// Each HTML will be inserted one by one.
     /// When an error occurs, the error will be logged in WARN level and the operation will continue.
-    async fn insert_htmls(&self, mut htmls: UnboundedReceiver<Html>) -> Result<(), DbError> {
+    pub async fn insert_htmls(
+        &self,
+        mut htmls: UnboundedReceiver<table::Html>,
+    ) -> Result<(), DbError> {
         let mut statement = self
             .connection
             .prepare(
-                "INSERT into smes_html (smes_id, html, create_date, update_date)
-VALUES (:smes_id, :html, :create_date, :update_date);",
+                "INSERT into smes_html (smes_id, html)
+VALUES (:smes_id, :html);",
             )
             .await
             .inspect_err(|_e| tracing::error!("Failed to prepare statement for inserting HTMLs"))?;
 
         while let Some(html) = htmls.recv().await {
-            match statement.execute(html.params()).await {
+            match statement
+                .execute(Into::<crate::Html>::into(html.clone()).params())
+                .await
+            {
                 Ok(_number_of_rows) => {
                     tracing::trace!(smes_id = ?html.smes_id, "Inserted HTML");
                 }
@@ -72,22 +83,28 @@ VALUES (:smes_id, :html, :create_date, :update_date);",
     /// Each HTML will be upserted one by one.
     /// When an error occurs, the error will be logged in WARN level and the operation will continue.
     ///
-    /// When the upserting `smes_id` exists in the table, the `html` and `update_date` will be updated.
+    /// When the upserting `smes_id` exists in the table, the `html` and `updated_date` will be updated.
     #[tracing::instrument(skip(self))]
-    pub async fn upsert_htmls(&self, mut htmls: UnboundedReceiver<Html>) -> Result<(), DbError> {
+    pub async fn upsert_htmls(
+        &self,
+        mut htmls: UnboundedReceiver<table::Html>,
+    ) -> Result<(), DbError> {
         let mut statement = self
             .connection
             .prepare(
-                "INSERT into smes_html (smes_id, html, create_date, update_date)
-VALUES (:smes_id, :html, :create_date, :update_date)
-ON CONFLICT (smes_id) DO UPDATE SET html        = excluded.html,
-                                    update_date = excluded.update_date;",
+                "INSERT into smes_html (smes_id, html)
+VALUES (:smes_id, :html)
+ON CONFLICT (smes_id) DO UPDATE SET html         = excluded.html,
+                                    updated_date = CURRENT_DATE;",
             )
             .await
             .inspect_err(|_e| tracing::error!("Failed to prepare statement for upserting HTMLs"))?;
 
         while let Some(html) = htmls.recv().await {
-            match statement.execute(html.params()).await {
+            match statement
+                .execute(Into::<crate::Html>::into(html.clone()).params())
+                .await
+            {
                 Ok(_number_of_rows) => {
                     tracing::trace!(smes_id = ?html.smes_id, "Upserted HTML");
                 }
@@ -105,8 +122,9 @@ ON CONFLICT (smes_id) DO UPDATE SET html        = excluded.html,
 #[cfg(test)]
 mod tests {
     use crate::test_utils::{text_context, DbSource, TestContext};
-    use crate::{Html, LibsqlDb};
+    use crate::LibsqlDb;
     use fake::{Fake, Faker};
+    use model::table;
     use tokio::sync::mpsc;
 
     #[tokio::test]
@@ -137,7 +155,8 @@ mod tests {
         // endregion: Action
 
         // region: Assert
-        assert_eq!(result, html_to_get);
+        assert_eq!(result.smes_id, html_to_get.smes_id);
+        assert_eq!(result.html, html_to_get.html);
         // endregion: Assert
     }
 
@@ -155,17 +174,19 @@ mod tests {
         // Create HTMLs to upsert: from existing HTMLs
         const UPDATED_HTML_CONTENT: &str = "<html><body>Updated</body></html>";
         let mut updated_htmls = htmls
-            .iter()
-            .map(|h| Html {
-                html: UPDATED_HTML_CONTENT.as_bytes().to_owned(),
-                ..h.clone()
+            .into_iter()
+            .map(|h| table::Html {
+                html: UPDATED_HTML_CONTENT.into(),
+                ..h
             })
             .collect::<Vec<_>>();
 
         // Add a new HTML to see that this HTML was properly inserted
-        let mut new_html = Faker.fake::<Html>();
+        let mut new_html = Faker.fake::<table::Html>();
         const NEW_HTML_ID: &str = "2000000";
-        new_html.smes_id = NEW_HTML_ID.to_string();
+        new_html.smes_id = NEW_HTML_ID
+            .try_into()
+            .expect("failed to create dummy smes_id");
         let new_html_content = new_html.html.clone();
         updated_htmls.push(new_html);
 
@@ -197,22 +218,22 @@ mod tests {
                     assert_eq!(html.html, removed_html.html);
                 }
                 _ => {
-                    assert_eq!(html.html, UPDATED_HTML_CONTENT.as_bytes());
+                    assert_eq!(html.html, UPDATED_HTML_CONTENT.as_bytes().to_vec().into());
                 }
             }
         }
         // endregion: Assert
     }
 
-    async fn populate_htmls(db: &LibsqlDb, size: usize) -> Vec<Html> {
+    async fn populate_htmls(db: &LibsqlDb, size: usize) -> Vec<table::Html> {
         let mut incremental_id: usize = 1000000;
-        let htmls: Vec<Html> = (0..size)
+        let htmls: Vec<table::Html> = (0..size)
             .map(|_| {
-                let html = Faker.fake::<Html>();
+                let html = Faker.fake::<table::Html>();
                 let id = incremental_id.to_string();
                 incremental_id += 1;
-                Html {
-                    smes_id: id,
+                table::Html {
+                    smes_id: id.try_into().expect("failed to create dummy smes_id"),
                     ..html
                 }
             })

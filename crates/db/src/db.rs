@@ -47,6 +47,10 @@ impl LibsqlDb {
     }
 }
 
+pub(crate) trait Params {
+    fn params(&self) -> impl IntoParams;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -73,8 +77,4 @@ mod tests {
         }
         assert!(rows.next().await.expect("Unable to get row").is_none());
     }
-}
-
-pub(crate) trait Params {
-    fn params(&self) -> impl IntoParams;
 }

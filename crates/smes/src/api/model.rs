@@ -1,9 +1,9 @@
-use crate::html::Html;
+use crate::SmesError;
 use cookie::CookieJar;
-use derive_more::Display;
 use image::DynamicImage;
+use model::company::RepresentativeName;
+use model::{company, table, ModelError};
 use serde::{Deserialize, Serialize};
-use std::ops::Deref;
 
 // region: Captcha
 /// Represents a captcha which could be in the following three `State`s:
@@ -12,7 +12,6 @@ use std::ops::Deref;
 ///                  but has not been submitted to Nopecha for solving.
 /// * `Submitted`: The captcha that has been submitted to Nopecha for solving.
 /// * `Solved`: The captcha that has been solved.
-// todo: consider changing to pub(crate)
 #[derive(Clone)]
 pub(crate) struct Captcha<State> {
     image: DynamicImage,
@@ -114,60 +113,69 @@ impl<T> std::fmt::Debug for Captcha<T> {
 /// }
 /// ```
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Company {
+pub(crate) struct Company {
     /// 고유번호 (Unique Number)
-    pub vnia_sn: VniaSn,
+    pub(crate) vnia_sn: usize,
     /// 대표자명 (Representative Name)
-    pub rprsv_nm: String,
+    pub(crate) rprsv_nm: String,
     /// 본사주소 (Headquarters Address)
-    pub hdofc_addr: String,
+    pub(crate) hdofc_addr: String,
     /// 사업자번호 (Business Registration Number)
-    pub bizrno: String,
+    pub(crate) bizrno: String,
     /// 기업명 (Company Name)
-    pub cmp_nm: String,
+    pub(crate) cmp_nm: String,
     /// 업종코드 (Industry Code)
-    pub indsty_cd: String,
+    pub(crate) indsty_cd: String,
     /// 업종 (Industry Name)
-    pub indsty_nm: String,
+    pub(crate) indsty_nm: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Display, Copy, PartialEq)]
-pub struct VniaSn(pub usize);
+impl TryFrom<Company> for table::Company {
+    type Error = SmesError;
 
-impl Deref for VniaSn {
-    type Target = usize;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
+    fn try_from(value: Company) -> Result<Self, Self::Error> {
+        Ok(table::Company {
+            smes_id: company::Id::try_from(value.vnia_sn.to_string()).map_err(ModelError::from)?,
+            representative_name: Into::<RepresentativeName>::into(value.rprsv_nm),
+            headquarters_address: Into::<company::HeadquartersAddress>::into(value.hdofc_addr),
+            business_registration_number: company::BusinessRegistrationNumber::try_from(
+                value.bizrno,
+            )
+            .map_err(ModelError::from)?,
+            company_name: Into::<company::CompanyName>::into(value.cmp_nm),
+            industry_code: company::IndustryCode::try_from(value.indsty_cd)
+                .map_err(ModelError::from)?,
+            industry_name: Into::<company::IndustryName>::into(value.indsty_nm),
+            created_date: None,
+            updated_date: None,
+        })
     }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct BsPl {
-    pub vnia_sn: VniaSn,
-    pub html: Html,
+pub(crate) struct Html {
+    pub(crate) vnia_sn: String,
+    pub(crate) html: Vec<u8>,
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn vniasn_should_serialize_as_expected() {
-        let vnia_sn = super::VniaSn(1071180);
-        let json = serde_json::to_string(&vnia_sn).unwrap();
-        assert_eq!(json, r#"1071180"#);
+impl From<table::Html> for Html {
+    fn from(value: table::Html) -> Self {
+        Self {
+            vnia_sn: value.smes_id.to_string(),
+            html: value.html.into(),
+        }
     }
+}
 
-    #[test]
-    fn vniasn_should_deserialize_as_expected() {
-        let json = r#"1071180"#;
-        let vnia_sn: super::VniaSn = serde_json::from_str(json).unwrap();
-        assert_eq!(vnia_sn, super::VniaSn(1071180));
-    }
+impl TryFrom<Html> for table::Html {
+    type Error = SmesError;
 
-    #[test]
-    fn vniasn_should_display_as_expected() {
-        let vnia_sn = super::VniaSn(1071180);
-        let display = format!("{}", vnia_sn);
-        assert_eq!(display, "1071180");
+    fn try_from(value: Html) -> Result<Self, Self::Error> {
+        Ok(table::Html {
+            smes_id: company::Id::try_from(value.vnia_sn).map_err(ModelError::from)?,
+            html: Into::<company::HtmlContent>::into(value.html),
+            created_date: None,
+            updated_date: None,
+        })
     }
 }

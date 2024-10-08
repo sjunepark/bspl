@@ -9,14 +9,16 @@ rust-version = "1.80.0"
 publish = false
 
 [dependencies]
-db = { workspace = true }
 hashbrown = { workspace = true }
 libsql = { workspace = true, features = ["core", "serde"] }
-smes = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true, features = ["log"] }
+
+# Local crates
+db = { workspace = true }
+model = { workspace = true }
+smes = { workspace = true }
 tracing-setup = { workspace = true }
-tracing-subscriber = { workspace = true, features = ["env-filter"] }
 utils = { workspace = true }
 
 [workspace.dependencies]

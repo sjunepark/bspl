@@ -2,10 +2,9 @@
 
 pub mod api;
 mod error;
-mod html;
 mod utils;
 
-pub use api::{
-    BsPl, BsplApi, Company, ListApi, ListPayload, ListPayloadBuilder, ListResponse, VniaSn,
-};
+pub(crate) use api::{Company, Html};
+
+pub use api::{get_bspl_htmls, BsplApi, ListApi, ListPayload, ListPayloadBuilder, ListResponse};
 pub use error::SmesError;

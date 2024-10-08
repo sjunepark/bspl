@@ -19,7 +19,6 @@ thiserror = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true, features = ["log"] }
 utils = { workspace = true }
-validator = { workspace = true, features = ["derive"] }
 
 # Workspace crates
 model = { workspace = true }

@@ -468,11 +468,11 @@ dependencies = [
  "db",
  "hashbrown 0.15.0",
  "libsql",
+ "model",
  "smes",
  "tokio",
  "tracing",
  "tracing-setup",
- "tracing-subscriber",
  "utils",
 ]
 
@@ -1045,7 +1045,6 @@ dependencies = [
  "tracing",
  "tracing-setup",
  "utils",
- "validator",
 ]
 
 [[package]]
@@ -2600,6 +2599,9 @@ dependencies = [
 name = "model"
 version = "0.1.0"
 dependencies = [
+ "bytes",
+ "chrono",
+ "fake",
  "nutype",
  "serde",
  "serde_json",
@@ -3194,30 +3196,6 @@ checksum = "479cf940fbbb3426c32c5d5176f62ad57549a0bb84773423ba8be9d089f5faba"
 dependencies = [
  "proc-macro2",
  "syn 2.0.79",
-]
-
-[[package]]
-name = "proc-macro-error"
-version = "1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da25490ff9892aab3fcf7c36f08cfb902dd3e71ca0f9f9517bea02a73a5ce38c"
-dependencies = [
- "proc-macro-error-attr",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
- "version_check",
-]
-
-[[package]]
-name = "proc-macro-error-attr"
-version = "1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1be40180e52ecc98ad80b184934baf3d0d29f979574e439af5a55274b35f869"
-dependencies = [
- "proc-macro2",
- "quote",
- "version_check",
 ]
 
 [[package]]
@@ -4032,7 +4010,6 @@ dependencies = [
  "bytes",
  "cookie",
  "derive_builder",
- "derive_more 1.0.0",
  "fake",
  "goldrust",
  "image",
@@ -4999,36 +4976,6 @@ dependencies = [
  "aligned-vec",
  "num-traits",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "validator"
-version = "0.18.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db79c75af171630a3148bd3e6d7c4f42b6a9a014c2945bc5ed0020cbb8d9478e"
-dependencies = [
- "idna",
- "once_cell",
- "regex",
- "serde",
- "serde_derive",
- "serde_json",
- "url",
- "validator_derive",
-]
-
-[[package]]
-name = "validator_derive"
-version = "0.18.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df0bcf92720c40105ac4b2dda2a4ea3aa717d4d6a862cc217da653a4bd5c6b10"
-dependencies = [
- "darling",
- "once_cell",
- "proc-macro-error",
- "proc-macro2",
- "quote",
- "syn 2.0.79",
 ]
 
 [[package]]
