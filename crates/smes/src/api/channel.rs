@@ -28,57 +28,77 @@ pub async fn get_bspl_htmls(companies: HashSet<company::Id>) -> UnboundedReceive
     let (tx, rx) = unbounded_channel::<table::Html>();
     let size = companies.len();
     let mut captcha_cookies = captcha::get_solved_captchas(size).await;
-    let mut ids = companies.into_iter();
+    let ids = companies.into_iter();
 
     tokio::spawn(
         async move {
             let mut api = BsplApi::default();
-            let mut index = 0;
 
-            while let Some(captcha) = captcha_cookies.recv().await {
-                let Some(id) = ids.next() else { continue };
-                let span = tracing::info_span!("get_bspl_html", ?id);
-                let _guard = span.enter();
-                tracing::info!("Getting {}/{} company's bspl html", index + 1, size);
+            const MAX_RETRY_PER_ID: usize = 3;
 
-                let html = match api
-                    .get_bspl_html(id.as_str(), &captcha)
-                    .in_current_span()
-                    .await
-                {
-                    Ok(html) => html,
-                    Err(e) => {
-                        tracing::warn!(?e, ?id, "Error received from get_bspl_html. Skipping.");
-                        continue;
+            'id: for (index, id) in ids.enumerate() {
+                'retry: for retry in 0..=MAX_RETRY_PER_ID {
+                    match captcha_cookies.recv().await {
+                        None => {
+                            tracing::warn!("Out of captchas. End of loop.");
+                        }
+                        Some(captcha) => {
+                            let span = tracing::info_span!("get_bspl_html", ?id);
+                            let _guard = span.enter();
+                            if retry > 0 {
+                                tracing::warn!(
+                                    ?id,
+                                    "Retrying {}/{} get_bspl_html with new captcha",
+                                    retry + 1,
+                                    MAX_RETRY_PER_ID
+                                );
+                            }
+
+                            tracing::info!("Getting {}/{} company's bspl html", index + 1, size);
+
+                            // Run `get_bspl_html` but continue with loop when it errors.
+                            // This is because the errors from `get_bspl_html`
+                            // are not considered to be recoverable through retries.
+                            let html = match api
+                                .get_bspl_html(id.as_str(), &captcha)
+                                .in_current_span()
+                                .await
+                            {
+                                Ok(html) => html,
+                                Err(e) => {
+                                    tracing::warn!(
+                                        ?e,
+                                        ?id,
+                                        "Error received from get_bspl_html. Skipping id."
+                                    );
+                                    continue 'id;
+                                }
+                            };
+
+                            // Try converting the String HTML to db::Html.
+                            // This will fail when the HTML does not contain the required string "유동자산".
+                            let html = crate::Html {
+                                vnia_sn: id.to_string(),
+                                html,
+                            }
+                            .try_into();
+
+                            // Retry when the HTML does not contain the required string "유동자산".
+                            let html = match html {
+                                Ok(html) => html,
+                                Err(e) => {
+                                    tracing::warn!(?e, ?id, "Error converting html to db::Html.");
+                                    continue 'retry;
+                                }
+                            };
+
+                            if let Err(e) = tx.send(html) {
+                                tracing::warn!(?e, ?id, "Failed to send bspl html. The channel has been closed. Breaking loop.");
+                                break 'id;
+                            }
+                        }
                     }
-                };
-
-                let html = crate::Html {
-                    vnia_sn: id.to_string(),
-                    html,
                 }
-                .try_into();
-
-                let html = match html {
-                    Ok(html) => html,
-                    Err(e) => {
-                        tracing::warn!(?e, ?id, "Error converting html to db::Html. Skipping.");
-                        continue;
-                    }
-                };
-
-                match tx.send(html) {
-                    Ok(_) => {
-                        index += 1;
-                    }
-                    Err(e) => {
-                        tracing::warn!(
-                            ?e,
-                            ?id,
-                            "Failed to send bspl html. The channel has been closed. Skipping."
-                        );
-                    }
-                };
             }
         }
         .in_current_span(),

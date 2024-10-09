@@ -4,8 +4,6 @@ use crate::api::model::{Captcha, Solved, Unsubmitted};
 use crate::error::InvariantError;
 use crate::SmesError;
 use minify_html::Cfg;
-use model::company::HtmlContentError;
-use model::ModelError;
 use reqwest::header::HeaderMap;
 use reqwest::{Client, Method};
 use scraper::Selector;
@@ -87,14 +85,7 @@ impl BsplApi {
             )
             .await?;
 
-        let html = minify_and_trim_html(&response.bytes)?;
-
-        if html.contains("유동자산") {
-            Ok(html)
-        } else {
-            tracing::warn!(?company_id, "The html does not contain '유동자산'");
-            Err(ModelError::HtmlContent(HtmlContentError::PredicateViolated).into())
-        }
+        minify_and_trim_html(&response.bytes)
     }
 }
 
