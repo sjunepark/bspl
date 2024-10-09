@@ -1,11 +1,13 @@
 use db::LibsqlDb;
 use smes::{ListApi, ListPayloadBuilder};
+use tracing::Instrument;
 
 #[tokio::main]
 async fn main() {
     tracing_setup::span!("main");
 
     let db = LibsqlDb::new_local("db/local.db")
+        .in_current_span()
         .await
         .inspect_err(|e| {
             tracing::error!(?e, "Failed to create db");
@@ -16,6 +18,7 @@ async fn main() {
 
     let total_count = api
         .get_company_list_count()
+        .in_current_span()
         .await
         .expect("Failed to get total count");
 
@@ -26,6 +29,7 @@ async fn main() {
 
     let response = api
         .get_company_list(&payload)
+        .in_current_span()
         .await
         .expect("Failed to make request");
 
@@ -36,6 +40,7 @@ async fn main() {
         .collect();
 
     db.upsert_companies(companies)
+        .in_current_span()
         .await
         .expect("Failed to upsert companies");
 }

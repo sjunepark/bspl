@@ -1,5 +1,6 @@
 use crate::BsplApi;
-use model::table;
+use hashbrown::HashSet;
+use model::{company, table};
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver};
 use tracing::Instrument;
 
@@ -23,7 +24,7 @@ mod captcha;
 ///
 /// The skipped operations should be inspected and re-scraped in the future if necessary.
 #[tracing::instrument(skip(companies))]
-pub async fn get_bspl_htmls(companies: Vec<model::company::Id>) -> UnboundedReceiver<table::Html> {
+pub async fn get_bspl_htmls(companies: HashSet<company::Id>) -> UnboundedReceiver<table::Html> {
     let (tx, rx) = unbounded_channel::<table::Html>();
     let size = companies.len();
     let mut captcha_cookies = captcha::get_solved_captchas(size).await;
@@ -36,7 +37,7 @@ pub async fn get_bspl_htmls(companies: Vec<model::company::Id>) -> UnboundedRece
 
             while let Some(captcha) = captcha_cookies.recv().await {
                 let Some(id) = ids.next() else { continue };
-                tracing::trace!("Getting {}/{} company's bspl html", index + 1, size);
+                tracing::info!("Getting {}/{} company's bspl html", index + 1, size);
 
                 let html = match api
                     .get_bspl_html(captcha.cookies(), id.as_str(), captcha.answer())

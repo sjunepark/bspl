@@ -71,7 +71,7 @@ VALUES (:smes_id, :html);",
                 .await
             {
                 Ok(_number_of_rows) => {
-                    tracing::trace!(smes_id = ?html.smes_id, "Inserted HTML");
+                    tracing::info!(smes_id = ?html.smes_id, "Inserted HTML");
                 }
                 Err(error) => {
                     tracing::warn!(?error, ?html, "Failed to insert HTML into the database");

@@ -4157,6 +4157,7 @@ dependencies = [
  "derive_builder",
  "fake",
  "goldrust",
+ "hashbrown 0.15.0",
  "image",
  "minify-html",
  "model",
