@@ -155,7 +155,7 @@ impl TryFrom<Company> for table::Company {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub(crate) struct Html {
     pub(crate) vnia_sn: String,
-    pub(crate) html: Vec<u8>,
+    pub(crate) html: String,
 }
 
 impl From<table::Html> for Html {

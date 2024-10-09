@@ -41,8 +41,6 @@ impl<T> Dummy<T> for Html {
                 CompanyName().fake_with_rng::<String, R>(rng),
                 Name().fake_with_rng::<String, R>(rng)
             )
-            .as_bytes()
-            .to_vec()
             .into(),
             created_date: None,
             updated_date: None,

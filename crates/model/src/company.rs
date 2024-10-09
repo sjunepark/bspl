@@ -1,5 +1,5 @@
+use crate::string;
 use crate::utils::{is_digits, is_length_10_or_empty};
-use crate::{bytes, string};
 
 string!(Id, TryFrom => {
     validate(len_char_min = 7, len_char_max = 7, predicate = is_digits),
@@ -17,7 +17,7 @@ string!(IndustryCode, TryFrom => {
 });
 string!(IndustryName, From);
 
-bytes!(HtmlContent, From);
+string!(HtmlContent, From);
 
 #[cfg(test)]
 mod tests {

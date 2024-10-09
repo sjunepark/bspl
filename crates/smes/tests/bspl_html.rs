@@ -35,10 +35,7 @@ async fn get_bspl_htmls_should_work_as_expected() {
 
     while let Some(bspl) = rx.recv().await {
         bspl_count += 1;
-        let html = bspl
-            .html
-            .utf8_string()
-            .expect("Failed to convert html to string");
+        let html = bspl.html.as_str();
         let success = html.contains("유동자산");
 
         if !success {
