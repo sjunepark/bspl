@@ -1,5 +1,7 @@
 use crate::error::DbError;
+use hashbrown::HashSet;
 use libsql::params::IntoParams;
+use model::{company, ModelError};
 use serde::Deserialize;
 use std::fmt::Debug;
 use std::path::Path;
@@ -44,6 +46,29 @@ impl LibsqlDb {
         }
 
         Ok(items)
+    }
+
+    pub(crate) async fn get_all_ids_from(
+        &self,
+        table: &str,
+    ) -> Result<HashSet<company::Id>, DbError> {
+        let mut rows = self
+            .connection
+            .query(&format!("SELECT * from {}", table), ())
+            .await?;
+        let mut ids = HashSet::new();
+
+        #[derive(Deserialize)]
+        struct IdStruct {
+            smes_id: String,
+        }
+
+        while let Some(row) = rows.next().await? {
+            let id_struct = libsql::de::from_row::<IdStruct>(&row)?;
+            ids.insert(id_struct.smes_id.try_into().map_err(ModelError::from)?);
+        }
+
+        Ok(ids)
     }
 }
 

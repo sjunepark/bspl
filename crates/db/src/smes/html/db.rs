@@ -1,7 +1,8 @@
 use crate::db::Params;
 use crate::{DbError, LibsqlDb};
+use hashbrown::HashSet;
 use libsql::named_params;
-use model::table;
+use model::{company, table};
 use tokio::sync::mpsc::UnboundedReceiver;
 
 impl LibsqlDb {
@@ -42,6 +43,10 @@ impl LibsqlDb {
             .collect()
     }
 
+    pub async fn get_html_ids(&self) -> Result<HashSet<company::Id>, DbError> {
+        self.get_all_ids_from("smes_html").await
+    }
+
     #[tracing::instrument(skip(self, htmls))]
     /// Insert HTMLs into the HTML table.
     ///
@@ -66,10 +71,10 @@ VALUES (:smes_id, :html);",
                 .await
             {
                 Ok(_number_of_rows) => {
-                    tracing::trace!(smes_id = ?html.smes_id, "Inserted HTML");
+                    tracing::info!(smes_id = ?html.smes_id, "Inserted HTML");
                 }
                 Err(error) => {
-                    tracing::warn!(?error, ?html, "Failed to insert HTML into the database");
+                    tracing::warn!(smes_id = ?html.smes_id, ?error, "Failed to insert HTML into the database");
                 }
             };
             statement.reset()
@@ -172,11 +177,14 @@ mod tests {
         let htmls = populate_htmls(db, 10).await;
 
         // Create HTMLs to upsert: from existing HTMLs
-        const UPDATED_HTML_CONTENT: &str = "<html><body>Updated</body></html>";
+        const UPDATED_HTML_CONTENT: &str =
+            "<html><body><h2>유동자산</h2><p>Updated</p></body></html>";
         let mut updated_htmls = htmls
             .into_iter()
             .map(|h| table::Html {
-                html: UPDATED_HTML_CONTENT.into(),
+                html: UPDATED_HTML_CONTENT
+                    .try_into()
+                    .expect("failed to create dummy html"),
                 ..h
             })
             .collect::<Vec<_>>();
@@ -218,7 +226,12 @@ mod tests {
                     assert_eq!(html.html, removed_html.html);
                 }
                 _ => {
-                    assert_eq!(html.html, UPDATED_HTML_CONTENT.into());
+                    assert_eq!(
+                        html.html,
+                        UPDATED_HTML_CONTENT
+                            .try_into()
+                            .expect("failed to create dummy html")
+                    );
                 }
             }
         }

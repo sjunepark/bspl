@@ -10,6 +10,7 @@ base64 = { workspace = true }
 bytes = { workspace = true }
 cookie = { workspace = true }
 derive_builder = { workspace = true }
+hashbrown = { workspace = true }
 image = { workspace = true }
 minify-html = { workspace = true }
 reqwest = { workspace = true, features = ["json"] }

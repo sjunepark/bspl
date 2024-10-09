@@ -37,11 +37,11 @@ impl<T> Dummy<T> for Html {
                 .try_into()
                 .expect("failed to create dummy smes_id"),
             html: format!(
-                "<html><head><title>{}</title></head><body>{}</body></html>",
+                "<html><head><title>{}</title></head><body><h2>유동자산</h2><p>{}</p></body></html>",
                 CompanyName().fake_with_rng::<String, R>(rng),
                 Name().fake_with_rng::<String, R>(rng)
             )
-            .into(),
+            .try_into().expect("failed to create dummy html"),
             created_date: None,
             updated_date: None,
         }

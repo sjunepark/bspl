@@ -1,5 +1,6 @@
 ## Todo
 
+- Need more captchas when retries are made.
 - Check if `inspect_err`s are necessary
 - Check if channels are closing as expected.
 
