@@ -41,10 +41,8 @@ pub async fn get_bspl_htmls(companies: HashSet<company::Id>) -> UnboundedReceive
                 let _guard = span.enter();
                 tracing::info!("Getting {}/{} company's bspl html", index + 1, size);
 
-                const MAX_RETRY: usize = 5;
-
                 let html = match api
-                    .get_bspl_html(MAX_RETRY, id.as_str(), &captcha)
+                    .get_bspl_html(id.as_str(), &captcha)
                     .in_current_span()
                     .await
                 {

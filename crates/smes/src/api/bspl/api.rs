@@ -66,7 +66,6 @@ impl BsplApi {
     #[tracing::instrument(skip(self, captcha))]
     pub(crate) async fn get_bspl_html(
         &mut self,
-        max_retry: usize,
         company_id: &str,
         captcha: &Captcha<Solved>,
     ) -> Result<String, SmesError> {
@@ -77,33 +76,25 @@ impl BsplApi {
         let mut headers = HeaderMap::with_bspl();
         headers.append_cookies(PATH, captcha.cookies())?;
 
-        for _ in 0..max_retry {
-            let response = self
-                .request(
-                    Method::POST,
-                    &domain,
-                    PATH,
-                    headers.clone(),
-                    Some(&[("vniaSn", company_id), ("captcha", captcha.answer())]),
-                    None,
-                )
-                .await?;
+        let response = self
+            .request(
+                Method::POST,
+                &domain,
+                PATH,
+                headers.clone(),
+                Some(&[("vniaSn", company_id), ("captcha", captcha.answer())]),
+                None,
+            )
+            .await?;
 
-            let html = minify_and_trim_html(&response.bytes)?;
+        let html = minify_and_trim_html(&response.bytes)?;
 
-            if html.contains("유동자산") {
-                return Ok(html);
-            } else {
-                tracing::warn!(
-                    "The html does not contain '유동자산'. Retrying... {}/{}",
-                    company_id,
-                    max_retry
-                );
-            }
+        if html.contains("유동자산") {
+            Ok(html)
+        } else {
+            tracing::warn!(?company_id, "The html does not contain '유동자산'");
+            Err(ModelError::HtmlContent(HtmlContentError::PredicateViolated).into())
         }
-
-        // When the final result has invalid HTML
-        Err(ModelError::HtmlContent(HtmlContentError::PredicateViolated).into())
     }
 }
 
