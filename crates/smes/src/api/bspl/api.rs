@@ -1,10 +1,11 @@
 use crate::api::base::Api;
 use crate::api::header::HeaderMapExt;
-use crate::api::model::{Captcha, Unsubmitted};
+use crate::api::model::{Captcha, Solved, Unsubmitted};
 use crate::error::InvariantError;
 use crate::SmesError;
-use cookie::CookieJar;
 use minify_html::Cfg;
+use model::company::HtmlContentError;
+use model::ModelError;
 use reqwest::header::HeaderMap;
 use reqwest::{Client, Method};
 use scraper::Selector;
@@ -62,33 +63,47 @@ impl BsplApi {
     ///
     /// You need to submit the pre-solved captcha answer together with the cookies.
     /// The smes website knows which captcha the answer belongs to by the cookies.
-    #[tracing::instrument(skip(self, cookies, company_id, captcha_answer))]
+    #[tracing::instrument(skip(self, captcha))]
     pub(crate) async fn get_bspl_html(
         &mut self,
-        cookies: &CookieJar,
+        max_retry: usize,
         company_id: &str,
-        captcha_answer: &str,
+        captcha: &Captcha<Solved>,
     ) -> Result<String, SmesError> {
         tracing::trace!("Getting bspl html");
         let domain = self.domain.to_string();
         const PATH: &str = "/venturein/pbntc/searchVntrCmpDtls";
 
         let mut headers = HeaderMap::with_bspl();
-        headers.append_cookies(PATH, cookies)?;
+        headers.append_cookies(PATH, captcha.cookies())?;
 
-        let response = self
-            .request(
-                Method::POST,
-                &domain,
-                PATH,
-                headers,
-                Some(&[("vniaSn", company_id), ("captcha", captcha_answer)]),
-                None,
-            )
-            .await?;
+        for _ in 0..max_retry {
+            let response = self
+                .request(
+                    Method::POST,
+                    &domain,
+                    PATH,
+                    headers.clone(),
+                    Some(&[("vniaSn", company_id), ("captcha", captcha.answer())]),
+                    None,
+                )
+                .await?;
 
-        let html = minify_and_trim_html(&response.bytes)?;
-        Ok(html)
+            let html = minify_and_trim_html(&response.bytes)?;
+
+            if html.contains("유동자산") {
+                return Ok(html);
+            } else {
+                tracing::warn!(
+                    "The html does not contain '유동자산'. Retrying... {}/{}",
+                    company_id,
+                    max_retry
+                );
+            }
+        }
+
+        // When the final result has invalid HTML
+        Err(ModelError::HtmlContent(HtmlContentError::PredicateViolated).into())
     }
 }
 

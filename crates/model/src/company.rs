@@ -1,5 +1,5 @@
 use crate::string;
-use crate::utils::{is_digits, is_length_10_or_empty};
+use crate::utils::{is_digits, is_html_with_bspl, is_length_10_or_empty};
 
 string!(Id, [TryFrom] {
     /// 고유번호
@@ -48,8 +48,10 @@ string!(IndustryName, [From] {
 // Note: This approach assumes UTF-8 encoding.
 // If dealing with non-UTF-8 content,
 // additional handling may be required during the bytes-to-string conversion.
-string!(HtmlContent, [From] {
+string!(HtmlContent, [TryFrom] {
     /// HTML content, represented as a UTF-8 encoded string.
+} => {
+    validate(predicate = is_html_with_bspl),
 });
 
 #[cfg(test)]

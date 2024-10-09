@@ -37,29 +37,34 @@ pub async fn get_bspl_htmls(companies: HashSet<company::Id>) -> UnboundedReceive
 
             while let Some(captcha) = captcha_cookies.recv().await {
                 let Some(id) = ids.next() else { continue };
+                let span = tracing::info_span!("get_bspl_html", ?id);
+                let _guard = span.enter();
                 tracing::info!("Getting {}/{} company's bspl html", index + 1, size);
 
+                const MAX_RETRY: usize = 5;
+
                 let html = match api
-                    .get_bspl_html(captcha.cookies(), id.as_str(), captcha.answer())
+                    .get_bspl_html(MAX_RETRY, id.as_str(), &captcha)
+                    .in_current_span()
                     .await
                 {
                     Ok(html) => html,
                     Err(e) => {
-                        tracing::warn!(?e, "Error received from get_bspl_html. Skipping.");
+                        tracing::warn!(?e, ?id, "Error received from get_bspl_html. Skipping.");
                         continue;
                     }
                 };
 
                 let html = crate::Html {
                     vnia_sn: id.to_string(),
-                    html: html.into(),
+                    html,
                 }
                 .try_into();
 
                 let html = match html {
                     Ok(html) => html,
                     Err(e) => {
-                        tracing::warn!(?e, "Error converting html to db::Html. Skipping.");
+                        tracing::warn!(?e, ?id, "Error converting html to db::Html. Skipping.");
                         continue;
                     }
                 };
@@ -71,6 +76,7 @@ pub async fn get_bspl_htmls(companies: HashSet<company::Id>) -> UnboundedReceive
                     Err(e) => {
                         tracing::warn!(
                             ?e,
+                            ?id,
                             "Failed to send bspl html. The channel has been closed. Skipping."
                         );
                     }

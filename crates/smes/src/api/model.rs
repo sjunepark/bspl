@@ -173,7 +173,7 @@ impl TryFrom<Html> for table::Html {
     fn try_from(value: Html) -> Result<Self, Self::Error> {
         Ok(table::Html {
             smes_id: company::Id::try_from(value.vnia_sn).map_err(ModelError::from)?,
-            html: Into::<company::HtmlContent>::into(value.html),
+            html: value.html.try_into().map_err(ModelError::from)?,
             created_date: None,
             updated_date: None,
         })

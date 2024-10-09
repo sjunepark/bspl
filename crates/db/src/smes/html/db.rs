@@ -177,11 +177,14 @@ mod tests {
         let htmls = populate_htmls(db, 10).await;
 
         // Create HTMLs to upsert: from existing HTMLs
-        const UPDATED_HTML_CONTENT: &str = "<html><body>Updated</body></html>";
+        const UPDATED_HTML_CONTENT: &str =
+            "<html><body><h2>유동자산</h2><p>Updated</p></body></html>";
         let mut updated_htmls = htmls
             .into_iter()
             .map(|h| table::Html {
-                html: UPDATED_HTML_CONTENT.into(),
+                html: UPDATED_HTML_CONTENT
+                    .try_into()
+                    .expect("failed to create dummy html"),
                 ..h
             })
             .collect::<Vec<_>>();
@@ -223,7 +226,12 @@ mod tests {
                     assert_eq!(html.html, removed_html.html);
                 }
                 _ => {
-                    assert_eq!(html.html, UPDATED_HTML_CONTENT.into());
+                    assert_eq!(
+                        html.html,
+                        UPDATED_HTML_CONTENT
+                            .try_into()
+                            .expect("failed to create dummy html")
+                    );
                 }
             }
         }

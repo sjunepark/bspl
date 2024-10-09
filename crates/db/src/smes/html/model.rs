@@ -30,7 +30,7 @@ impl TryFrom<Html> for model::table::Html {
     fn try_from(value: Html) -> Result<Self, Self::Error> {
         Ok(model::table::Html {
             smes_id: value.smes_id.try_into().map_err(ModelError::from)?,
-            html: value.html.into(),
+            html: value.html.try_into().map_err(ModelError::from)?,
             created_date: value.created_date,
             updated_date: value.updated_date,
         })
