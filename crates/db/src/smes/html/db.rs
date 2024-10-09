@@ -74,7 +74,7 @@ VALUES (:smes_id, :html);",
                     tracing::info!(smes_id = ?html.smes_id, "Inserted HTML");
                 }
                 Err(error) => {
-                    tracing::warn!(?error, ?html, "Failed to insert HTML into the database");
+                    tracing::warn!(smes_id = ?html.smes_id, ?error, "Failed to insert HTML into the database");
                 }
             };
             statement.reset()

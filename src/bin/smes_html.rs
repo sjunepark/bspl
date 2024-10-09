@@ -34,6 +34,8 @@ async fn main() {
         .await
         .expect("Failed to get html ids");
 
+    tracing::info!(?ids_with_htmls, "These queried ids will be skipped");
+
     let ids_to_query = all_ids_to_query.difference(&ids_with_htmls).cloned();
     let ids_already_queried = all_ids_to_query.intersection(&ids_with_htmls);
 
@@ -61,5 +63,32 @@ async fn main() {
             .in_current_span()
             .await
             .expect("Failed to upsert htmls");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use hashbrown::HashSet;
+    use model::company;
+
+    #[test]
+    fn hashset_difference_should_work_as_expected() {
+        let set1: HashSet<company::Id> = [1000000, 2000000, 3000000]
+            .into_iter()
+            .map(|id| company::Id::try_new(id.to_string()).expect("Failed to create company id"))
+            .collect();
+        let set2: HashSet<company::Id> = [2000000, 3000000, 4000000]
+            .into_iter()
+            .map(|id| company::Id::try_new(id.to_string()).expect("Failed to create company id"))
+            .collect();
+
+        let difference: HashSet<company::Id> = set1.difference(&set2).cloned().collect();
+
+        let expected: HashSet<company::Id> = [1000000]
+            .into_iter()
+            .map(|id| company::Id::try_new(id.to_string()).expect("Failed to create company id"))
+            .collect();
+
+        assert_eq!(difference, expected);
     }
 }

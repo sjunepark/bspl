@@ -37,10 +37,19 @@ pub async fn get_bspl_htmls(companies: HashSet<company::Id>) -> UnboundedReceive
             const MAX_RETRY_PER_ID: usize = 3;
 
             'id: for (index, id) in ids.enumerate() {
+                // Some manual delay to prevent getting blocked by the server.
+                tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+
                 'retry: for retry in 0..=MAX_RETRY_PER_ID {
+                    if retry > 0 {
+                        // Some manual delay to prevent getting blocked by the server.
+                        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                    }
+
                     match captcha_cookies.recv().await {
                         None => {
                             tracing::warn!("Out of captchas. End of loop.");
+                            break 'id;
                         }
                         Some(captcha) => {
                             let span = tracing::info_span!("get_bspl_html", ?id);
@@ -48,8 +57,9 @@ pub async fn get_bspl_htmls(companies: HashSet<company::Id>) -> UnboundedReceive
                             if retry > 0 {
                                 tracing::warn!(
                                     ?id,
+                                    captcha_answer = ?captcha.answer(),
                                     "Retrying {}/{} get_bspl_html with new captcha",
-                                    retry + 1,
+                                    retry,
                                     MAX_RETRY_PER_ID
                                 );
                             }
@@ -87,14 +97,19 @@ pub async fn get_bspl_htmls(companies: HashSet<company::Id>) -> UnboundedReceive
                             let html = match html {
                                 Ok(html) => html,
                                 Err(e) => {
-                                    tracing::warn!(?e, ?id, "Error converting html to db::Html.");
+                                    tracing::warn!(?e, ?id, captcha_answer = ?captcha.answer(), "Error converting html to db::Html.");
                                     continue 'retry;
                                 }
                             };
 
-                            if let Err(e) = tx.send(html) {
-                                tracing::warn!(?e, ?id, "Failed to send bspl html. The channel has been closed. Breaking loop.");
-                                break 'id;
+                            match tx.send(html) {
+                                Ok(_) => {
+                                    break 'retry;
+                                }
+                                Err(e) => {
+                                    tracing::warn!(?e, ?id, "Failed to send bspl html. The channel has been closed. Breaking loop.");
+                                    break 'id;
+                                }
                             }
                         }
                     }
