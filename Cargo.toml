@@ -9,8 +9,10 @@ rust-version = "1.80.0"
 publish = false
 
 [dependencies]
+config = { workspace = true }
 hashbrown = { workspace = true }
 libsql = { workspace = true, features = ["core", "serde"] }
+serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true, features = ["log"] }
 
@@ -28,6 +30,7 @@ base64 = "0.22.1"
 bytes = "1.7.2"
 chrono = "0.4.38"
 chrono-tz = "0.10.0"
+config = "0.14.0"
 cookie = "0.18.1"
 derive_builder = "0.20.1"
 derive_more = "1.0.0"

@@ -1,8 +1,7 @@
 use crate::db::Params;
 use crate::{DbError, LibsqlDb};
 use hashbrown::HashSet;
-use model::{company, table, ModelError};
-use serde::Deserialize;
+use model::{company, table};
 
 impl LibsqlDb {
     #[tracing::instrument(skip(self))]
@@ -16,23 +15,7 @@ impl LibsqlDb {
 
     #[tracing::instrument(skip(self))]
     pub async fn get_company_ids(&self) -> Result<HashSet<company::Id>, DbError> {
-        let mut rows = self
-            .connection
-            .query("SELECT smes_id from smes_company", ())
-            .await?;
-        let mut company_ids = HashSet::new();
-
-        #[derive(Deserialize)]
-        struct IdStruct {
-            smes_id: String,
-        }
-
-        while let Some(row) = rows.next().await? {
-            let id_struct: IdStruct = libsql::de::from_row(&row)?;
-            company_ids.insert(id_struct.smes_id.try_into().map_err(ModelError::from)?);
-        }
-
-        Ok(company_ids)
+        self.get_all_ids_from("smes_company").await
     }
 
     #[tracing::instrument(skip(self, companies))]
@@ -121,12 +104,12 @@ mod tests {
     fn id_struct_should_deserialize_as_expected() {
         #[derive(Deserialize)]
         struct IdStruct {
-            id: company::Id,
+            smes_id: company::Id,
         }
 
-        let json = r#"{"id":"1234567"}"#;
+        let json = r#"{"smes_id":"1234567"}"#;
         let id_struct: IdStruct = serde_json::from_str(json).unwrap();
-        assert_eq!(id_struct.id, company::Id::from_str("1234567").unwrap());
+        assert_eq!(id_struct.smes_id, company::Id::from_str("1234567").unwrap());
     }
 
     #[tokio::test]

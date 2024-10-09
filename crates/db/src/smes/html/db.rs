@@ -1,7 +1,8 @@
 use crate::db::Params;
 use crate::{DbError, LibsqlDb};
+use hashbrown::HashSet;
 use libsql::named_params;
-use model::table;
+use model::{company, table};
 use tokio::sync::mpsc::UnboundedReceiver;
 
 impl LibsqlDb {
@@ -40,6 +41,10 @@ impl LibsqlDb {
             .into_iter()
             .map(TryInto::try_into)
             .collect()
+    }
+
+    pub async fn get_html_ids(&self) -> Result<HashSet<company::Id>, DbError> {
+        self.get_all_ids_from("smes_html").await
     }
 
     #[tracing::instrument(skip(self, htmls))]
