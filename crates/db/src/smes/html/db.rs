@@ -218,7 +218,7 @@ mod tests {
                     assert_eq!(html.html, removed_html.html);
                 }
                 _ => {
-                    assert_eq!(html.html, UPDATED_HTML_CONTENT.as_bytes().to_vec().into());
+                    assert_eq!(html.html, UPDATED_HTML_CONTENT.into());
                 }
             }
         }

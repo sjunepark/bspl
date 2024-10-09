@@ -1,7 +1,8 @@
 #[macro_export]
 macro_rules! string {
     // Pattern for structs with additional nutype attributes
-        ($name:ident, $($custom_derives:ident),* => { $($nutype_attrs:tt)+ }) => {
+    ($name:ident, [$($custom_derives:ident),*] {$(#[$meta:meta])*} => { $($nutype_attrs:tt)+ }) => {
+        $(#[$meta])*
         #[nutype::nutype(
             $(
                 $nutype_attrs
@@ -17,7 +18,8 @@ macro_rules! string {
         $crate::assert_impl_commons_without_default!($name);
     };
     // Pattern for structs without additional nutype attributes
-    ($name:ident, $($custom_derives:ident),*) => {
+    ($name:ident, [$($custom_derives:ident),*] {$(#[$meta:meta])*}) => {
+        $(#[$meta])*
         #[nutype::nutype(
             derive(
                 Clone, Eq, PartialEq, Ord, PartialOrd,
@@ -34,7 +36,8 @@ macro_rules! string {
 #[macro_export]
 macro_rules! bytes {
     // Pattern for structs with additional nutype attributes
-    ($name:ident, $($custom_derives:ident),* => { $($nutype_attrs:tt)+ }) => {
+    ($name:ident, [$($custom_derives:ident),*] {$(#[$meta:meta])*} => { $($nutype_attrs:tt)+ }) => {
+        $(#[$meta])*
         #[nutype::nutype(
             $(
                 $nutype_attrs
@@ -62,7 +65,8 @@ macro_rules! bytes {
         }
     };
     // Pattern for structs without additional nutype attributes
-    ($name:ident, $($custom_derives:ident),*) => {
+    ($name:ident, [$($custom_derives:ident),*] {$(#[$meta:meta])*}) => {
+        $(#[$meta])*
         #[nutype::nutype(
             derive(
                 Clone, Eq, PartialEq, Ord, PartialOrd,
@@ -90,7 +94,7 @@ macro_rules! bytes {
 mod tests {
     use serde::{Deserialize, Serialize};
 
-    string!(Inner, From);
+    string!(Inner, [From] {});
 
     #[derive(Serialize, Deserialize)]
     struct SomeStruct {
