@@ -1,6 +1,5 @@
 pub mod api;
 mod error;
-mod parser;
 mod utils;
 
 pub(crate) use api::{Company, Html};
