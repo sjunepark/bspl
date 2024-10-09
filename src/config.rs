@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct AppConfig {
     pub update_all_html: bool,
 }

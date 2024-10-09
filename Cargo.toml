@@ -9,7 +9,7 @@ rust-version = "1.80.0"
 publish = false
 
 [dependencies]
-config = { workspace = true }
+figment = { workspace = true, features = ["toml"] }
 hashbrown = { workspace = true }
 libsql = { workspace = true, features = ["core", "serde"] }
 serde = { workspace = true, features = ["derive"] }
@@ -30,10 +30,10 @@ base64 = "0.22.1"
 bytes = "1.7.2"
 chrono = "0.4.38"
 chrono-tz = "0.10.0"
-config = "0.14.0"
 cookie = "0.18.1"
 derive_builder = "0.20.1"
 derive_more = "1.0.0"
+figment = "0.10.19"
 hashbrown = "0.15.0"
 image = "0.25.2"
 libsql = "0.6.0"

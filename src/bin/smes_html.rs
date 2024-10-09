@@ -1,6 +1,7 @@
 use bspl::AppConfig;
-use config::Config;
 use db::LibsqlDb;
+use figment::providers::{Format, Toml};
+use figment::Figment;
 use smes::get_bspl_htmls;
 use tracing::Instrument;
 
@@ -8,14 +9,10 @@ use tracing::Instrument;
 async fn main() {
     tracing_setup::span!("main");
 
-    let config = Config::builder()
-        .add_source(config::File::with_name("Settings"))
-        .build()
-        .expect("Failed to build config");
-
-    let app: AppConfig = config
-        .try_deserialize()
-        .expect("Failed to deserialize config");
+    let app: AppConfig = Figment::new()
+        .merge(Toml::file("Settings.toml"))
+        .extract()
+        .expect("Failed to load settings");
 
     let db = LibsqlDb::new_local("db/local.db")
         .in_current_span()
