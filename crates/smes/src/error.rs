@@ -12,10 +12,14 @@ pub enum SmesError {
     Build(#[from] BuildError),
     #[error("Conversion error: {0}")]
     Conversion(#[from] ConversionError),
+    #[error("Parse error: {0}")]
+    CookieParse(#[from] ParseError),
     #[error("Deserialization error: {0}")]
     Deserialization(#[from] DeserializationError),
     #[error("External API error: {0}")]
     ExternalApi(#[from] ExternalApiError),
+    #[error("HTML parse error: {0}")]
+    HtmlParse(#[from] HtmlParseError),
     #[error("Image error: {0}")]
     Image(#[from] image::ImageError),
     #[error("Invalid header value: {0}")]
@@ -26,8 +30,8 @@ pub enum SmesError {
     Model(#[from] ModelError),
     #[error("Nopecha error: {0}")]
     Nopecha(#[from] NopechaError),
-    #[error("Parse error: {0}")]
-    CookieParse(#[from] ParseError),
+    #[error("Reqwest error: {0}")]
+    ParseInt(#[from] std::num::ParseIntError),
     #[error("HTTP error: {0}")]
     Reqwest(#[from] reqwest::Error),
     #[error("Scraper error: {0}")]
@@ -38,6 +42,14 @@ pub enum SmesError {
     UnsuccessfulResponse(#[from] UnsuccessfulResponseError),
     #[error("Invariant error: {0}")]
     Invariant(#[from] InvariantError),
+}
+
+#[derive(Error, Debug)]
+#[error("HTML parse error: {message}")]
+pub struct HtmlParseError {
+    #[source]
+    pub source: Option<Box<dyn std::error::Error>>,
+    pub message: &'static str,
 }
 
 #[derive(Error, Debug)]

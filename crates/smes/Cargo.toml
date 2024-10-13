@@ -13,6 +13,7 @@ derive_builder = { workspace = true }
 hashbrown = { workspace = true }
 image = { workspace = true }
 minify-html = { workspace = true }
+nutype = { workspace = true }
 reqwest = { workspace = true, features = ["json"] }
 scraper = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
