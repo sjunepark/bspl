@@ -1,4 +1,6 @@
--- Write your down sql migration here
+-- Write your down SQL migration here
+DROP TABLE smes_html;
+
 DROP TABLE smes_company;
 
-DROP TABLE smes_html;
+PRAGMA foreign_keys = OFF;

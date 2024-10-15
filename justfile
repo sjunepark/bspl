@@ -82,6 +82,14 @@ geni-down-local:
 backup-db:
     scripts/backup_db.sh
 
+reset-db:
+    just backup-db
+    just geni-down-local
+    just geni-up-local
+
+restore-db:
+    sqlite3 db/local.db < db/restore.sql
+
 ## Others
 git-gc:
     git gc --prune=now --aggressive
