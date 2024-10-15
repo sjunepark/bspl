@@ -94,7 +94,6 @@ ON CONFLICT (smes_id) DO UPDATE SET representative_name          = excluded.repr
 #[cfg(test)]
 mod tests {
     use crate::test_utils::{text_context, DbSource, TestContext};
-    use crate::LibsqlDb;
     use fake::Fake;
     use model::{company, table};
     use serde::Deserialize;
@@ -118,7 +117,9 @@ mod tests {
 
         let ctx = text_context!(DbSource::Migration).await;
         let db = &ctx.db;
-        let companies = populate_companies(db, 10).await;
+
+        let ids = (0..10_u64).map(|i| 1000000 + i).collect::<Vec<_>>();
+        let companies = ctx.populate_companies(&ids).await;
 
         let db_companies = db
             .get_companies()
@@ -135,7 +136,8 @@ mod tests {
 
         let ctx = text_context!(DbSource::Migration).await;
         let db = &ctx.db;
-        let companies = populate_companies(db, 10).await;
+        let ids = (0..10_u64).map(|i| 1000000 + i).collect::<Vec<_>>();
+        let companies = ctx.populate_companies(&ids).await;
 
         let db_company_ids = db
             .get_company_ids()
@@ -150,7 +152,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn upsdert_companies_should_work() {
+    async fn upsert_companies_should_work() {
         // region: Arrange
         tracing_setup::span!("test");
 
@@ -158,7 +160,8 @@ mod tests {
         let db = &ctx.db;
 
         // Set up basic companies
-        let companies = populate_companies(db, 10).await;
+        let ids = (0..10_u64).map(|i| 1000000 + i).collect::<Vec<_>>();
+        let companies = ctx.populate_companies(&ids).await;
 
         // Create companies to upsert: from existing companies.
         const UPDATED_REPRESENTATIVE_NAME: &str = "Updated";
@@ -219,31 +222,5 @@ mod tests {
             }
         }
         // endregion: Assert
-    }
-
-    async fn populate_companies(db: &LibsqlDb, size: usize) -> Vec<table::Company> {
-        let mut incremental_id: usize = 1000000;
-        let companies: Vec<table::Company> = (0..size)
-            .map(|_| {
-                let company = ().fake::<table::Company>();
-                let id = incremental_id.to_string();
-                incremental_id += 1;
-                table::Company {
-                    smes_id: id
-                        .try_into()
-                        .expect("failed to create proper dummy smes_id"),
-                    ..company
-                }
-            })
-            .collect();
-
-        db.insert_companies(companies.clone())
-            .await
-            .inspect_err(|e| {
-                tracing::error!(?e, "Failed to insert companies");
-            })
-            .unwrap();
-
-        companies
     }
 }

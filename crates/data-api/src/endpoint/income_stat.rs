@@ -46,7 +46,7 @@ pub struct IncomeStatParams {
 mod tests {
     use crate::model::DataApiKey;
 
-    const SERIALIZED_PARAMS: &str = r#"{"numOfRows":10,"pageNo":1,"resultType":"json","serviceKey":"test","crno":"1234567890123"}"#;
+    const SERIALIZED_PARAMS: &str = r#"{"numOfRows":10,"pageNo":1,"resultType":"json","serviceKey":"test","crno":"1234567890123","bizYear":null}"#;
 
     #[test]
     fn serialize_get_income_stat_params() {
@@ -77,5 +77,6 @@ mod tests {
         assert_eq!(deserialized.result_type, "json");
         assert_eq!(deserialized.service_key, DataApiKey::new("test"));
         assert_eq!(deserialized.crno.unwrap().to_string(), "1234567890123");
+        assert!(deserialized.biz_year.is_none());
     }
 }
