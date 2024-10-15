@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/db", "crates/smes", "crates/utils", "crates/tracing-setup", "crates/model"]
+members = ["crates/db", "crates/smes", "crates/utils", "crates/tracing-setup", "crates/model", "crates/data-api"]
 
 [package]
 name = "bspl"

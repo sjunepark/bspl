@@ -4,7 +4,7 @@ use crate::SmesError;
 use derive_builder::Builder;
 use scraper::{ElementRef, Selector};
 
-struct Table<'a> {
+pub struct Table<'a> {
     root: ElementRef<'a>,
 }
 
@@ -16,7 +16,7 @@ enum Level {
 
 #[derive(Builder, PartialEq, Debug, Clone)]
 #[builder(setter(strip_option, into))]
-struct Cell {
+pub struct Cell {
     level: Level,
     #[builder(default)]
     dep1: Option<String>,
@@ -24,15 +24,15 @@ struct Cell {
     dep2: Option<String>,
     account: String,
     year: String,
-    value: usize,
+    value: i64,
 }
 
 impl<'a> Table<'a> {
-    fn new(table: ElementRef<'a>) -> Self {
+    pub fn new(table: ElementRef<'a>) -> Self {
         Self { root: table }
     }
 
-    fn parse_body(&self) -> Result<Vec<Cell>, SmesError> {
+    pub fn parse_body(&self) -> Result<Vec<Cell>, SmesError> {
         // Keep the states during iteration
         let mut dep1: Option<String> = None;
         let mut dep2: Option<String> = None;
@@ -156,16 +156,11 @@ impl<'a> Table<'a> {
     fn years(&self) -> Result<Vec<String>, SmesError> {
         let selector = Selector::parse("thead>tr>th").unwrap();
         let mut header = self.root.select(&selector);
-        match header.next() {
-            Some(header) if join_text_nodes(header.text()) == "년도" => {}
-            Some(_) => Err(HtmlParseError {
-                source: None,
-                message: "header other than '년도' found",
-            })?,
-            None => Err(HtmlParseError {
+        if header.next().is_none() {
+            Err(HtmlParseError {
                 source: None,
                 message: "No header found",
-            })?,
+            })?;
         };
 
         Ok(header.map(|year| join_text_nodes(year.text())).collect())

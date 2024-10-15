@@ -1,4 +1,4 @@
-use crate::error::{HtmlParseError, InvariantError};
+use crate::error::ParseIntError;
 use crate::SmesError;
 use scraper::element_ref::Text;
 
@@ -9,28 +9,16 @@ pub(crate) fn join_text_nodes(node: Text) -> String {
 /// Parse a string into a number, ignoring commas.
 ///
 /// Returns 0 if the string is empty.
-pub(crate) fn parse_comma_sep_digit(s: &str) -> Result<usize, SmesError> {
+pub(crate) fn parse_comma_sep_digit(s: &str) -> Result<i64, SmesError> {
     let s = s.trim();
     if s.is_empty() {
         return Ok(0);
     }
     let s = s.replace(",", "");
-    Ok(s.parse::<usize>()?)
-}
-
-pub(crate) fn single_element<I: Iterator>(mut iter: I) -> Result<I::Item, SmesError> {
-    let element = iter.next().ok_or(InvariantError {
-        source: None,
-        message: "Expected at least one element".to_string(),
-    })?;
-    if iter.next().is_none() {
-        Ok(element)
-    } else {
-        Err(HtmlParseError {
-            source: None,
-            message: "Only single element was expected",
-        })?
-    }
+    Ok(s.parse::<i64>().map_err(|e| ParseIntError {
+        source: Some(Box::new(e)),
+        value: s,
+    })?)
 }
 
 #[cfg(test)]

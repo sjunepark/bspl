@@ -19,7 +19,7 @@ macro_rules! span {
     ($span_name:expr) => {
         tracing_setup::subscribe();
 
-        let function_id = utils::function_id!();
+        let function_id = $crate::function_id!();
         let _span = tracing::info_span!($span_name, ?function_id).entered();
     };
 }

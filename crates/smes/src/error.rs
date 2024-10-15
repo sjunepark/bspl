@@ -31,7 +31,7 @@ pub enum SmesError {
     #[error("Nopecha error: {0}")]
     Nopecha(#[from] NopechaError),
     #[error("Reqwest error: {0}")]
-    ParseInt(#[from] std::num::ParseIntError),
+    ParseInt(#[from] ParseIntError),
     #[error("HTTP error: {0}")]
     Reqwest(#[from] reqwest::Error),
     #[error("Scraper error: {0}")]
@@ -42,6 +42,13 @@ pub enum SmesError {
     UnsuccessfulResponse(#[from] UnsuccessfulResponseError),
     #[error("Invariant error: {0}")]
     Invariant(#[from] InvariantError),
+}
+
+#[derive(Error, Debug)]
+#[error("Failed to parse value: {value}")]
+pub struct ParseIntError {
+    pub source: Option<Box<dyn std::error::Error>>,
+    pub value: String,
 }
 
 #[derive(Error, Debug)]

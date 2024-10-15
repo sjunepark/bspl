@@ -26,6 +26,14 @@ string!(BusinessRegistrationNumber, [TryFrom] {
     validate(predicate = is_length_10_or_empty),
 });
 
+string!(CorporationRegistrationNumber, [TryFrom] {
+    /// 법인등록번호
+    ///
+    /// This field is a 13-digit number.
+} => {
+    validate(len_char_min = 13, len_char_max = 13, predicate = is_digits),
+});
+
 string!(CompanyName, [From] {
     /// 기업명
 });
