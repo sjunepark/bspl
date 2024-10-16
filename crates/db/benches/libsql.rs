@@ -25,7 +25,7 @@
 //! The results show that using prepared statements with transactions is the fastest way to insert data.
 
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
-use db::{DbError, LibsqlDb};
+use db::{Db, DbError, LibsqlDb};
 use libsql::Connection;
 use rand::Rng;
 use tokio::time::Instant;
@@ -44,7 +44,7 @@ fn bench_glob_check(c: &mut Criterion) {
             |b, &&size| {
                 b.to_async(tokio::runtime::Runtime::new().unwrap())
                     .iter_custom(|iters| async move {
-                        let db = Db::new().await;
+                        let db = BenchDb::new().await;
                         db.create_names_table_without_glob_check()
                             .await
                             .inspect_err(|e| tracing::error!(?e, "Failed to create names table"))
@@ -64,7 +64,7 @@ fn bench_glob_check(c: &mut Criterion) {
             |b, &&size| {
                 b.to_async(tokio::runtime::Runtime::new().unwrap())
                     .iter_custom(|iters| async move {
-                        let db = Db::new().await;
+                        let db = BenchDb::new().await;
                         db.create_names_table_with_glob_check()
                             .await
                             .inspect_err(|e| tracing::error!(?e, "Failed to create names table"))
@@ -92,7 +92,7 @@ fn bench_libsql_insert(c: &mut Criterion) {
             |b, &&size| {
                 b.to_async(tokio::runtime::Runtime::new().unwrap())
                     .iter_custom(|iters| async move {
-                        let db = Db::new().await;
+                        let db = BenchDb::new().await;
                         db.create_users_table()
                             .await
                             .inspect_err(|e| tracing::error!(?e, "Failed to create users table"))
@@ -112,7 +112,7 @@ fn bench_libsql_insert(c: &mut Criterion) {
             |b, &&size| {
                 b.to_async(tokio::runtime::Runtime::new().unwrap())
                     .iter_custom(|iter| async move {
-                        let db = Db::new().await;
+                        let db = BenchDb::new().await;
                         db.create_users_table()
                             .await
                             .inspect_err(|e| tracing::error!(?e, "Failed to create users table"))
@@ -132,7 +132,7 @@ fn bench_libsql_insert(c: &mut Criterion) {
             |b, &&size| {
                 b.to_async(tokio::runtime::Runtime::new().unwrap())
                     .iter_custom(|iter| async move {
-                        let db = Db::new().await;
+                        let db = BenchDb::new().await;
                         db.create_users_table()
                             .await
                             .inspect_err(|e| tracing::error!(?e, "Failed to create users table"))
@@ -183,11 +183,11 @@ impl User {
     }
 }
 
-struct Db {
+struct BenchDb {
     connection: Connection,
 }
 
-impl Db {
+impl BenchDb {
     async fn new() -> Self {
         let db = LibsqlDb::new_local(":memory:")
             .await
