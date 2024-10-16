@@ -9,9 +9,7 @@ pub(crate) struct LibsqlTestContext {
 }
 
 impl TestContext<LibsqlDb> for LibsqlTestContext {
-    /// Creates a new test context. Performs the following steps:
-    /// 1. Subscribes to tracing_subscriber
-    /// 2. Copies the actual local db to a test db
+    /// Creates a new test context.
     #[tracing::instrument]
     async fn new(function_id: &str) -> Self {
         let project_root = Path::new(env!("CARGO_MANIFEST_DIR"));

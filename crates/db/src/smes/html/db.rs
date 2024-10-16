@@ -1,4 +1,4 @@
-use crate::{DbError, PostgresqlDb};
+use crate::{DbError, PostgresDb};
 use hashbrown::HashSet;
 use model::company::Id;
 use model::table::Html;
@@ -21,7 +21,7 @@ pub trait HtmlDb {
     ) -> impl Future<Output = Result<(), DbError>>;
 }
 
-impl HtmlDb for PostgresqlDb {
+impl HtmlDb for PostgresDb {
     async fn get_html(&self, smes_id: &str) -> Result<Option<Html>, DbError> {
         todo!()
     }

@@ -43,6 +43,7 @@ model = { path = "crates/model" }
 fake = "2.10.0"
 geni = "1.1.3"
 goldrust = "0.1.8"
+testcontainers-modules = "0.11.2"
 wiremock = "0.6.2"
 
 # Benchmarks

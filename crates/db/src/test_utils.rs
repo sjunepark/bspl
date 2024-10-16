@@ -1,6 +1,7 @@
 #![cfg(test)]
 
 mod libsql;
+mod postgres;
 
 use crate::db::Db;
 use fake::{Fake, Faker};
@@ -8,6 +9,7 @@ use model::table;
 use tokio::sync::mpsc;
 
 pub(crate) use libsql::LibsqlTestContext;
+pub(crate) use postgres::PostgresTestContext;
 
 pub(crate) trait TestContext<D: Db> {
     async fn new(function_id: &str) -> Self;

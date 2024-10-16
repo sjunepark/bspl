@@ -1,4 +1,4 @@
-use crate::{DbError, PostgresqlDb};
+use crate::{DbError, PostgresDb};
 use hashbrown::HashSet;
 use model::company::Id;
 use model::table::Company;
@@ -18,7 +18,7 @@ pub trait CompanyDb {
     ) -> impl Future<Output = Result<(), DbError>>;
 }
 
-impl CompanyDb for PostgresqlDb {
+impl CompanyDb for PostgresDb {
     async fn get_companies(&self) -> Result<Vec<Company>, DbError> {
         todo!()
     }

@@ -95,7 +95,7 @@ geni-down-local:
     geni down
 
 backup-db:
-    scripts/backup_postgresql_db.sh
+    scripts/backup_postgres_db.sh
 
 reset-libsql-db:
     just backup-db
@@ -105,7 +105,7 @@ reset-libsql-db:
 restore-libsql-db:
     sqlite3 db/libsql/local.db < db/libsql/restore.sql
 
-### Postgresql
+### Postgres
 copmose-up:
     docker compose up -d
 

@@ -31,4 +31,5 @@ fake = { workspace = true }
 geni = { workspace = true }
 rand = { workspace = true }
 serde_json = { workspace = true }
+testcontainers-modules = { workspace = true, features = ["postgres"] }
 tracing-setup = { workspace = true }

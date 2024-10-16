@@ -18,15 +18,15 @@ pub(crate) trait Params {
     fn params(&self) -> impl IntoParams;
 }
 
-// region: PostgresqlDb
-pub struct PostgresqlDb {
+// region: Postgres
+pub struct PostgresDb {
     pub pool: sqlx::PgPool,
 }
 
-impl Db for PostgresqlDb {
+impl Db for PostgresDb {
     #[tracing::instrument]
-    async fn new<P: AsRef<Path> + Debug>(db_url: P) -> Self {
-        let connection_string = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set");
+    async fn new<P: AsRef<Path> + Debug>(connection_string: P) -> Self {
+        let connection_string = connection_string.as_ref().to_string_lossy();
         let pool = PgPoolOptions::new()
             .connect(&connection_string)
             .await
@@ -37,11 +37,14 @@ impl Db for PostgresqlDb {
 
     #[tracing::instrument(skip(self))]
     async fn health_check(&self) -> Result<(), DbError> {
-        sqlx::query!("SELECT 1 AS value")
+        let result = sqlx::query!("SELECT 1 AS value")
             .fetch_one(&self.pool)
-            .await
-            .map(|_| ())
-            .map_err(Into::into)
+            .await?;
+
+        tracing::trace!(?result);
+        tracing::trace!(value = ?result.value);
+
+        Ok(())
     }
 }
 
@@ -120,6 +123,15 @@ impl LibsqlDb {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_utils::{PostgresTestContext, TestContext};
+
+    #[tokio::test]
+    async fn postgres_health_check() {
+        tracing_setup::span!("test");
+        let function_id = utils::function_id!();
+        let ctx = PostgresTestContext::new(&function_id).await;
+        assert!(ctx.db().health_check().await.is_ok());
+    }
 
     #[tokio::test]
     async fn libsql_db_should_connect() {
