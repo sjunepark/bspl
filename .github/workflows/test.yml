@@ -10,7 +10,7 @@ name: test
 
 env:
   RUST_LOG: ${{ vars.RUST_LOG }}
-  NOPECHA_KEY: ${{ secrets.NOPECHA_KEY }}
+  NOPECHA_API_KEY: ${{ secrets.NOPECHA_API_KEY }}
 
 permissions:
   contents: read
@@ -46,11 +46,11 @@ jobs:
         run: cargo generate-lockfile
       - name: cargo install nextest
         uses: taiki-e/install-action@nextest
-      - run: cargo nextest run --locked --workspace --all-features --all-targets
-      - run: cargo nextest run --lib --bins --locked --workspace --all-features
+      - run: cargo nextest run --locked --all-features --all-targets
+      - run: cargo nextest run --lib --bins --locked --all-features
         # Nextest currently [doesn't support doctests](https://github.com/nextest-rs/nextest/issues/16)
         # For `cargo test`, there's an issue that [cargo test --all-targets does not run doc tests](https://github.com/rust-lang/cargo/issues/6669)
-      - run: cargo test --doc --locked --workspace --all-features
+      - run: cargo test --doc --locked --all-features
   # run cargo test on Mac and Windows
   os-check:
     runs-on: ${{ matrix.os }}
@@ -80,7 +80,7 @@ jobs:
       - name: cargo install nextest
         uses: taiki-e/install-action@nextest
       - name: cargo nextest run
-        run: cargo nextest run --workspace --locked --all-features --all-targets
+        run: cargo nextest run --locked --all-features --all-targets
   coverage:
     # Use llvm-cov to build and collect coverage and outputs in a format that is compatible with codecov.io.
     #
@@ -119,7 +119,7 @@ jobs:
       - name: cargo llvm-cov nextest
         # Test only library unit tests, as it's assumed that most of the logic is in the library.
         # Modify it to `--all-targets`, etc. if you also want to test binaries.
-        run: cargo llvm-cov nextest --workspace --all-features --lib --lcov --locked --output-path lcov.info
+        run: cargo llvm-cov nextest --all-features --lib --lcov --locked --output-path lcov.info
       - name: Record Rust version
         run: echo "RUST=$(rustc --version)" >> "$GITHUB_ENV"
       - name: Upload to codecov.io

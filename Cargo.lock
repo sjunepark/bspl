@@ -471,23 +471,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bspl"
-version = "0.1.0"
-dependencies = [
- "db",
- "figment",
- "hashbrown 0.15.0",
- "libsql",
- "model",
- "serde",
- "smes",
- "tokio",
- "tracing",
- "tracing-setup",
- "utils",
-]
-
-[[package]]
 name = "built"
 version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1017,6 +1000,23 @@ dependencies = [
  "lock_api",
  "once_cell",
  "parking_lot_core",
+]
+
+[[package]]
+name = "data-api"
+version = "0.1.0"
+dependencies = [
+ "derive_builder",
+ "log",
+ "model",
+ "nutype",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-setup",
 ]
 
 [[package]]
@@ -3602,6 +3602,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "runners"
+version = "0.1.0"
+dependencies = [
+ "db",
+ "figment",
+ "hashbrown 0.15.0",
+ "libsql",
+ "model",
+ "serde",
+ "smes",
+ "tokio",
+ "tracing",
+ "tracing-setup",
+ "utils",
+]
+
+[[package]]
 name = "rustc-demangle"
 version = "0.1.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4041,6 +4058,7 @@ dependencies = [
  "image",
  "minify-html",
  "model",
+ "nutype",
  "rand",
  "reqwest",
  "scraper",
@@ -4851,6 +4869,7 @@ version = "0.1.0"
 dependencies = [
  "tracing",
  "tracing-subscriber",
+ "utils",
 ]
 
 [[package]]

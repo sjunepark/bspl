@@ -5,7 +5,7 @@ name: scheduled
 
 env:
   RUST_LOG: ${{ vars.RUST_LOG }}
-  NOPECHA_KEY: ${{ secrets.NOPECHA_KEY }}
+  NOPECHA_API_KEY: ${{ secrets.NOPECHA_API_KEY }}
 
 permissions:
   contents: read
@@ -37,11 +37,11 @@ jobs:
         run: cargo generate-lockfile
       - name: Install nextest
         uses: taiki-e/install-action@nextest
-      - run: cargo nextest run --locked --workspace --all-features --all-targets
+      - run: cargo nextest run --locked --all-features --all-targets
         # Check test.yml for more information about why we don't:
         # 1. Use nextest for doctests
         # 2. Run doctests without --all-targets
-      - run: cargo test --doc --locked --workspace --all-features
+      - run: cargo test --doc --locked --all-features
   update:
     # This action checks that updating the dependencies of this crate to the latest available
     # that satisfy the versions in Cargo.toml does not break this crate.
@@ -66,6 +66,6 @@ jobs:
       - name: Install nextest
         uses: taiki-e/install-action@nextest
       - if: hashFiles('Cargo.lock') != ''
-        run: cargo nextest run --locked --workspace --all-features --all-targets
+        run: cargo nextest run --locked --all-features --all-targets
         env:
           RUSTFLAGS: -D deprecated

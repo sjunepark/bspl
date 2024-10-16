@@ -1,8 +1,8 @@
 ## Todo
 
-- Need more captchas when retries are made.
+- Remap all `function id`
+- Parsing html only works for one bspl. Need to fix the whole logic. Have to decide the data structure first.
 - Check if `inspect_err`s are necessary
-- Check if channels are closing as expected.
 
 ## Pending
 

@@ -1,2 +1,2 @@
 mod error;
-mod id;
+pub mod id;

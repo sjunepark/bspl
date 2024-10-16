@@ -127,7 +127,6 @@ ON CONFLICT (smes_id) DO UPDATE SET html         = excluded.html,
 #[cfg(test)]
 mod tests {
     use crate::test_utils::{text_context, DbSource, TestContext};
-    use crate::LibsqlDb;
     use fake::{Fake, Faker};
     use model::table;
     use tokio::sync::mpsc;
@@ -140,7 +139,8 @@ mod tests {
         let ctx = text_context!(DbSource::Migration).await;
         let db = &ctx.db;
 
-        let htmls = populate_htmls(db, 10).await;
+        let ids = (0..10_u64).map(|i| 1000000 + i).collect::<Vec<_>>();
+        let htmls = ctx.populate_htmls(&ids).await;
         let html_to_get = htmls.clone().remove(0);
         let (tx, rx) = mpsc::unbounded_channel();
         for html in htmls {
@@ -174,7 +174,8 @@ mod tests {
         let db = &ctx.db;
 
         // Set up basic HTMLs
-        let htmls = populate_htmls(db, 10).await;
+        let ids = (0..10_u64).map(|i| 1000000 + i).collect::<Vec<_>>();
+        let htmls = ctx.populate_htmls(&ids).await;
 
         // Create HTMLs to upsert: from existing HTMLs
         const UPDATED_HTML_CONTENT: &str =
@@ -236,35 +237,5 @@ mod tests {
             }
         }
         // endregion: Assert
-    }
-
-    async fn populate_htmls(db: &LibsqlDb, size: usize) -> Vec<table::Html> {
-        let mut incremental_id: usize = 1000000;
-        let htmls: Vec<table::Html> = (0..size)
-            .map(|_| {
-                let html = Faker.fake::<table::Html>();
-                let id = incremental_id.to_string();
-                incremental_id += 1;
-                table::Html {
-                    smes_id: id.try_into().expect("failed to create dummy smes_id"),
-                    ..html
-                }
-            })
-            .collect();
-
-        let (tx, rx) = mpsc::unbounded_channel();
-        for html in &htmls {
-            tx.send(html.clone()).expect("Failed to send HTML");
-        }
-        drop(tx);
-
-        db.insert_htmls(rx)
-            .await
-            .inspect_err(|e| {
-                tracing::error!(?e, "Failed to insert HTMLs");
-            })
-            .expect("Failed to insert HTMLs");
-
-        htmls
     }
 }

@@ -24,7 +24,7 @@ impl Default for NopechaApi {
     fn default() -> Self {
         Self {
             client: reqwest::Client::new(),
-            api_key: std::env::var("NOPECHA_KEY").expect("NOPECHA_KEY is not set"),
+            api_key: std::env::var("NOPECHA_API_KEY").expect("NOPECHA_API_KEY is not set"),
             domain: "https://api.nopecha.com".to_string(),
         }
     }

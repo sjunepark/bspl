@@ -1,0 +1,22 @@
+[package]
+name = "data-api"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+derive_builder = { workspace = true }
+nutype = { workspace = true }
+reqwest = { workspace = true, features = ["json"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true, features = ["log"] }
+
+# Workspace crates
+model = { workspace = true }
+log = "0.4.22"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full"] }
+tracing-setup = { workspace = true }

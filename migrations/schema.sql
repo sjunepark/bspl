@@ -27,5 +27,6 @@ CREATE TABLE smes_html
                                                    smes_id GLOB replace(HEX(ZEROBLOB(7)), '00', '[0-9]') ),
     html         BLOB             NOT NULL,
     created_date TEXT DEFAULT CURRENT_DATE CHECK (date(created_date) IS NOT NULL),
-    updated_date TEXT DEFAULT CURRENT_DATE CHECK (date(updated_date) IS NOT NULL)
+    updated_date TEXT DEFAULT CURRENT_DATE CHECK (date(updated_date) IS NOT NULL),
+    FOREIGN KEY (smes_id) REFERENCES smes_company (smes_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );

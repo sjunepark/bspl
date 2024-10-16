@@ -9,3 +9,4 @@ path = "lib.rs"
 [dependencies]
 tracing = { workspace = true, features = ["log"] }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
+utils = { workspace = true }
