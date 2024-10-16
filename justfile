@@ -13,7 +13,7 @@ run bin="":
 # Watch
 
 watch:
-     {{watch_base}} -x "c --workspace --all-features --all-targets"
+     {{watch_base}} -x "c --all-features --all-targets"
 
 watch-test name="":
     {{watch_base}} -s "just test {{name}}"
@@ -25,7 +25,7 @@ watch-example package name:
     {{watch_base}} -s "just example {{package}} {{name}}"
 
 watch-test-integration:
-    {{watch_base}} -x "nextest run --workspace --all-features -E 'kind(test)'"
+    {{watch_base}} -x "nextest run --all-features -E 'kind(test)'"
 
 watch-bench name="":
     {{watch_base}} -s "just bench {{name}}"
@@ -35,7 +35,7 @@ watch-bench name="":
 
 test name="":
     clear
-    cargo nextest run {{no_capture}} --workspace --all-features --all-targets {{name}}
+    cargo nextest run {{no_capture}} --all-features --all-targets {{name}}
 
 test-pkg pkg:
     clear
@@ -43,11 +43,11 @@ test-pkg pkg:
 
 test-doc:
     clear
-    cargo test --workspace --all-features --doc
+    cargo test --all-features --doc
 
 check-lib-bins:
     clear
-    cargo check --workspace --all-features --lib --bins
+    cargo check --all-features --lib --bins
 
 example package name:
     clear
@@ -55,19 +55,19 @@ example package name:
 
 bench name="":
     clear
-    cargo bench --workspace --all-features --all-targets {{name}}
+    cargo bench --all-features --all-targets {{name}}
 
 cov:
     clear
-    rustup run nightly cargo llvm-cov nextest --open --workspace --all-features --lib --locked
+    rustup run nightly cargo llvm-cov nextest --open --all-features --lib --locked
 
 lint:
     clear
-    cargo clippy --workspace --all-features --all-targets --locked
+    cargo clippy --all-features --all-targets --locked
 
-tree:
+tree crate:
     clear
-    cargo tree --workspace --all-features --all-targets -i derive_more-impl
+    cargo tree --all-features --all-targets -i {{crate}}
 
 ## DB
 turso-dev:

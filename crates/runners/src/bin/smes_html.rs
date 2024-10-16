@@ -1,7 +1,7 @@
-use bspl::AppConfig;
 use db::LibsqlDb;
 use figment::providers::{Format, Toml};
 use figment::Figment;
+use runners::AppConfig;
 use smes::get_bspl_htmls;
 use tracing::Instrument;
 

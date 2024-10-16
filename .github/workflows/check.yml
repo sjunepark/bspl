@@ -11,7 +11,7 @@ name: check
 
 env:
   RUST_LOG: ${{ vars.RUST_LOG }}
-  NOPECHA_KEY: ${{ secrets.NOPECHA_KEY }}
+  NOPECHA_API_KEY: ${{ secrets.NOPECHA_API_KEY }}
 
 permissions:
   contents: read
@@ -108,7 +108,7 @@ jobs:
       # intentionally no target specifier; see https://github.com/jonhoo/rust-ci-conf/pull/4
       # --feature-powerset runs for every combination of features
       - name: cargo hack
-        run: cargo hack --workspace --feature-powerset check
+        run: cargo hack --feature-powerset check
   # There are edge cases where --all-targets allows uncatched errors to be introduced.
   # For example, when a dev dependency enables a certain feature flag which the normal dependencies should have,
   # --all-targets will not through a compile error, but --lib --bins will.
@@ -123,4 +123,4 @@ jobs:
       - name: Install stable
         uses: dtolnay/rust-toolchain@stable
       - name: cargo check
-        run: cargo check --workspace --all-features --lib --bins
+        run: cargo check --all-features --lib --bins
