@@ -90,6 +90,15 @@ reset-db:
 restore-db:
     sqlite3 db/libsql/local.db < db/libsql/restore.sql
 
+### Postgresql
+copmose-up:
+    docker compose up -d
+
+compose-config:
+    echo $POSTGRES_PASSWORD
+    docker compose config
+
+
 ## Others
 git-gc:
     git gc --prune=now --aggressive
