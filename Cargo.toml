@@ -20,11 +20,12 @@ minify-html = "0.15.0"
 nutype = "0.5.0"
 rand = "0.8.5"
 reqwest = "0.12.7"
+scraper = "0.20.0"
 serde = "1.0.210"
 serde-aux = "4.5.0"
 serde_json = "1.0.128"
 static_assertions = "1.1.0"
-scraper = "0.20.0"
+sqlx = "0.5.7"
 thiserror = "1.0.63"
 tokio = "1.40.0"
 tracing = "0.1.40"
@@ -46,3 +47,6 @@ wiremock = "0.6.2"
 
 # Benchmarks
 criterion = "0.5.1"
+
+[profile.dev.package.sqlx-macros]
+opt-level = 3

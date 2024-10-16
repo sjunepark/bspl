@@ -44,4 +44,4 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ./db/postgresql
+      device: ./db/postgresql/data

@@ -1,7 +1,7 @@
 # Tests are run by nextest
 
 set dotenv-required
-set dotenv-filename := ".env.dev"
+set dotenv-filename := ".env"
 
 watch_base := "cargo watch -q -c -i 'tests/resources/**/*'"
 no_capture := if env_var("TEST_LOG") == "true" { "--no-capture" } else { "" }
@@ -73,6 +73,21 @@ tree crate:
 turso-dev:
     turso dev --db-file db/libsql/local.db
 
+sqlx-add name:
+    sqlx migrate add {{name}}
+
+sqlx-run:
+    sqlx migrate run
+
+sqlx-revert:
+    sqlx migrate revert
+
+sqlx-info:
+    sqlx migrate info
+
+sqlx-prepare:
+    cargo sqlx prepare --workspace -- --all-targets --all-features
+
 geni-up-local:
     geni up
 
@@ -80,14 +95,14 @@ geni-down-local:
     geni down
 
 backup-db:
-    scripts/backup_db.sh
+    scripts/backup_postgresql_db.sh
 
-reset-db:
+reset-libsql-db:
     just backup-db
     just geni-down-local
     just geni-up-local
 
-restore-db:
+restore-libsql-db:
     sqlite3 db/libsql/local.db < db/libsql/restore.sql
 
 ### Postgresql

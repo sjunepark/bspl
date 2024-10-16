@@ -12,6 +12,8 @@ pub enum DbError {
     Libsql(#[from] libsql::Error),
     #[error("Model error: {0}")]
     Model(#[from] model::ModelError),
+    #[error("Sqlx error: {0}")]
+    Sqlx(#[from] sqlx::Error),
 }
 
 #[derive(Error, Debug)]

@@ -7,13 +7,7 @@ use tracing::Instrument;
 async fn main() {
     tracing_setup::span!("main");
 
-    let db = LibsqlDb::new_local("db/libsql/local.db")
-        .in_current_span()
-        .await
-        .inspect_err(|e| {
-            tracing::error!(?e, "Failed to create db");
-        })
-        .expect("Failed to create db");
+    let db = LibsqlDb::new("db/libsql/local.db").in_current_span().await;
 
     let mut api = ListApi::new();
 

@@ -15,10 +15,7 @@ async fn main() {
         .extract()
         .expect("Failed to load settings");
 
-    let db = LibsqlDb::new_local("db/libsql/local.db")
-        .in_current_span()
-        .await
-        .expect("Failed to get db");
+    let db = LibsqlDb::new("db/libsql/local.db").in_current_span().await;
 
     // 1. Get all companies from the database
     let all_ids_to_query = db

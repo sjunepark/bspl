@@ -189,10 +189,7 @@ struct BenchDb {
 
 impl BenchDb {
     async fn new() -> Self {
-        let db = LibsqlDb::new_local(":memory:")
-            .await
-            .inspect_err(|e| tracing::error!(?e, "Failed to create database"))
-            .unwrap();
+        let db = LibsqlDb::new(":memory:").await;
 
         Self {
             connection: db.connection,

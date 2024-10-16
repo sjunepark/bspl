@@ -4,15 +4,48 @@ use hashbrown::HashSet;
 use libsql::params::IntoParams;
 use model::{company, ModelError};
 use serde::Deserialize;
+use sqlx::postgres::PgPoolOptions;
 use std::fmt::Debug;
 use std::future::Future;
 use std::path::Path;
 
 pub trait Db: Sized + CompanyDb + HtmlDb {
+    fn new<P: AsRef<Path> + Debug>(db_url: P) -> impl Future<Output = Self>;
     fn health_check(&self) -> impl Future<Output = Result<(), DbError>>;
-    fn new_local<P: AsRef<Path> + Debug>(db_url: P) -> impl Future<Output = Result<Self, DbError>>;
 }
 
+pub(crate) trait Params {
+    fn params(&self) -> impl IntoParams;
+}
+
+// region: PostgresqlDb
+pub struct PostgresqlDb {
+    pub pool: sqlx::PgPool,
+}
+
+impl Db for PostgresqlDb {
+    #[tracing::instrument]
+    async fn new<P: AsRef<Path> + Debug>(db_url: P) -> Self {
+        let connection_string = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set");
+        let pool = PgPoolOptions::new()
+            .connect(&connection_string)
+            .await
+            .expect("Failed to create connection pool");
+
+        Self { pool }
+    }
+
+    #[tracing::instrument(skip(self))]
+    async fn health_check(&self) -> Result<(), DbError> {
+        sqlx::query!("SELECT 1 AS value")
+            .fetch_one(&self.pool)
+            .await
+            .map(|_| ())
+            .map_err(Into::into)
+    }
+}
+
+// region: LibsqlDb
 pub struct LibsqlDb {
     pub connection: libsql::Connection,
 }
@@ -28,16 +61,17 @@ impl Db for LibsqlDb {
     }
 
     #[tracing::instrument]
-    async fn new_local<P: AsRef<Path> + Debug>(db_url: P) -> Result<Self, DbError> {
+    async fn new<P: AsRef<Path> + Debug>(db_url: P) -> Self {
         let db = libsql::Builder::new_local(db_url)
             .build()
-            .await?
-            .connect()?;
+            .await
+            .expect("Failed to create connection")
+            .connect()
+            .expect("Failed to connect");
 
-        Ok(Self { connection: db })
+        Self { connection: db }
     }
 }
-
 impl LibsqlDb {
     pub(crate) async fn get_all_from<T: for<'de> Deserialize<'de>>(
         &self,
@@ -81,22 +115,17 @@ impl LibsqlDb {
     }
 }
 
-pub(crate) trait Params {
-    fn params(&self) -> impl IntoParams;
-}
+// endregion: LibsqlDb
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn db_should_connect() {
+    async fn libsql_db_should_connect() {
         tracing_setup::span!("test");
 
-        let db = LibsqlDb::new_local(":memory:")
-            .await
-            .inspect_err(|e| tracing::error!(?e, "Failed to create connection"))
-            .unwrap();
+        let db = LibsqlDb::new(":memory:").await;
 
         let mut rows = db
             .connection

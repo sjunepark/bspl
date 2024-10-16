@@ -25,7 +25,9 @@ impl TestContext<LibsqlDb> for LibsqlTestContext {
             .join(function_id)
             .with_extension("db");
         create_parent_dirs(&test_db_path);
-        let migrations_path = workspace_root.join("migrations");
+        let migrations_path =
+            std::env::var("DATABASE_MIGRATIONS_FOLDER").unwrap_or("migrations".to_string());
+        let migrations_path = workspace_root.join(migrations_path);
 
         tracing::trace!(
             ?project_root,
@@ -39,10 +41,7 @@ impl TestContext<LibsqlDb> for LibsqlTestContext {
         delete_files_if_exist(db_related_files);
 
         // Create a connection to the test db
-        let db = LibsqlDb::new_local(&test_db_path)
-            .await
-            .inspect_err(|e| tracing::error!(?e, "Failed to create connection"))
-            .unwrap();
+        let db = LibsqlDb::new(&test_db_path).await;
 
         // Perform migration scripts to initialize the test db
         let test_db_url = format!("sqlite://{}", test_db_path.display());
@@ -134,26 +133,11 @@ mod tests {
 
     #[tokio::test]
     async fn db_source_migration_should_create_empty_companies_table() {
+        tracing_setup::span!("test");
+
         let function_id = utils::function_id!();
         let ctx = LibsqlTestContext::new(&function_id).await;
         let companies = ctx.db.get_companies().await.unwrap();
         assert_eq!(companies.len(), 0);
-    }
-
-    #[tokio::test]
-    async fn db_source_local_should_create_working_connection() {
-        if std::env::var("CI").is_ok() {
-            return;
-        }
-
-        let function_id = utils::function_id!();
-        let ctx = LibsqlTestContext::new(&function_id).await;
-        ctx.db
-            .health_check()
-            .await
-            .inspect_err(|e| {
-                tracing::error!(?e, "Failed to health check");
-            })
-            .unwrap();
     }
 }

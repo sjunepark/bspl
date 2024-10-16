@@ -16,7 +16,7 @@ async fn main() {
         .inspect_err(|e| tracing::error!(?e, "Failed to deserialize"))
         .unwrap();
 
-    let db = LibsqlDb::new_local(":memory:").await.unwrap();
+    let db = LibsqlDb::new(":memory:").await;
 
     let companies: Vec<model::table::Company> = response
         .companies()
