@@ -1,5 +1,5 @@
 mod company;
 mod html;
 
-pub use company::Company;
-pub use html::Html;
+pub use company::{Company, CompanyDb};
+pub use html::{Html, HtmlDb};

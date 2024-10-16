@@ -1,4 +1,5 @@
-use db::LibsqlDb;
+use db::smes::CompanyDb;
+use db::{Db, LibsqlDb};
 
 #[tokio::main]
 async fn main() {

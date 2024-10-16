@@ -1,18 +1,25 @@
 use crate::error::DbError;
+use crate::smes::{CompanyDb, HtmlDb};
 use hashbrown::HashSet;
 use libsql::params::IntoParams;
 use model::{company, ModelError};
 use serde::Deserialize;
 use std::fmt::Debug;
+use std::future::Future;
 use std::path::Path;
+
+pub trait Db: Sized + CompanyDb + HtmlDb {
+    fn health_check(&self) -> impl Future<Output = Result<(), DbError>>;
+    fn new_local<P: AsRef<Path> + Debug>(db_url: P) -> impl Future<Output = Result<Self, DbError>>;
+}
 
 pub struct LibsqlDb {
     pub connection: libsql::Connection,
 }
 
-impl LibsqlDb {
+impl Db for LibsqlDb {
     #[tracing::instrument(skip(self))]
-    pub async fn health_check(&self) -> Result<(), DbError> {
+    async fn health_check(&self) -> Result<(), DbError> {
         self.connection
             .query("SELECT 1", ())
             .await
@@ -21,7 +28,7 @@ impl LibsqlDb {
     }
 
     #[tracing::instrument]
-    pub async fn new_local<P: AsRef<Path> + Debug>(db_url: P) -> Result<Self, DbError> {
+    async fn new_local<P: AsRef<Path> + Debug>(db_url: P) -> Result<Self, DbError> {
         let db = libsql::Builder::new_local(db_url)
             .build()
             .await?
@@ -29,7 +36,9 @@ impl LibsqlDb {
 
         Ok(Self { connection: db })
     }
+}
 
+impl LibsqlDb {
     pub(crate) async fn get_all_from<T: for<'de> Deserialize<'de>>(
         &self,
         table: &str,
