@@ -14,7 +14,7 @@ pub trait Db: Sized + CompanyDb + HtmlDb {
     fn health_check(&self) -> impl Future<Output = Result<(), DbError>>;
 }
 
-pub(crate) trait Params {
+pub(crate) trait LibsqlParams {
     fn params(&self) -> impl IntoParams;
 }
 

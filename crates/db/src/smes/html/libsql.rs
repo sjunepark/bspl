@@ -1,4 +1,4 @@
-use crate::db::Params;
+use crate::db::LibsqlParams;
 use crate::smes::HtmlDb;
 use crate::{DbError, LibsqlDb};
 use hashbrown::HashSet;

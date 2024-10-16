@@ -1,6 +1,5 @@
-use crate::db::Params;
+use crate::db::LibsqlParams;
 use crate::DbError;
-use chrono::NaiveDate;
 use libsql::params::IntoParams;
 use model::ModelError;
 use serde::{Deserialize, Serialize};
@@ -9,8 +8,8 @@ use serde::{Deserialize, Serialize};
 pub struct Html {
     pub smes_id: String,
     pub html: String,
-    pub created_date: Option<NaiveDate>,
-    pub updated_date: Option<NaiveDate>,
+    pub created_date: Option<time::Date>,
+    pub updated_date: Option<time::Date>,
 }
 
 impl From<model::table::Html> for Html {
@@ -37,7 +36,7 @@ impl TryFrom<Html> for model::table::Html {
     }
 }
 
-impl Params for Html {
+impl LibsqlParams for Html {
     fn params(&self) -> impl IntoParams {
         libsql::named_params! {
             ":smes_id": self.smes_id.as_str(),

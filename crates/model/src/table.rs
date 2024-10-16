@@ -1,5 +1,4 @@
 use crate::company;
-use chrono::NaiveDate;
 use fake::faker::address::ja_jp::CityName;
 use fake::faker::company::ja_jp::{CompanyName, Industry};
 use fake::faker::name::ja_jp::Name;
@@ -8,7 +7,7 @@ use fake::locales::EN;
 use fake::{Dummy, Fake, Rng};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub struct Company {
     pub smes_id: company::Id,
     pub representative_name: company::RepresentativeName,
@@ -17,16 +16,16 @@ pub struct Company {
     pub company_name: company::CompanyName,
     pub industry_code: company::IndustryCode,
     pub industry_name: company::IndustryName,
-    pub created_date: Option<NaiveDate>,
-    pub updated_date: Option<NaiveDate>,
+    pub created_date: Option<time::Date>,
+    pub updated_date: Option<time::Date>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Html {
     pub smes_id: company::Id,
     pub html: company::HtmlContent,
-    pub created_date: Option<NaiveDate>,
-    pub updated_date: Option<NaiveDate>,
+    pub created_date: Option<time::Date>,
+    pub updated_date: Option<time::Date>,
 }
 
 impl<T> Dummy<T> for Html {

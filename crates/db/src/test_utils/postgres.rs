@@ -1,5 +1,6 @@
 use crate::test_utils::TestContext;
 use crate::{Db, PostgresDb};
+use sqlx::migrate;
 use testcontainers_modules::postgres::Postgres;
 use testcontainers_modules::testcontainers::runners::AsyncRunner;
 use testcontainers_modules::testcontainers::{ContainerAsync, ImageExt};
@@ -26,6 +27,11 @@ impl TestContext<PostgresDb> for PostgresTestContext {
         );
 
         let db = PostgresDb::new(&connection_string).await;
+
+        migrate!("../../migrations")
+            .run(&db.pool)
+            .await
+            .expect("Failed to run migrations");
 
         Self { db, _node: node }
     }
