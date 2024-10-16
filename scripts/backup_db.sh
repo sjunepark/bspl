@@ -4,8 +4,8 @@ pwd              # Print current working directory
 ls -l "$SRC_DIR" # List contents of source directory
 
 # Set the source and destination directories
-SRC_DIR="db"
-BACKUP_DIR="db/backup"
+SRC_DIR="db/libsql"
+BACKUP_DIR="db/libsql/backup"
 
 # Set the source filename
 SRC_FILE="local.db"

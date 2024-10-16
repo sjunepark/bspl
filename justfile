@@ -71,7 +71,7 @@ tree crate:
 
 ## DB
 turso-dev:
-    turso dev --db-file db/local.db
+    turso dev --db-file db/libsql/local.db
 
 geni-up-local:
     geni up
@@ -88,7 +88,7 @@ reset-db:
     just geni-up-local
 
 restore-db:
-    sqlite3 db/local.db < db/restore.sql
+    sqlite3 db/libsql/local.db < db/libsql/restore.sql
 
 ## Others
 git-gc:

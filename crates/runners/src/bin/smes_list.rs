@@ -7,7 +7,7 @@ use tracing::Instrument;
 async fn main() {
     tracing_setup::span!("main");
 
-    let db = LibsqlDb::new_local("db/local.db")
+    let db = LibsqlDb::new_local("db/libsql/local.db")
         .in_current_span()
         .await
         .inspect_err(|e| {

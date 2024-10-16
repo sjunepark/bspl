@@ -15,7 +15,7 @@ async fn main() {
         .extract()
         .expect("Failed to load settings");
 
-    let db = LibsqlDb::new_local("db/local.db")
+    let db = LibsqlDb::new_local("db/libsql/local.db")
         .in_current_span()
         .await
         .expect("Failed to get db");
