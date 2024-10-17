@@ -3,7 +3,7 @@ use crate::{DbError, PostgresDb};
 use hashbrown::HashSet;
 use model::{company, table, ModelError};
 use serde::{Deserialize, Serialize};
-use sqlx::FromRow;
+use sqlx::{FromRow, QueryBuilder};
 
 impl CompanyDb for PostgresDb {
     async fn get_companies(&self) -> Result<Vec<table::Company>, DbError> {
@@ -28,25 +28,25 @@ impl CompanyDb for PostgresDb {
     }
 
     async fn insert_companies(&self, companies: Vec<table::Company>) -> Result<(), DbError> {
-        let mut tx = self.pool.begin().await?;
+        let tx = self.pool.begin().await?;
         let total_company_count = companies.len() as u64;
-        let mut insert_count = 0_u64;
 
-        for company in companies {
-            let result = sqlx::query!(
-                "INSERT INTO smes_company (smes_id, representative_name, headquarters_address, business_registration_number,
-                          company_name, industry_code, industry_name)
-VALUES ($1, $2, $3, $4, $5, $6, $7)",
-                company.smes_id.to_string(),
-                company.representative_name.to_string(),
-                company.headquarters_address.to_string(),
-                company.business_registration_number.to_string(),
-                company.company_name.to_string(),
-                company.industry_code.to_string(),
-                company.industry_name.to_string(),
-            ).execute(&mut *tx).await?.rows_affected();
-            insert_count += result;
-        }
+        let mut query_builder = QueryBuilder::new(
+            "INSERT INTO smes_company (smes_id, representative_name, headquarters_address, business_registration_number,
+                          company_name, industry_code, industry_name) "
+        );
+
+        query_builder.push_values(companies, |mut b, company| {
+            b.push_bind(company.smes_id.to_string())
+                .push_bind(company.representative_name.to_string())
+                .push_bind(company.headquarters_address.to_string())
+                .push_bind(company.business_registration_number.to_string())
+                .push_bind(company.company_name.to_string())
+                .push_bind(company.industry_code.to_string())
+                .push_bind(company.industry_name.to_string());
+        });
+        let query = query_builder.build();
+        let insert_count = query.execute(&self.pool).await?.rows_affected();
 
         if insert_count == total_company_count {
             tracing::trace!("Inserted {} companies", insert_count);

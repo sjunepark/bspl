@@ -70,7 +70,7 @@ pub(crate) trait TestContext<D: Db> {
         drop(tx);
 
         self.db()
-            .insert_htmls(rx)
+            .insert_html_channel(rx)
             .await
             .inspect_err(|e| {
                 tracing::error!(?e, "Failed to insert HTMLs");

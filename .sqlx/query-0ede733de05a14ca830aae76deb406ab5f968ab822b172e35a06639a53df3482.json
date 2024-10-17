@@ -1,0 +1,38 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT * from smes_html",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "smes_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "html",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "created_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 3,
+        "name": "updated_date",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "0ede733de05a14ca830aae76deb406ab5f968ab822b172e35a06639a53df3482"
+}

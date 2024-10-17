@@ -53,9 +53,9 @@ example package name:
     clear
     cargo run -p {{package}} --example {{name}}
 
-bench name="":
+bench package name="":
     clear
-    cargo bench --all-features --all-targets {{name}}
+    cargo bench --all-features --all-targets -p {{package}} {{name}}
 
 cov:
     clear
@@ -106,7 +106,7 @@ restore-libsql-db:
     sqlite3 db/libsql/local.db < db/libsql/restore.sql
 
 ### Postgres
-copmose-up:
+compose-up:
     docker compose up -d
 
 compose-config:

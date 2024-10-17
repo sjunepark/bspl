@@ -8,6 +8,10 @@ publish = false
 name = "libsql"
 harness = false
 
+[[bench]]
+name = "postgres"
+harness = false
+
 [dependencies]
 hashbrown = { workspace = true }
 libsql = { workspace = true, features = ["core", "serde"] }

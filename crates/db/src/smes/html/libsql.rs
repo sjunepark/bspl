@@ -3,11 +3,13 @@ use crate::smes::HtmlDb;
 use crate::{DbError, LibsqlDb};
 use hashbrown::HashSet;
 use libsql::named_params;
-use model::{company, table};
+use libsql::params::IntoParams;
+use model::{company, table, ModelError};
+use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::UnboundedReceiver;
 
 impl HtmlDb for LibsqlDb {
-    async fn get_html(&self, smes_id: &str) -> Result<Option<table::Html>, DbError> {
+    async fn select_html(&self, smes_id: &str) -> Result<Option<table::Html>, DbError> {
         let mut rows = self
             .connection
             .query(
@@ -20,7 +22,7 @@ impl HtmlDb for LibsqlDb {
 
         let row = rows.next().await?;
         let result = row
-            .map(|r| libsql::de::from_row::<crate::smes::Html>(&r))
+            .map(|r| libsql::de::from_row::<LibsqlHtml>(&r))
             .transpose()?
             .map(TryInto::<table::Html>::try_into)
             .transpose()?;
@@ -36,15 +38,15 @@ impl HtmlDb for LibsqlDb {
     }
 
     #[tracing::instrument(skip(self))]
-    async fn get_htmls(&self) -> Result<Vec<table::Html>, DbError> {
-        self.get_all_from::<crate::smes::Html>("smes_html")
+    async fn select_htmls(&self) -> Result<Vec<table::Html>, DbError> {
+        self.get_all_from::<LibsqlHtml>("smes_html")
             .await?
             .into_iter()
             .map(TryInto::try_into)
             .collect()
     }
 
-    async fn get_html_ids(&self) -> Result<HashSet<company::Id>, DbError> {
+    async fn select_html_ids(&self) -> Result<HashSet<company::Id>, DbError> {
         self.get_all_ids_from("smes_html").await
     }
 
@@ -53,7 +55,10 @@ impl HtmlDb for LibsqlDb {
     ///
     /// Each HTML will be inserted one by one.
     /// When an error occurs, the error will be logged in WARN level and the operation will continue.
-    async fn insert_htmls(&self, mut htmls: UnboundedReceiver<table::Html>) -> Result<(), DbError> {
+    async fn insert_html_channel(
+        &self,
+        mut htmls: UnboundedReceiver<table::Html>,
+    ) -> Result<(), DbError> {
         let mut statement = self
             .connection
             .prepare(
@@ -65,7 +70,7 @@ VALUES (:smes_id, :html);",
 
         while let Some(html) = htmls.recv().await {
             match statement
-                .execute(Into::<crate::smes::Html>::into(html.clone()).params())
+                .execute(Into::<LibsqlHtml>::into(html.clone()).params())
                 .await
             {
                 Ok(_number_of_rows) => {
@@ -88,7 +93,10 @@ VALUES (:smes_id, :html);",
     ///
     /// When the upserting `smes_id` exists in the table, the `html` and `updated_date` will be updated.
     #[tracing::instrument(skip(self))]
-    async fn upsert_htmls(&self, mut htmls: UnboundedReceiver<table::Html>) -> Result<(), DbError> {
+    async fn upsert_html_channel(
+        &self,
+        mut htmls: UnboundedReceiver<table::Html>,
+    ) -> Result<(), DbError> {
         let mut statement = self
             .connection
             .prepare(
@@ -102,7 +110,7 @@ ON CONFLICT (smes_id) DO UPDATE SET html         = excluded.html,
 
         while let Some(html) = htmls.recv().await {
             match statement
-                .execute(Into::<crate::smes::Html>::into(html.clone()).params())
+                .execute(Into::<LibsqlHtml>::into(html.clone()).params())
                 .await
             {
                 Ok(_number_of_rows) => {
@@ -145,12 +153,14 @@ mod tests {
         }
         drop(tx);
 
-        db.insert_htmls(rx).await.expect("Failed to insert HTMLs");
+        db.insert_html_channel(rx)
+            .await
+            .expect("Failed to insert HTMLs");
         // endregion: Arrange
 
         // region: Action
         let result = db
-            .get_html(&html_to_get.smes_id)
+            .select_html(&html_to_get.smes_id)
             .await
             .expect("Failed to get HTML")
             .expect("No HTML found");
@@ -209,11 +219,13 @@ mod tests {
         }
         drop(tx);
 
-        db.upsert_htmls(rx).await.expect("Failed to upsert HTMLs");
+        db.upsert_html_channel(rx)
+            .await
+            .expect("Failed to upsert HTMLs");
         // endregion: Action
 
         // region: Assert
-        let db_htmls = db.get_htmls().await.expect("Failed to get HTMLs");
+        let db_htmls = db.select_htmls().await.expect("Failed to get HTMLs");
 
         for html in &db_htmls {
             match html.smes_id.as_str() {
@@ -235,5 +247,46 @@ mod tests {
             }
         }
         // endregion: Assert
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct LibsqlHtml {
+    pub smes_id: String,
+    pub html: String,
+    pub created_date: Option<time::Date>,
+    pub updated_date: Option<time::Date>,
+}
+
+impl From<table::Html> for LibsqlHtml {
+    fn from(value: table::Html) -> Self {
+        Self {
+            smes_id: value.smes_id.to_string(),
+            html: value.html.into(),
+            created_date: value.created_date,
+            updated_date: value.updated_date,
+        }
+    }
+}
+
+impl TryFrom<LibsqlHtml> for table::Html {
+    type Error = DbError;
+
+    fn try_from(value: LibsqlHtml) -> Result<Self, Self::Error> {
+        Ok(table::Html {
+            smes_id: value.smes_id.try_into().map_err(ModelError::from)?,
+            html: value.html.try_into().map_err(ModelError::from)?,
+            created_date: value.created_date,
+            updated_date: value.updated_date,
+        })
+    }
+}
+
+impl LibsqlParams for LibsqlHtml {
+    fn params(&self) -> impl IntoParams {
+        named_params! {
+            ":smes_id": self.smes_id.as_str(),
+            ":html": self.html.as_str(),
+        }
     }
 }

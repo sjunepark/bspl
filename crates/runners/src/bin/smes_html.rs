@@ -24,7 +24,7 @@ async fn main() {
         .await
         .expect("Failed to get companies");
     let ids_with_htmls = db
-        .get_html_ids()
+        .select_html_ids()
         .in_current_span()
         .await
         .expect("Failed to get html ids");
@@ -44,7 +44,7 @@ async fn main() {
     // We're calling `insert_htmls` rather than `upsert_htmls`
     // because we're sure that the HTMLs are new.
     // Or else, it means that an invariant has happened.
-    db.insert_htmls(new_htmls)
+    db.insert_html_channel(new_htmls)
         .in_current_span()
         .await
         .expect("Failed to upsert htmls");
@@ -54,7 +54,7 @@ async fn main() {
         let htmls = get_bspl_htmls(ids_already_queried.cloned().collect())
             .in_current_span()
             .await;
-        db.upsert_htmls(htmls)
+        db.upsert_html_channel(htmls)
             .in_current_span()
             .await
             .expect("Failed to upsert htmls");
