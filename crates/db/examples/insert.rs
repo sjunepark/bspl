@@ -1,5 +1,5 @@
 use db::smes::CompanyDb;
-use db::{Db, LibsqlDb};
+use db::{Db, PostgresDb};
 
 #[tokio::main]
 async fn main() {
@@ -16,7 +16,8 @@ async fn main() {
         .inspect_err(|e| tracing::error!(?e, "Failed to deserialize"))
         .unwrap();
 
-    let db = LibsqlDb::new(":memory:").await;
+    let connection_string = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set");
+    let db = PostgresDb::new(connection_string).await;
 
     let companies: Vec<model::table::Company> = response
         .companies()

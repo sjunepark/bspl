@@ -135,7 +135,8 @@ impl TryFrom<Company> for table::Company {
 
     fn try_from(value: Company) -> Result<Self, Self::Error> {
         Ok(table::Company {
-            smes_id: company::Id::try_from(value.vnia_sn.to_string()).map_err(ModelError::from)?,
+            company_id: company::Id::try_from(value.vnia_sn.to_string())
+                .map_err(ModelError::from)?,
             representative_name: Into::<RepresentativeName>::into(value.rprsv_nm),
             headquarters_address: Into::<company::HeadquartersAddress>::into(value.hdofc_addr),
             business_registration_number: company::BusinessRegistrationNumber::try_from(
@@ -146,8 +147,8 @@ impl TryFrom<Company> for table::Company {
             industry_code: company::IndustryCode::try_from(value.indsty_cd)
                 .map_err(ModelError::from)?,
             industry_name: Into::<company::IndustryName>::into(value.indsty_nm),
-            created_date: None,
-            updated_date: None,
+            created_at: None,
+            updated_at: None,
         })
     }
 }
@@ -161,7 +162,7 @@ pub(crate) struct Html {
 impl From<table::Html> for Html {
     fn from(value: table::Html) -> Self {
         Self {
-            vnia_sn: value.smes_id.to_string(),
+            vnia_sn: value.company_id.to_string(),
             html: value.html.into(),
         }
     }
@@ -172,10 +173,10 @@ impl TryFrom<Html> for table::Html {
 
     fn try_from(value: Html) -> Result<Self, Self::Error> {
         Ok(table::Html {
-            smes_id: company::Id::try_from(value.vnia_sn).map_err(ModelError::from)?,
+            company_id: company::Id::try_from(value.vnia_sn).map_err(ModelError::from)?,
             html: value.html.try_into().map_err(ModelError::from)?,
-            created_date: None,
-            updated_date: None,
+            created_at: None,
+            updated_at: None,
         })
     }
 }

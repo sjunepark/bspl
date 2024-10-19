@@ -58,9 +58,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Removed `windows-latest` as it's not compatible with `libsql-sys` version 0.8
-        # ref: <https://github.com/tursodatabase/libsql/issues/1763>
-        os: [ macos-latest ]
+        os: [ macos-latest, windows-latest ]
     steps:
       # if your project needs OpenSSL, uncomment this to fix Windows builds.
       # it's commented out by default as the installation command takes 5-10m.

@@ -1,4 +1,7 @@
 # Tests are run by nextest
+# --all-features is not passed since `minify-html` is a optional dependency which takes long to compile,
+# and is not going to be included in local development.
+# CI will run with the `--all-features` flag.
 
 set dotenv-required
 set dotenv-filename := ".env"
@@ -8,12 +11,12 @@ no_capture := if env_var("TEST_LOG") == "true" { "--no-capture" } else { "" }
 
 run bin="":
     clear
-    cargo run --bin {{bin}}
+    cargo run --bin {{bin}} -r
 
 # Watch
 
 watch:
-     {{watch_base}} -x "c --all-features --all-targets"
+     {{watch_base}} -x "c --all-targets"
 
 watch-test name="":
     {{watch_base}} -s "just test {{name}}"
@@ -25,7 +28,7 @@ watch-example package name:
     {{watch_base}} -s "just example {{package}} {{name}}"
 
 watch-test-integration:
-    {{watch_base}} -x "nextest run --all-features -E 'kind(test)'"
+    {{watch_base}} -x "nextest run -E 'kind(test)'"
 
 watch-bench name="":
     {{watch_base}} -s "just bench {{name}}"
@@ -35,19 +38,19 @@ watch-bench name="":
 
 test name="":
     clear
-    cargo nextest run {{no_capture}} --all-features --all-targets {{name}}
+    cargo nextest run {{no_capture}} --all-targets {{name}}
 
 test-pkg pkg:
     clear
-    cargo nextest run --all-features --all-targets --package {{pkg}}
+    cargo nextest run --all-targets --package {{pkg}}
 
 test-doc:
     clear
-    cargo test --all-features --doc
+    cargo test --doc
 
 check-lib-bins:
     clear
-    cargo check --all-features --lib --bins
+    cargo check --lib --bins
 
 example package name:
     clear
@@ -59,20 +62,17 @@ bench package name="":
 
 cov:
     clear
-    rustup run nightly cargo llvm-cov nextest --open --all-features --lib --locked
+    rustup run nightly cargo llvm-cov nextest --open --lib --locked
 
 lint:
     clear
-    cargo clippy --all-features --all-targets --locked
+    cargo clippy --all-targets --locked
 
 tree crate:
     clear
     cargo tree --all-features --all-targets -i {{crate}}
 
 ## DB
-turso-dev:
-    turso dev --db-file db/libsql/local.db
-
 sqlx-add name:
     sqlx migrate add {{name}}
 
@@ -86,24 +86,22 @@ sqlx-info:
     sqlx migrate info
 
 sqlx-prepare:
-    cargo sqlx prepare --workspace -- --all-targets --all-features
-
-geni-up-local:
-    geni up
-
-geni-down-local:
-    geni down
+    cargo sqlx prepare --workspace -- --all-targets
 
 backup-db:
     scripts/backup_postgres_db.sh
 
-reset-libsql-db:
-    just backup-db
-    just geni-down-local
-    just geni-up-local
+dm-list:
+    diesel migration list
 
-restore-libsql-db:
-    sqlite3 db/libsql/local.db < db/libsql/restore.sql
+dm-run:
+    diesel migration run
+
+dm-revert:
+    diesel migration revert
+
+dm-redo:
+    diesel migration redo
 
 ### Postgres
 compose-up:

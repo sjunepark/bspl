@@ -1,11 +1,11 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT smes_id from smes_html",
+  "query": "SELECT company_id from smes.html",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "smes_id",
+        "name": "company_id",
         "type_info": "Text"
       }
     ],

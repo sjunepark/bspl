@@ -6,7 +6,6 @@ edition = "2021"
 [dependencies]
 figment = { workspace = true, features = ["toml"] }
 hashbrown = { workspace = true }
-libsql = { workspace = true, features = ["core", "serde"] }
 serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true, features = ["log"] }

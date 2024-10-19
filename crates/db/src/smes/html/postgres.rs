@@ -7,11 +7,11 @@ use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::UnboundedReceiver;
 
 impl HtmlDb for PostgresDb {
-    async fn select_html(&self, smes_id: &str) -> Result<Option<table::Html>, DbError> {
+    async fn select_html(&self, company_id: &str) -> Result<Option<table::Html>, DbError> {
         sqlx::query_as!(
             PostgresHtml,
-            "SELECT * from smes_html WHERE smes_id = $1",
-            smes_id
+            "SELECT * from smes.html WHERE company_id = $1",
+            company_id
         )
         .fetch_optional(&self.pool)
         .await?
@@ -20,7 +20,7 @@ impl HtmlDb for PostgresDb {
     }
 
     async fn select_htmls(&self) -> Result<Vec<table::Html>, DbError> {
-        sqlx::query_as!(PostgresHtml, "SELECT * from smes_html")
+        sqlx::query_as!(PostgresHtml, "SELECT * from smes.html")
             .fetch_all(&self.pool)
             .await?
             .into_iter()
@@ -29,26 +29,27 @@ impl HtmlDb for PostgresDb {
     }
 
     async fn select_html_ids(&self) -> Result<HashSet<Id>, DbError> {
-        sqlx::query!("SELECT smes_id from smes_html")
+        sqlx::query!("SELECT company_id from smes.html")
             .fetch_all(&self.pool)
             .await?
             .into_iter()
             .map(|html| {
-                company::Id::try_from(html.smes_id).map_err(|e| DbError::from(ModelError::from(e)))
+                company::Id::try_from(html.company_id)
+                    .map_err(|e| DbError::from(ModelError::from(e)))
             })
             .collect()
     }
 
     async fn insert_html_channel(
         &self,
-        htmls: UnboundedReceiver<table::Html>,
+        _htmls: UnboundedReceiver<table::Html>,
     ) -> Result<(), DbError> {
         todo!()
     }
 
     async fn upsert_html_channel(
         &self,
-        htmls: UnboundedReceiver<table::Html>,
+        _htmls: UnboundedReceiver<table::Html>,
     ) -> Result<(), DbError> {
         todo!()
     }
@@ -56,19 +57,19 @@ impl HtmlDb for PostgresDb {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct PostgresHtml {
-    pub smes_id: String,
-    pub html: String,
-    pub created_date: Option<time::Date>,
-    pub updated_date: Option<time::Date>,
+    pub company_id: String,
+    pub html_raw: String,
+    pub created_at: Option<time::PrimitiveDateTime>,
+    pub updated_at: Option<time::PrimitiveDateTime>,
 }
 
 impl From<table::Html> for PostgresHtml {
     fn from(value: table::Html) -> Self {
         Self {
-            smes_id: value.smes_id.to_string(),
-            html: value.html.into(),
-            created_date: value.created_date,
-            updated_date: value.updated_date,
+            company_id: value.company_id.to_string(),
+            html_raw: value.html.into(),
+            created_at: value.created_at,
+            updated_at: value.updated_at,
         }
     }
 }
@@ -78,10 +79,10 @@ impl TryFrom<PostgresHtml> for table::Html {
 
     fn try_from(value: PostgresHtml) -> Result<Self, Self::Error> {
         Ok(table::Html {
-            smes_id: value.smes_id.try_into().map_err(ModelError::from)?,
-            html: value.html.try_into().map_err(ModelError::from)?,
-            created_date: value.created_date,
-            updated_date: value.updated_date,
+            company_id: value.company_id.try_into().map_err(ModelError::from)?,
+            html: value.html_raw.try_into().map_err(ModelError::from)?,
+            created_at: value.created_at,
+            updated_at: value.updated_at,
         })
     }
 }

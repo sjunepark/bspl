@@ -7,7 +7,7 @@ use sqlx::{FromRow, QueryBuilder};
 
 impl CompanyDb for PostgresDb {
     async fn get_companies(&self) -> Result<Vec<table::Company>, DbError> {
-        sqlx::query_as!(PostgresCompany, "SELECT * from smes_company")
+        sqlx::query_as!(PostgresCompany, "SELECT * from smes.company")
             .fetch_all(&self.pool)
             .await?
             .into_iter()
@@ -16,12 +16,12 @@ impl CompanyDb for PostgresDb {
     }
 
     async fn get_company_ids(&self) -> Result<HashSet<company::Id>, DbError> {
-        sqlx::query!("SELECT smes_id from smes_company")
+        sqlx::query!("SELECT company_id from smes.company")
             .fetch_all(&self.pool)
             .await?
             .into_iter()
             .map(|company| {
-                company::Id::try_from(company.smes_id)
+                company::Id::try_from(company.company_id)
                     .map_err(|e| DbError::from(ModelError::from(e)))
             })
             .collect()
@@ -32,12 +32,12 @@ impl CompanyDb for PostgresDb {
         let total_company_count = companies.len() as u64;
 
         let mut query_builder = QueryBuilder::new(
-            "INSERT INTO smes_company (smes_id, representative_name, headquarters_address, business_registration_number,
+            "INSERT INTO smes.company (company_id, representative_name, headquarters_address, business_registration_number,
                           company_name, industry_code, industry_name) "
         );
 
         query_builder.push_values(companies, |mut b, company| {
-            b.push_bind(company.smes_id.to_string())
+            b.push_bind(company.company_id.to_string())
                 .push_bind(company.representative_name.to_string())
                 .push_bind(company.headquarters_address.to_string())
                 .push_bind(company.business_registration_number.to_string())
@@ -69,17 +69,17 @@ impl CompanyDb for PostgresDb {
 
         for company in companies {
             let result = sqlx::query!(
-                r#"INSERT INTO smes_company (smes_id, representative_name, headquarters_address, business_registration_number,
+                r#"INSERT INTO smes.company (company_id, representative_name, headquarters_address, business_registration_number,
                           company_name, industry_code, industry_name)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
-ON CONFLICT (smes_id) DO UPDATE SET representative_name          = $2,
+ON CONFLICT (company_id) DO UPDATE SET representative_name          = $2,
                                     headquarters_address         = $3,
                                     business_registration_number = $4,
                                     company_name                 = $5,
                                     industry_code                = $6,
                                     industry_name                = $7,
-                                    updated_date                 = DEFAULT"#,
-                company.smes_id.to_string(),
+                                    updated_at                 = DEFAULT"#,
+                company.company_id.to_string(),
                 company.representative_name.to_string(),
                 company.headquarters_address.to_string(),
                 company.business_registration_number.to_string(),
@@ -107,15 +107,15 @@ ON CONFLICT (smes_id) DO UPDATE SET representative_name          = $2,
 
 #[derive(Debug, Serialize, Deserialize, Clone, FromRow)]
 pub struct PostgresCompany {
-    pub smes_id: String,
+    pub company_id: String,
     pub representative_name: String,
     pub headquarters_address: String,
     pub business_registration_number: String,
     pub company_name: String,
     pub industry_code: String,
     pub industry_name: String,
-    pub created_date: Option<time::Date>,
-    pub updated_date: Option<time::Date>,
+    pub created_at: Option<time::PrimitiveDateTime>,
+    pub updated_at: Option<time::PrimitiveDateTime>,
 }
 
 impl TryFrom<PostgresCompany> for table::Company {
@@ -123,7 +123,7 @@ impl TryFrom<PostgresCompany> for table::Company {
 
     fn try_from(value: PostgresCompany) -> Result<Self, Self::Error> {
         Ok(table::Company {
-            smes_id: company::Id::try_from(value.smes_id).map_err(ModelError::from)?,
+            company_id: company::Id::try_from(value.company_id).map_err(ModelError::from)?,
             representative_name: Into::<company::RepresentativeName>::into(
                 value.representative_name,
             ),
@@ -138,8 +138,8 @@ impl TryFrom<PostgresCompany> for table::Company {
             industry_code: company::IndustryCode::try_from(value.industry_code)
                 .map_err(ModelError::from)?,
             industry_name: Into::<company::IndustryName>::into(value.industry_name),
-            created_date: value.created_date,
-            updated_date: value.updated_date,
+            created_at: value.created_at,
+            updated_at: value.updated_at,
         })
     }
 }
@@ -147,15 +147,15 @@ impl TryFrom<PostgresCompany> for table::Company {
 impl From<table::Company> for PostgresCompany {
     fn from(value: table::Company) -> Self {
         Self {
-            smes_id: value.smes_id.to_string(),
+            company_id: value.company_id.to_string(),
             representative_name: value.representative_name.to_string(),
             headquarters_address: value.headquarters_address.to_string(),
             business_registration_number: value.business_registration_number.to_string(),
             company_name: value.company_name.to_string(),
             industry_code: value.industry_code.to_string(),
             industry_name: value.industry_name.to_string(),
-            created_date: value.created_date,
-            updated_date: value.updated_date,
+            created_at: value.created_at,
+            updated_at: value.updated_at,
         }
     }
 }
@@ -183,8 +183,8 @@ mod test {
             .expect("Failed to get companies")
             .into_iter()
             .map(|company| table::Company {
-                created_date: None,
-                updated_date: None,
+                created_at: None,
+                updated_at: None,
                 ..company
             })
             .collect();
@@ -202,7 +202,7 @@ mod test {
             .populate_companies(&ids)
             .await
             .into_iter()
-            .map(|company| company.smes_id)
+            .map(|company| company.company_id)
             .collect();
 
         let selected_ids = ctx
@@ -240,15 +240,15 @@ mod test {
         // Add a new company to see that this company was properly updated
         let mut new_company = ().fake::<table::Company>();
         const NEW_COMPANY_ID: &str = "2000000";
-        new_company.smes_id = NEW_COMPANY_ID
+        new_company.company_id = NEW_COMPANY_ID
             .try_into()
-            .expect("failed to create dummy smes_id");
+            .expect("failed to create dummy company_id");
         let new_company_representative_name = new_company.representative_name.clone();
         updated_companies.push(new_company);
 
         // Remove a company to check that this company was not updated
         let removed_company = updated_companies.pop().unwrap();
-        let removed_company_id = removed_company.smes_id.as_str();
+        let removed_company_id = removed_company.company_id.as_str();
         // endregion: Arrange
 
         // region: Action
@@ -266,7 +266,7 @@ mod test {
             .unwrap();
 
         for company in &db_companies {
-            match company.smes_id.as_str() {
+            match company.company_id.as_str() {
                 NEW_COMPANY_ID => {
                     assert_eq!(company.representative_name, new_company_representative_name);
                 }

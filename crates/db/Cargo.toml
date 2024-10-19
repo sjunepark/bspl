@@ -5,16 +5,13 @@ edition = "2021"
 publish = false
 
 [[bench]]
-name = "libsql"
-harness = false
-
-[[bench]]
 name = "postgres"
 harness = false
 
 [dependencies]
+diesel = { workspace = true, features = ["postgres", "r2d2", "time"] }
+diesel_migrations = { workspace = true }
 hashbrown = { workspace = true }
-libsql = { workspace = true, features = ["core", "serde"] }
 serde = { workspace = true, features = ["derive"] }
 smes = { workspace = true }
 sqlx = { workspace = true, features = ["runtime-tokio-native-tls", "macros", "postgres", "time", "derive"] }
@@ -31,7 +28,6 @@ model = { workspace = true }
 anyhow = { workspace = true }
 criterion = { workspace = true, features = ["async_tokio"] }
 fake = { workspace = true }
-geni = { workspace = true }
 rand = { workspace = true }
 serde_json = { workspace = true }
 testcontainers-modules = { workspace = true, features = ["postgres"] }

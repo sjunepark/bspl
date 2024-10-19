@@ -1,5 +1,5 @@
 use db::smes::{CompanyDb, HtmlDb};
-use db::{Db, LibsqlDb};
+use db::{Db, PostgresDb};
 use figment::providers::{Format, Toml};
 use figment::Figment;
 use runners::AppConfig;
@@ -15,7 +15,8 @@ async fn main() {
         .extract()
         .expect("Failed to load settings");
 
-    let db = LibsqlDb::new("db/libsql/local.db").in_current_span().await;
+    let connection_string = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set");
+    let db = PostgresDb::new(connection_string).in_current_span().await;
 
     // 1. Get all companies from the database
     let all_ids_to_query = db

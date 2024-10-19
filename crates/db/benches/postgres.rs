@@ -26,10 +26,12 @@
 
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use db::DbError;
+use diesel::{Connection, PgConnection};
+use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use fake::{Fake, Faker};
 use model::table;
 use sqlx::postgres::PgPoolOptions;
-use sqlx::{migrate, PgPool, QueryBuilder};
+use sqlx::{PgPool, QueryBuilder};
 use testcontainers_modules::postgres::Postgres;
 use testcontainers_modules::testcontainers::runners::AsyncRunner;
 use testcontainers_modules::testcontainers::{ContainerAsync, ImageExt};
@@ -60,7 +62,7 @@ fn bench_postgres_insert(c: &mut Criterion) {
                         db.naive_insert(&htmls).await.unwrap();
                         total_time += start.elapsed();
 
-                        sqlx::query!("DELETE FROM smes_html")
+                        sqlx::query!("DELETE FROM smes.html")
                             .execute(&db.pool)
                             .await
                             .expect("Failed to delete all rows");
@@ -82,7 +84,7 @@ fn bench_postgres_insert(c: &mut Criterion) {
                             db.prepared_insert(&htmls).await.unwrap();
                             total_time += start.elapsed();
 
-                            sqlx::query!("DELETE FROM smes_html")
+                            sqlx::query!("DELETE FROM smes.html")
                                 .execute(&db.pool)
                                 .await
                                 .expect("Failed to delete all rows");
@@ -107,10 +109,10 @@ fn create_html_data(size: u64) -> Vec<table::Html> {
         .map(|id| {
             let html = Faker.fake::<table::Html>();
             table::Html {
-                smes_id: id
+                company_id: id
                     .to_string()
                     .try_into()
-                    .expect("failed to create dummy smes_id"),
+                    .expect("failed to create dummy company_id"),
                 ..html
             }
         })
@@ -149,13 +151,15 @@ impl BenchDb {
             .await
             .expect("Failed to create connection pool");
 
-        migrate!("../../migrations")
-            .run(&pool)
-            .await
+        // Run migrations via diesel
+        let mut conn = PgConnection::establish(&connection_string)
+            .expect("Failed to establish connection to test db");
+        const MIGRATIONS: EmbeddedMigrations = embed_migrations!("../../migrations");
+        conn.run_pending_migrations(MIGRATIONS)
             .expect("Failed to run migrations");
         tracing::trace!("Migrations run");
 
-        sqlx::query!("ALTER TABLE smes_html DROP CONSTRAINT smes_html_smes_id_fkey")
+        sqlx::query!("ALTER TABLE smes.html DROP CONSTRAINT html_company_id_fkey")
             .execute(&pool)
             .await
             .expect("Failed to drop constraint");
@@ -170,8 +174,8 @@ impl BenchDb {
 
         for html in htmls {
             let rows_affected = sqlx::query!(
-                "INSERT INTO smes_html(smes_id, html) VALUES($1, $2)",
-                html.smes_id.to_string(),
+                "INSERT INTO smes.html(company_id, html_raw) VALUES($1, $2)",
+                html.company_id.to_string(),
                 html.html.to_string()
             )
             .execute(&self.pool)
@@ -189,9 +193,10 @@ impl BenchDb {
         let mut total_insert_count = 0;
 
         for html_chunk in htmls.chunks(BIND_LIMIT / 4) {
-            let mut query_builder = QueryBuilder::new("INSERT INTO smes_html(smes_id, html) ");
+            let mut query_builder =
+                QueryBuilder::new("INSERT INTO smes.html(company_id, html_raw) ");
             query_builder.push_values(html_chunk.iter(), |mut b, html| {
-                b.push_bind(html.smes_id.to_string())
+                b.push_bind(html.company_id.to_string())
                     .push_bind(html.html.to_string());
             });
             let query = query_builder.build();

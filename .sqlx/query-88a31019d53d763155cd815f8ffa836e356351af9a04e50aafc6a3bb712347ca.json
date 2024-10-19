@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO smes_company (smes_id, representative_name, headquarters_address, business_registration_number,\n                          company_name, industry_code, industry_name)\nVALUES ($1, $2, $3, $4, $5, $6, $7)\nON CONFLICT (smes_id) DO UPDATE SET representative_name          = $2,\n                                    headquarters_address         = $3,\n                                    business_registration_number = $4,\n                                    company_name                 = $5,\n                                    industry_code                = $6,\n                                    industry_name                = $7,\n                                    updated_date                 = DEFAULT",
+  "query": "INSERT INTO smes.company (company_id, representative_name, headquarters_address, business_registration_number,\n                          company_name, industry_code, industry_name)\nVALUES ($1, $2, $3, $4, $5, $6, $7)\nON CONFLICT (company_id) DO UPDATE SET representative_name          = $2,\n                                    headquarters_address         = $3,\n                                    business_registration_number = $4,\n                                    company_name                 = $5,\n                                    industry_code                = $6,\n                                    industry_name                = $7,\n                                    updated_at                 = DEFAULT",
   "describe": {
     "columns": [],
     "parameters": {

@@ -8,8 +8,6 @@ pub enum DbError {
     Deserialize(#[from] serde::de::value::Error),
     #[error("Io error: {0}")]
     Io(#[from] std::io::Error),
-    #[error("Libsql error: {0}")]
-    Libsql(#[from] libsql::Error),
     #[error("Model error: {0}")]
     Model(#[from] model::ModelError),
     #[error("Sqlx error: {0}")]

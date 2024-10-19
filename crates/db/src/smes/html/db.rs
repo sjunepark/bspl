@@ -7,7 +7,7 @@ use tokio::sync::mpsc::UnboundedReceiver;
 pub trait HtmlDb {
     fn select_html(
         &self,
-        smes_id: &str,
+        company_id: &str,
     ) -> impl Future<Output = Result<Option<table::Html>, DbError>>;
     fn select_htmls(&self) -> impl Future<Output = Result<Vec<table::Html>, DbError>>;
     fn select_html_ids(&self) -> impl Future<Output = Result<HashSet<company::Id>, DbError>>;

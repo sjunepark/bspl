@@ -1,6 +1,5 @@
 #![cfg(test)]
 
-mod libsql;
 mod postgres;
 
 use crate::db::Db;
@@ -8,7 +7,6 @@ use fake::{Fake, Faker};
 use model::table;
 use tokio::sync::mpsc;
 
-pub(crate) use libsql::LibsqlTestContext;
 pub(crate) use postgres::PostgresTestContext;
 
 pub(crate) trait TestContext<D: Db> {
@@ -22,10 +20,10 @@ pub(crate) trait TestContext<D: Db> {
             .map(|id| {
                 let company = Faker.fake::<table::Company>();
                 table::Company {
-                    smes_id: id
+                    company_id: id
                         .to_string()
                         .try_into()
-                        .expect("failed to create proper dummy smes_id"),
+                        .expect("failed to create proper dummy company_id"),
                     ..company
                 }
             })
@@ -46,7 +44,7 @@ pub(crate) trait TestContext<D: Db> {
     ///
     /// ## Warning
     /// To satisfy the foreign key constraint, the Company table will be populated first.
-    async fn populate_htmls(&self, ids: &[u64]) -> Vec<table::Html> {
+    async fn _populate_htmls(&self, ids: &[u64]) -> Vec<table::Html> {
         self.populate_companies(ids).await;
 
         let htmls: Vec<table::Html> = ids
@@ -54,10 +52,10 @@ pub(crate) trait TestContext<D: Db> {
             .map(|id| {
                 let html = Faker.fake::<table::Html>();
                 table::Html {
-                    smes_id: id
+                    company_id: id
                         .to_string()
                         .try_into()
-                        .expect("failed to create dummy smes_id"),
+                        .expect("failed to create dummy company_id"),
                     ..html
                 }
             })
