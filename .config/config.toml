@@ -1,4 +1,0 @@
-# This is for CI
-[target.x86_64-pc-windows-msvc.pq]
-rustc-link-search = ["C:\\Program Files\\PostgreSQL\\14\\lib"]
-rustc-link-lib = ["libpq"]

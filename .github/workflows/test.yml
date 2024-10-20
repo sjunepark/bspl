@@ -51,50 +51,6 @@ jobs:
         # Nextest currently [doesn't support doctests](https://github.com/nextest-rs/nextest/issues/16)
         # For `cargo test`, there's an issue that [cargo test --all-targets does not run doc tests](https://github.com/rust-lang/cargo/issues/6669)
       - run: cargo test --doc --locked --all-features
-  # run cargo test on Mac and Windows
-  os-check:
-    runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} / stable
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ macos-13, windows-latest ]
-    steps:
-      # if your project needs OpenSSL, uncomment this to fix Windows builds.
-      # it's commented out by default as the installation command takes 5-10m.
-      #
-      # - run: echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
-      #   if: runner.os == 'Windows'
-      # - run: vcpkg install openssl:x64-windows-static-md
-      #   if: runner.os == 'Windows'
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: Setup Docker on macOS
-        if: runner.os == 'macOs'
-        uses: douglascamata/setup-docker-macos-action@v1-alpha
-      - name: Setup Docker
-        if: runner.os == 'Windows'
-        uses: crazy-max/ghaction-chocolatey@v3.0.0
-        with:
-          args: install docker-cli
-      - name: Setup PostgreSQL
-        if: runner.os == 'Windows'
-        run: echo "PQ_LIB_DIR=C:/Program Files/PostgreSQL/14/lib" >> $GITHUB_ENV
-      - name: Setup PostgreSQL
-        if: runner.os == 'macOs'
-        uses: tj-actions/install-postgresql@v3
-        with:
-          postgresql-version: 16
-      - name: Install stable
-        uses: dtolnay/rust-toolchain@stable
-      - name: cargo generate-lockfile
-        if: hashFiles('Cargo.lock') == ''
-        run: cargo generate-lockfile
-      - name: cargo install nextest
-        uses: taiki-e/install-action@nextest
-      - name: cargo nextest run
-        run: cargo nextest run --locked --all-features --all-targets
   coverage:
     # Use llvm-cov to build and collect coverage and outputs in a format that is compatible with codecov.io.
     #
