@@ -18,7 +18,7 @@ pub mod smes {
     diesel::table! {
         smes.html (company_id) {
             company_id -> Text,
-            html_raw -> Text,
+            html_content -> Text,
             created_at -> Timestamp,
             updated_at -> Timestamp,
         }

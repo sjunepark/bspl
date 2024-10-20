@@ -1,6 +1,6 @@
 use crate::error::InitError;
 use crate::utils::{is_digits, is_html_with_bspl};
-use crate::{string, TypeError};
+use crate::TypeError;
 use derive_more::{AsRef, Display, From, Into};
 use diesel_derive_newtype::DieselNewType;
 use serde::{Deserialize, Serialize};
@@ -99,6 +99,9 @@ pub struct HeadquartersAddress(String);
 ///
 /// This field is a 10-digit number.
 /// It also allows empty strings, since the website provides empty strings for some companies.
+///
+/// ## Cleansing
+/// Will automatically remove hyphens(-) from the input.
 #[derive(
     Debug,
     Clone,
@@ -120,7 +123,8 @@ pub struct BusinessRegistrationNumber(String);
 
 impl BusinessRegistrationNumber {
     pub fn try_new(value: &str) -> Result<Self, TypeError> {
-        if value.is_empty() || (value.len() == 10 && is_digits(value)) {
+        let value = value.replace("-", "");
+        if value.is_empty() || (value.len() == 10 && is_digits(&value)) {
             Ok(Self(value.to_string()))
         } else {
             Err(InitError {
@@ -140,6 +144,11 @@ impl TryFrom<&str> for BusinessRegistrationNumber {
 }
 
 /// 법인등록번호
+///
+/// This is a 13-digit number.
+///
+/// ## Cleansing
+/// Will automatically remove hyphens(-) from the input.
 #[derive(
     Debug,
     Clone,
@@ -161,7 +170,8 @@ pub struct CorporationRegistrationNumber(String);
 
 impl CorporationRegistrationNumber {
     pub fn try_new(value: &str) -> Result<Self, TypeError> {
-        if value.len() == 13 && is_digits(value) {
+        let value = value.replace("-", "");
+        if value.len() == 13 && is_digits(&value) {
             Ok(Self(value.to_string()))
         } else {
             Err(InitError {
@@ -180,21 +190,104 @@ impl TryFrom<&str> for CorporationRegistrationNumber {
     }
 }
 
-string!(CompanyName, [From] {
-    /// 기업명
-});
+/// 기업명
+#[derive(
+    Debug,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Hash,
+    // derive_more
+    AsRef,
+    Display,
+    From,
+    Into,
+    // serde
+    Serialize,
+    Deserialize,
+    // diesel
+    DieselNewType,
+)]
+pub struct Name(String);
 
-string!(IndustryCode, [TryFrom] {
-    /// 업종코드
-    ///
-    /// This field is a 5-digit number.
-} => {
-    validate(len_char_min = 5, len_char_max = 5, predicate = is_digits),
-});
+impl Name {
+    pub fn new(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
 
-string!(IndustryName, [From] {
-    /// 업종
-});
+/// 업종코드
+///
+/// This field is a 5-digit number.
+#[derive(
+    Debug,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Hash,
+    // derive_more
+    AsRef,
+    Display,
+    // serde
+    Serialize,
+    Deserialize,
+    // diesel
+    DieselNewType,
+)]
+pub struct IndustryCode(String);
+
+impl IndustryCode {
+    pub fn try_new(value: &str) -> Result<Self, TypeError> {
+        if value.len() == 5 && is_digits(value) {
+            Ok(Self(value.to_string()))
+        } else {
+            Err(InitError {
+                value: value.to_string(),
+                message: "IndustryCode must be a 5-digit number".to_string(),
+            })?
+        }
+    }
+}
+
+impl TryFrom<&str> for IndustryCode {
+    type Error = TypeError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Self::try_new(value)
+    }
+}
+
+/// 업종
+#[derive(
+    Debug,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Hash,
+    // derive_more
+    AsRef,
+    Display,
+    From,
+    Into,
+    // serde
+    Serialize,
+    Deserialize,
+    // diesel
+    DieselNewType,
+)]
+pub struct IndustryName(String);
+
+impl IndustryName {
+    pub fn new(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
 
 // While storing HTML as bytes can be beneficial for handling various encodings,
 // we use a string representation due to the requirements of the `scraper` crate.
@@ -202,11 +295,46 @@ string!(IndustryName, [From] {
 // Note: This approach assumes UTF-8 encoding.
 // If dealing with non-UTF-8 content,
 // additional handling may be required during the bytes-to-string conversion.
-string!(HtmlContent, [TryFrom] {
-    /// HTML content, represented as a UTF-8 encoded string.
-} => {
-    validate(predicate = is_html_with_bspl),
-});
+/// HTML content, represented as a UTF-8 encoded string.
+#[derive(
+    Debug,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Hash,
+    // derive_more
+    AsRef,
+    Display,
+    // serde
+    Serialize,
+    Deserialize,
+    // diesel
+    DieselNewType,
+)]
+pub struct HtmlContent(String);
+
+impl HtmlContent {
+    pub fn try_new(value: &str) -> Result<Self, TypeError> {
+        if is_html_with_bspl(value) {
+            Ok(Self(value.to_string()))
+        } else {
+            Err(InitError {
+                value: value.to_string(),
+                message: "HtmlContent must contain '유동자산'".to_string(),
+            })?
+        }
+    }
+}
+
+impl TryFrom<&str> for HtmlContent {
+    type Error = TypeError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Self::try_new(value)
+    }
+}
 
 #[cfg(test)]
 mod tests {

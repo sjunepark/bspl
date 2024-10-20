@@ -3,7 +3,6 @@ use cookie::CookieJar;
 use db::model::smes::NewHtml;
 use image::DynamicImage;
 use serde::{Deserialize, Serialize};
-use types::TypeError;
 
 // region: Captcha
 /// Represents a captcha which could be in the following three `State`s:
@@ -135,18 +134,13 @@ impl TryFrom<Company> for db::model::smes::NewCompany {
 
     fn try_from(value: Company) -> Result<Self, Self::Error> {
         Ok(db::model::smes::NewCompany {
-            company_id: value
-                .vnia_sn
-                .to_string()
-                .as_str()
-                .try_into()
-                .map_err(TypeError::from)?,
-            representative_name: value.rprsv_nm,
-            headquarters_address: value.hdofc_addr,
-            business_registration_number: value.bizrno,
-            company_name: value.cmp_nm,
-            industry_code: value.indsty_cd,
-            industry_name: value.indsty_nm,
+            company_id: value.vnia_sn.to_string().as_str().try_into()?,
+            representative_name: value.rprsv_nm.into(),
+            headquarters_address: value.hdofc_addr.into(),
+            business_registration_number: value.bizrno.as_str().try_into()?,
+            company_name: value.cmp_nm.into(),
+            industry_code: value.indsty_cd.as_str().try_into()?,
+            industry_name: value.indsty_nm.into(),
         })
     }
 }
@@ -162,8 +156,8 @@ impl TryFrom<Html> for NewHtml {
 
     fn try_from(value: Html) -> Result<Self, Self::Error> {
         Ok(NewHtml {
-            company_id: value.vnia_sn,
-            html_raw: value.html,
+            company_id: value.vnia_sn.as_str().try_into()?,
+            html_content: value.html.as_str().try_into()?,
         })
     }
 }

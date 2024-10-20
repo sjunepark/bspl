@@ -53,16 +53,18 @@ pub(crate) trait TestContext<D: Db> {
     async fn populate_htmls(&mut self, ids: &[u64]) -> Vec<NewHtml> {
         self.populate_companies(ids).await;
 
-        let htmls: Vec<NewHtml> = ids
-            .iter()
-            .map(|id| {
-                let html = Faker.fake::<NewHtml>();
-                NewHtml {
-                    company_id: id.to_string(),
-                    ..html
-                }
-            })
-            .collect();
+        let htmls: Vec<NewHtml> =
+            ids.iter()
+                .map(|id| {
+                    let html = Faker.fake::<NewHtml>();
+                    NewHtml {
+                        company_id: id.to_string().as_str().try_into().expect(
+                            "dummy creation logic needs to be fixed within the source code",
+                        ),
+                        ..html
+                    }
+                })
+                .collect();
 
         let (tx, rx) = mpsc::unbounded_channel();
         for html in &htmls {
