@@ -1,5 +1,5 @@
 use data_api::{DataApi, IncomeStatParamsBuilder};
-use model::company::CorporationRegistrationNumber;
+use types::company::CorporationRegistrationNumber;
 
 #[tokio::main]
 async fn main() {

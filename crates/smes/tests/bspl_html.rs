@@ -1,7 +1,7 @@
 use hashbrown::HashSet;
-use model::company;
 use smes::api::get_bspl_htmls;
 use tracing::Instrument;
+use types::company;
 
 #[tokio::test]
 async fn get_bspl_htmls_should_work_as_expected() {

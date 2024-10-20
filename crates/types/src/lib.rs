@@ -12,4 +12,4 @@ mod statics;
 pub mod table;
 mod utils;
 
-pub use error::ModelError;
+pub use error::TypeError;

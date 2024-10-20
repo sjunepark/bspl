@@ -1,10 +1,10 @@
 use cookie::ParseError;
-use model::ModelError;
 use reqwest::header::{InvalidHeaderValue, ToStrError};
 use serde::{Deserialize, Serialize};
 use std::str::Utf8Error;
 use std::string::FromUtf8Error;
 use thiserror::Error;
+use types::TypeError;
 
 #[derive(Error, Debug)]
 pub enum SmesError {
@@ -26,8 +26,6 @@ pub enum SmesError {
     InvalidHeaderValue(#[from] InvalidHeaderValue),
     #[error("Missing expected field: {0}")]
     MissingExpectedField(String),
-    #[error("Model error: {0}")]
-    Model(#[from] ModelError),
     #[error("Nopecha error: {0}")]
     Nopecha(#[from] NopechaError),
     #[error("Reqwest error: {0}")]
@@ -38,6 +36,8 @@ pub enum SmesError {
     Scraper(#[from] scraper::error::SelectorErrorKind<'static>),
     #[error("Serde JSON error: {0}")]
     SerdeJson(#[from] serde_json::Error),
+    #[error("Type error: {0}")]
+    Type(#[from] TypeError),
     #[error("Unsuccessful response error: {0}")]
     UnsuccessfulResponse(#[from] UnsuccessfulResponseError),
     #[error("Invariant error: {0}")]

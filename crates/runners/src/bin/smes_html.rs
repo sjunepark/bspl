@@ -65,7 +65,7 @@ async fn main() {
 #[cfg(test)]
 mod tests {
     use hashbrown::HashSet;
-    use model::company;
+    use types::company;
 
     #[test]
     fn hashset_difference_should_work_as_expected() {

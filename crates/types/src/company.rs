@@ -1,6 +1,6 @@
 use crate::error::InitError;
 use crate::utils::{is_digits, is_html_with_bspl, is_length_10_or_empty};
-use crate::{string, ModelError};
+use crate::{string, TypeError};
 use derive_more::{AsRef, Display};
 use diesel_derive_newtype::DieselNewType;
 use serde::{Deserialize, Serialize};
@@ -25,7 +25,7 @@ use serde::{Deserialize, Serialize};
 pub struct Id(String);
 
 impl Id {
-    pub fn try_new(value: &str) -> Result<Self, ModelError> {
+    pub fn try_new(value: &str) -> Result<Self, TypeError> {
         if value.len() == 7 && is_digits(value) {
             Ok(Self(value.to_string()))
         } else {
@@ -38,7 +38,7 @@ impl Id {
 }
 
 impl TryFrom<&str> for Id {
-    type Error = ModelError;
+    type Error = TypeError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         Self::try_new(value)

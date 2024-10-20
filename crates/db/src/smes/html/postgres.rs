@@ -4,9 +4,9 @@ use crate::{schema, DbError, PostgresDb};
 use diesel::prelude::*;
 use diesel::upsert::excluded;
 use hashbrown::HashSet;
-use model::{company, table, ModelError};
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::UnboundedReceiver;
+use types::{company, table, TypeError};
 
 impl HtmlDb for PostgresDb {
     async fn select_html(
@@ -86,7 +86,7 @@ impl TryFrom<PostgresHtml> for table::Html {
     fn try_from(value: PostgresHtml) -> Result<Self, Self::Error> {
         Ok(table::Html {
             company_id: value.company_id,
-            html: value.html_raw.try_into().map_err(ModelError::from)?,
+            html: value.html_raw.try_into().map_err(TypeError::from)?,
             created_at: value.created_at,
             updated_at: value.updated_at,
         })

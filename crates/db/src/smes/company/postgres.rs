@@ -4,7 +4,7 @@ use crate::{schema, DbError, PostgresDb};
 use diesel::prelude::*;
 use diesel::upsert::excluded;
 use hashbrown::HashSet;
-use model::company;
+use types::company;
 
 impl CompanyDb for PostgresDb {
     async fn get_companies(&mut self) -> Result<Vec<crate::model::smes::Company>, DbError> {

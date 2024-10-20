@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/db", "crates/smes", "crates/utils", "crates/tracing-setup", "crates/model", "crates/data-api", "crates/runners"]
+members = ["crates/db", "crates/smes", "crates/utils", "crates/tracing-setup", "crates/types", "crates/data-api", "crates/runners"]
 resolver = "2"
 
 [workspace.dependencies]
@@ -36,7 +36,7 @@ db = { path = "crates/db" }
 smes = { path = "crates/smes" }
 tracing-setup = { path = "crates/tracing-setup" }
 utils = { path = "crates/utils" }
-model = { path = "crates/model" }
+types = { path = "crates/types" }
 
 # Testig
 fake = "2.10.0"

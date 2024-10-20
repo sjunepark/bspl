@@ -1,8 +1,8 @@
 use crate::DbError;
 use hashbrown::HashSet;
-use model::company;
 use std::future::Future;
 use tokio::sync::mpsc::UnboundedReceiver;
+use types::company;
 
 pub trait HtmlDb {
     fn select_html(

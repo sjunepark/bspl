@@ -2,7 +2,7 @@ use crate::company::{BusinessRegistrationNumberError, HtmlContentError, Industry
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum ModelError {
+pub enum TypeError {
     #[error("BusinessRegistrationNumber error: {0}")]
     BusinessRegistrationNumber(#[from] BusinessRegistrationNumberError),
     #[error("Html error: {0}")]

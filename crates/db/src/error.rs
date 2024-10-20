@@ -10,8 +10,8 @@ pub enum DbError {
     Diesel(#[from] diesel::result::Error),
     #[error("Io error: {0}")]
     Io(#[from] std::io::Error),
-    #[error("Model error: {0}")]
-    Model(#[from] model::ModelError),
+    #[error("Type error: {0}")]
+    Type(#[from] types::TypeError),
 }
 
 #[derive(Error, Debug)]

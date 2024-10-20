@@ -2,9 +2,9 @@ use crate::SmesError;
 use cookie::CookieJar;
 use db::model::smes::NewHtml;
 use image::DynamicImage;
-use model::company::RepresentativeName;
-use model::{company, table, ModelError};
 use serde::{Deserialize, Serialize};
+use types::company::RepresentativeName;
+use types::{company, table, TypeError};
 
 // region: Captcha
 /// Represents a captcha which could be in the following three `State`s:
@@ -137,16 +137,16 @@ impl TryFrom<Company> for table::Company {
     fn try_from(value: Company) -> Result<Self, Self::Error> {
         Ok(table::Company {
             company_id: company::Id::try_from(value.vnia_sn.to_string().as_str())
-                .map_err(ModelError::from)?,
+                .map_err(TypeError::from)?,
             representative_name: Into::<RepresentativeName>::into(value.rprsv_nm),
             headquarters_address: Into::<company::HeadquartersAddress>::into(value.hdofc_addr),
             business_registration_number: company::BusinessRegistrationNumber::try_from(
                 value.bizrno,
             )
-            .map_err(ModelError::from)?,
+            .map_err(TypeError::from)?,
             company_name: Into::<company::CompanyName>::into(value.cmp_nm),
             industry_code: company::IndustryCode::try_from(value.indsty_cd)
-                .map_err(ModelError::from)?,
+                .map_err(TypeError::from)?,
             industry_name: Into::<company::IndustryName>::into(value.indsty_nm),
             created_at: None,
             updated_at: None,
@@ -164,7 +164,7 @@ impl TryFrom<Company> for db::model::smes::NewCompany {
                 .to_string()
                 .as_str()
                 .try_into()
-                .map_err(ModelError::from)?,
+                .map_err(TypeError::from)?,
             representative_name: value.rprsv_nm,
             headquarters_address: value.hdofc_addr,
             business_registration_number: value.bizrno,
@@ -195,8 +195,8 @@ impl TryFrom<Html> for table::Html {
 
     fn try_from(value: Html) -> Result<Self, Self::Error> {
         Ok(table::Html {
-            company_id: company::Id::try_from(value.vnia_sn.as_str()).map_err(ModelError::from)?,
-            html: value.html.try_into().map_err(ModelError::from)?,
+            company_id: company::Id::try_from(value.vnia_sn.as_str()).map_err(TypeError::from)?,
+            html: value.html.try_into().map_err(TypeError::from)?,
             created_at: None,
             updated_at: None,
         })

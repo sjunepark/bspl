@@ -20,7 +20,7 @@ tracing = { workspace = true, features = ["log"] }
 utils = { workspace = true }
 
 # Workspace crates
-model = { workspace = true }
+types = { workspace = true }
 
 [dev-dependencies]
 anyhow = { workspace = true }

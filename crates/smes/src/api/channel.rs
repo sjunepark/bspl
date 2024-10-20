@@ -1,9 +1,9 @@
 use crate::BsplApi;
 use db::model::smes::NewHtml;
 use hashbrown::HashSet;
-use model::company;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver};
 use tracing::Instrument;
+use types::company;
 
 mod captcha;
 

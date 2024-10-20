@@ -2,8 +2,8 @@ use crate::client::DataApi;
 use crate::model::DataApiKey;
 use crate::DataApiError;
 use derive_builder::Builder;
-use model::company::CorporationRegistrationNumber;
 use serde::{Deserialize, Serialize};
+use types::company::CorporationRegistrationNumber;
 
 impl DataApi {
     #[tracing::instrument(skip(self))]
