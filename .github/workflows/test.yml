@@ -71,24 +71,24 @@ jobs:
         with:
           submodules: true
       - name: Setup Homebrew
-        if: runner.os == 'macos-latest'
+        if: matrix.os == 'macos-latest'
         uses: Homebrew/actions/setup-homebrew@master
       - name: Setup Docker
-        if: runner.os == 'macos-latest'
+        if: matrix.os == 'macos-latest'
         run: |
           brew install docker colima
           colima start
         timeout-minutes: 12
       - name: Setup Docker
-        if: runner.os == 'windows-latest'
+        if: matrix.os == 'windows-latest'
         uses: crazy-max/ghaction-chocolatey@v3.0.0
         with:
           args: install docker-cli
-      #      - name: Setup PostgreSQL
-      #        if: runner.os == 'macos-latest'
-      #        uses: tj-actions/install-postgresql@v3
-      #        with:
-      #          postgresql-version: 16
+      - name: Setup PostgreSQL
+        if: matrix.os == 'macos-latest'
+        uses: tj-actions/install-postgresql@v3
+        with:
+          postgresql-version: 16
       - name: Install stable
         uses: dtolnay/rust-toolchain@stable
       - name: cargo generate-lockfile
