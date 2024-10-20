@@ -43,8 +43,3 @@ fake = "2.10.0"
 goldrust = "0.1.8"
 testcontainers-modules = "0.11.2"
 wiremock = "0.6.2"
-
-# This is for CI
-[target.x86_64-pc-windows-msvc.pq]
-rustc-link-search = ["C:\\Program Files\\PostgreSQL\\14\\lib"]
-rustc-link-lib = ["libpq"]
