@@ -11,7 +11,7 @@ use rand::Rng;
 #[diesel(table_name = crate::schema::smes::company)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Company {
-    pub company_id: String,
+    pub company_id: types::company::Id,
     pub representative_name: String,
     pub headquarters_address: String,
     pub business_registration_number: String,
@@ -47,7 +47,7 @@ impl<T> Dummy<T> for Company {
 #[diesel(table_name = crate::schema::smes::company)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewCompany {
-    pub company_id: String,
+    pub company_id: types::company::Id,
     pub representative_name: String,
     pub headquarters_address: String,
     pub business_registration_number: String,
@@ -59,7 +59,11 @@ pub struct NewCompany {
 impl<T> Dummy<T> for NewCompany {
     fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
         NewCompany {
-            company_id: NumberWithFormat(EN, "^######").fake::<String>(),
+            company_id: NumberWithFormat(EN, "^######")
+                .fake::<String>()
+                .as_str()
+                .try_into()
+                .expect("failed to create dummy company_id"),
             representative_name: Name().fake_with_rng::<String, R>(rng),
             headquarters_address: format!(
                 "{}, South Korea",

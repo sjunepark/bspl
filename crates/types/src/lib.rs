@@ -9,7 +9,6 @@ pub mod company;
 mod error;
 mod macros;
 mod statics;
-pub mod table;
 mod utils;
 
-pub use error::ModelError;
+pub use error::TypeError;

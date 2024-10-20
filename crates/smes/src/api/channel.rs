@@ -3,6 +3,7 @@ use db::model::smes::NewHtml;
 use hashbrown::HashSet;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver};
 use tracing::Instrument;
+use types::company;
 
 mod captcha;
 
@@ -24,7 +25,7 @@ mod captcha;
 ///
 /// The skipped operations should be inspected and re-scraped in the future if necessary.
 #[tracing::instrument(skip(companies))]
-pub async fn get_bspl_htmls(companies: HashSet<String>) -> UnboundedReceiver<NewHtml> {
+pub async fn get_bspl_htmls(companies: HashSet<company::Id>) -> UnboundedReceiver<NewHtml> {
     let (tx, rx) = unbounded_channel::<NewHtml>();
     let size = companies.len();
     let mut captcha_cookies = captcha::get_solved_captchas(size).await;
@@ -70,7 +71,7 @@ pub async fn get_bspl_htmls(companies: HashSet<String>) -> UnboundedReceiver<New
                             // This is because the errors from `get_bspl_html`
                             // are not considered to be recoverable through retries.
                             let html = match api
-                                .get_bspl_html(id.as_str(), &captcha)
+                                .get_bspl_html(id.as_ref(), &captcha)
                                 .in_current_span()
                                 .await
                             {

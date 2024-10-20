@@ -4,9 +4,8 @@ use crate::{schema, DbError, PostgresDb};
 use diesel::prelude::*;
 use diesel::upsert::excluded;
 use hashbrown::HashSet;
-use model::{table, ModelError};
-use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::UnboundedReceiver;
+use types::company;
 
 impl HtmlDb for PostgresDb {
     async fn select_html(
@@ -23,7 +22,7 @@ impl HtmlDb for PostgresDb {
         Ok(dsl::html.load(&mut self.conn)?)
     }
 
-    async fn select_html_ids(&mut self) -> Result<HashSet<String>, DbError> {
+    async fn select_html_ids(&mut self) -> Result<HashSet<company::Id>, DbError> {
         Ok(dsl::html
             .select(dsl::company_id)
             .load(&mut self.conn)?
@@ -58,37 +57,5 @@ impl HtmlDb for PostgresDb {
                 .execute(&mut self.conn)?;
         }
         Ok(())
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct PostgresHtml {
-    pub company_id: String,
-    pub html_raw: String,
-    pub created_at: Option<time::PrimitiveDateTime>,
-    pub updated_at: Option<time::PrimitiveDateTime>,
-}
-
-impl From<table::Html> for PostgresHtml {
-    fn from(value: table::Html) -> Self {
-        Self {
-            company_id: value.company_id.to_string(),
-            html_raw: value.html.into(),
-            created_at: value.created_at,
-            updated_at: value.updated_at,
-        }
-    }
-}
-
-impl TryFrom<PostgresHtml> for table::Html {
-    type Error = DbError;
-
-    fn try_from(value: PostgresHtml) -> Result<Self, Self::Error> {
-        Ok(table::Html {
-            company_id: value.company_id.try_into().map_err(ModelError::from)?,
-            html: value.html_raw.try_into().map_err(ModelError::from)?,
-            created_at: value.created_at,
-            updated_at: value.updated_at,
-        })
     }
 }

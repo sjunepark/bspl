@@ -4,20 +4,20 @@ use crate::{schema, DbError, PostgresDb};
 use diesel::prelude::*;
 use diesel::upsert::excluded;
 use hashbrown::HashSet;
-use model::{company, table, ModelError};
-use serde::{Deserialize, Serialize};
+use types::company;
 
 impl CompanyDb for PostgresDb {
     async fn get_companies(&mut self) -> Result<Vec<crate::model::smes::Company>, DbError> {
         Ok(dsl::company.load(&mut self.conn)?)
     }
 
-    async fn get_company_ids(&mut self) -> Result<HashSet<String>, DbError> {
-        Ok(dsl::company
+    async fn get_company_ids(&mut self) -> Result<HashSet<company::Id>, DbError> {
+        dsl::company
             .select(dsl::company_id)
             .load::<String>(&mut self.conn)?
             .into_iter()
-            .collect())
+            .map(|id| company::Id::try_from(id.as_str()).map_err(DbError::from))
+            .collect::<Result<HashSet<_>, _>>()
     }
 
     async fn insert_companies(
@@ -79,61 +79,6 @@ impl CompanyDb for PostgresDb {
             }
         })?;
         Ok(())
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct PostgresCompany {
-    pub company_id: String,
-    pub representative_name: String,
-    pub headquarters_address: String,
-    pub business_registration_number: String,
-    pub company_name: String,
-    pub industry_code: String,
-    pub industry_name: String,
-    pub created_at: Option<time::PrimitiveDateTime>,
-    pub updated_at: Option<time::PrimitiveDateTime>,
-}
-
-impl TryFrom<PostgresCompany> for table::Company {
-    type Error = DbError;
-
-    fn try_from(value: PostgresCompany) -> Result<Self, Self::Error> {
-        Ok(table::Company {
-            company_id: company::Id::try_from(value.company_id).map_err(ModelError::from)?,
-            representative_name: Into::<company::RepresentativeName>::into(
-                value.representative_name,
-            ),
-            headquarters_address: Into::<company::HeadquartersAddress>::into(
-                value.headquarters_address,
-            ),
-            business_registration_number: company::BusinessRegistrationNumber::try_from(
-                value.business_registration_number,
-            )
-            .map_err(ModelError::from)?,
-            company_name: Into::<company::CompanyName>::into(value.company_name),
-            industry_code: company::IndustryCode::try_from(value.industry_code)
-                .map_err(ModelError::from)?,
-            industry_name: Into::<company::IndustryName>::into(value.industry_name),
-            created_at: value.created_at,
-            updated_at: value.updated_at,
-        })
-    }
-}
-
-impl From<table::Company> for PostgresCompany {
-    fn from(value: table::Company) -> Self {
-        Self {
-            company_id: value.company_id.to_string(),
-            representative_name: value.representative_name.to_string(),
-            headquarters_address: value.headquarters_address.to_string(),
-            business_registration_number: value.business_registration_number.to_string(),
-            company_name: value.company_name.to_string(),
-            industry_code: value.industry_code.to_string(),
-            industry_name: value.industry_name.to_string(),
-            created_at: value.created_at,
-            updated_at: value.updated_at,
-        }
     }
 }
 
@@ -215,13 +160,15 @@ mod test {
         // Add a new company to see that this company was properly updated
         let mut new_company = ().fake::<NewCompany>();
         const NEW_COMPANY_ID: &str = "2000000";
-        new_company.company_id = NEW_COMPANY_ID.to_string();
+        new_company.company_id = NEW_COMPANY_ID
+            .try_into()
+            .expect("failed to create dummy company_id");
         let new_company_representative_name = new_company.representative_name.clone();
         updated_companies.push(new_company);
 
         // Remove a company to check that this company was not updated
         let removed_company = updated_companies.pop().unwrap();
-        let removed_company_id = removed_company.company_id.as_str();
+        let removed_company_id = removed_company.company_id;
         // endregion: Arrange
 
         // region: Action
@@ -240,11 +187,11 @@ mod test {
             .unwrap();
 
         for company in &db_companies {
-            match company.company_id.as_str() {
+            match company.company_id.as_ref().as_str() {
                 NEW_COMPANY_ID => {
                     assert_eq!(company.representative_name, new_company_representative_name);
                 }
-                id if id == removed_company_id => {
+                id if id == removed_company_id.as_ref() => {
                     // Not upserted company name should not change
                     assert_eq!(
                         company.representative_name,

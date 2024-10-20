@@ -5,7 +5,9 @@ edition = "2021"
 publish = false
 
 [dependencies]
+derive_more = { workspace = true, features = ["as_ref", "display", "from", "into"] }
 diesel = { workspace = true, features = ["postgres", "r2d2", "time"] }
+diesel-derive-newtype = { workspace = true }
 diesel_migrations = { workspace = true }
 fake = { workspace = true, features = ["time"] }
 hashbrown = { workspace = true }
@@ -18,7 +20,7 @@ tracing = { workspace = true, features = ["log"] }
 utils = { workspace = true }
 
 # Workspace crates
-model = { workspace = true }
+types = { workspace = true }
 
 [dev-dependencies]
 anyhow = { workspace = true }

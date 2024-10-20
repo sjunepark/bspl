@@ -2,8 +2,8 @@ use crate::client::DataApi;
 use crate::model::DataApiKey;
 use crate::DataApiError;
 use derive_builder::Builder;
-use model::company::CorporationRegistrationNumber;
 use serde::{Deserialize, Serialize};
+use types::company::CorporationRegistrationNumber;
 
 impl DataApi {
     #[tracing::instrument(skip(self))]
@@ -57,7 +57,7 @@ mod tests {
             service_key: DataApiKey::new("test"),
             crno: Some(
                 "1234567890123"
-                    .parse()
+                    .try_into()
                     .expect("Failed to parse CorporationRegistrationNumber"),
             ),
             biz_year: None,
