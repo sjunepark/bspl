@@ -99,6 +99,9 @@ pub struct HeadquartersAddress(String);
 ///
 /// This field is a 10-digit number.
 /// It also allows empty strings, since the website provides empty strings for some companies.
+///
+/// ## Cleansing
+/// Will automatically remove hyphens(-) from the input.
 #[derive(
     Debug,
     Clone,
@@ -120,7 +123,8 @@ pub struct BusinessRegistrationNumber(String);
 
 impl BusinessRegistrationNumber {
     pub fn try_new(value: &str) -> Result<Self, TypeError> {
-        if value.is_empty() || (value.len() == 10 && is_digits(value)) {
+        let value = value.replace("-", "");
+        if value.is_empty() || (value.len() == 10 && is_digits(&value)) {
             Ok(Self(value.to_string()))
         } else {
             Err(InitError {
@@ -140,6 +144,11 @@ impl TryFrom<&str> for BusinessRegistrationNumber {
 }
 
 /// 법인등록번호
+///
+/// This is a 13-digit number.
+///
+/// ## Cleansing
+/// Will automatically remove hyphens(-) from the input.
 #[derive(
     Debug,
     Clone,
@@ -161,7 +170,8 @@ pub struct CorporationRegistrationNumber(String);
 
 impl CorporationRegistrationNumber {
     pub fn try_new(value: &str) -> Result<Self, TypeError> {
-        if value.len() == 13 && is_digits(value) {
+        let value = value.replace("-", "");
+        if value.len() == 13 && is_digits(&value) {
             Ok(Self(value.to_string()))
         } else {
             Err(InitError {
