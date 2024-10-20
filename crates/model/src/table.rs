@@ -32,7 +32,7 @@ impl<T> Dummy<T> for Html {
     fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
         Html {
             company_id: NumberWithFormat(EN, "^######")
-                .fake::<String>()
+                .fake::<String>().as_str()
                 .try_into()
                 .expect("failed to create dummy company_id"),
             html: format!(
@@ -52,6 +52,7 @@ impl<T> Dummy<T> for Company {
         Company {
             company_id: NumberWithFormat(EN, "^######")
                 .fake::<String>()
+                .as_str()
                 .try_into()
                 .expect("failed to create dummy company_id"),
             representative_name: Name().fake_with_rng::<String, R>(rng).into(),

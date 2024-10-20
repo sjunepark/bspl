@@ -1,5 +1,6 @@
 use crate::DbError;
 use hashbrown::HashSet;
+use model::company;
 use std::future::Future;
 use tokio::sync::mpsc::UnboundedReceiver;
 
@@ -11,7 +12,7 @@ pub trait HtmlDb {
     fn select_htmls(
         &mut self,
     ) -> impl Future<Output = Result<Vec<crate::model::smes::Html>, DbError>>;
-    fn select_html_ids(&mut self) -> impl Future<Output = Result<HashSet<String>, DbError>>;
+    fn select_html_ids(&mut self) -> impl Future<Output = Result<HashSet<company::Id>, DbError>>;
     fn insert_html_channel(
         &mut self,
         htmls: UnboundedReceiver<crate::model::smes::NewHtml>,

@@ -20,7 +20,11 @@ pub(crate) trait TestContext<D: Db> {
             .map(|id| {
                 let company = Faker.fake::<crate::model::smes::Company>();
                 crate::model::smes::NewCompany {
-                    company_id: id.to_string(),
+                    company_id: id
+                        .to_string()
+                        .as_str()
+                        .try_into()
+                        .expect("failed to create dummy company_id"),
                     representative_name: company.representative_name,
                     headquarters_address: company.headquarters_address,
                     business_registration_number: company.business_registration_number,

@@ -136,7 +136,7 @@ impl TryFrom<Company> for table::Company {
 
     fn try_from(value: Company) -> Result<Self, Self::Error> {
         Ok(table::Company {
-            company_id: company::Id::try_from(value.vnia_sn.to_string())
+            company_id: company::Id::try_from(value.vnia_sn.to_string().as_str())
                 .map_err(ModelError::from)?,
             representative_name: Into::<RepresentativeName>::into(value.rprsv_nm),
             headquarters_address: Into::<company::HeadquartersAddress>::into(value.hdofc_addr),
@@ -159,7 +159,12 @@ impl TryFrom<Company> for db::model::smes::NewCompany {
 
     fn try_from(value: Company) -> Result<Self, Self::Error> {
         Ok(db::model::smes::NewCompany {
-            company_id: value.vnia_sn.to_string(),
+            company_id: value
+                .vnia_sn
+                .to_string()
+                .as_str()
+                .try_into()
+                .map_err(ModelError::from)?,
             representative_name: value.rprsv_nm,
             headquarters_address: value.hdofc_addr,
             business_registration_number: value.bizrno,
@@ -190,7 +195,7 @@ impl TryFrom<Html> for table::Html {
 
     fn try_from(value: Html) -> Result<Self, Self::Error> {
         Ok(table::Html {
-            company_id: company::Id::try_from(value.vnia_sn).map_err(ModelError::from)?,
+            company_id: company::Id::try_from(value.vnia_sn.as_str()).map_err(ModelError::from)?,
             html: value.html.try_into().map_err(ModelError::from)?,
             created_at: None,
             updated_at: None,

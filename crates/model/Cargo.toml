@@ -6,6 +6,9 @@ publish = false
 
 [dependencies]
 bytes = { workspace = true }
+derive_more = { workspace = true, features = ["as_ref", "display", "from", "into"] }
+diesel = { workspace = true }
+diesel-derive-newtype = { workspace = true }
 fake = { workspace = true }
 nutype = { workspace = true, features = ["serde"] }
 serde = { workspace = true, features = ["derive"] }

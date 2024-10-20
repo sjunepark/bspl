@@ -648,7 +648,9 @@ name = "db"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "derive_more 1.0.0",
  "diesel",
+ "diesel-derive-newtype",
  "diesel_migrations",
  "fake",
  "hashbrown 0.15.0",
@@ -775,6 +777,17 @@ dependencies = [
  "pq-sys",
  "r2d2",
  "time",
+]
+
+[[package]]
+name = "diesel-derive-newtype"
+version = "2.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d5adf688c584fe33726ce0e2898f608a2a92578ac94a4a92fcecf73214fe0716"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.79",
 ]
 
 [[package]]
@@ -1907,6 +1920,9 @@ name = "model"
 version = "0.1.0"
 dependencies = [
  "bytes",
+ "derive_more 1.0.0",
+ "diesel",
+ "diesel-derive-newtype",
  "fake",
  "nutype",
  "serde",

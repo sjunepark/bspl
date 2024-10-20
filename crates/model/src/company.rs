@@ -1,13 +1,49 @@
-use crate::string;
+use crate::error::InitError;
 use crate::utils::{is_digits, is_html_with_bspl, is_length_10_or_empty};
+use crate::{string, ModelError};
+use derive_more::{AsRef, Display};
+use diesel_derive_newtype::DieselNewType;
+use serde::{Deserialize, Serialize};
 
-string!(Id, [TryFrom] {
-    /// 고유번호
-    ///
-    /// This field is a 7-digit number.
-} => {
-    validate(len_char_min = 7, len_char_max = 7, predicate = is_digits),
-});
+#[derive(
+    Debug,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Hash,
+    // derive_more
+    AsRef,
+    Display,
+    // serde
+    Serialize,
+    Deserialize,
+    // diesel
+    DieselNewType,
+)]
+pub struct Id(String);
+
+impl Id {
+    pub fn try_new(value: &str) -> Result<Self, ModelError> {
+        if value.len() == 7 && is_digits(value) {
+            Ok(Self(value.to_string()))
+        } else {
+            Err(InitError {
+                value: value.to_string(),
+                message: "Id must be a 7-digit number".to_string(),
+            })?
+        }
+    }
+}
+
+impl TryFrom<&str> for Id {
+    type Error = ModelError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Self::try_new(value)
+    }
+}
 
 string!(RepresentativeName, [From] {
     /// 대표자명

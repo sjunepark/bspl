@@ -11,6 +11,7 @@ cookie = "0.18.1"
 derive_builder = "0.20.1"
 derive_more = "1.0.0"
 diesel = "2.2.4"
+diesel-derive-newtype = "2.1.2"
 diesel_migrations = "2.2.0"
 figment = "0.10.19"
 hashbrown = "0.15.0"
@@ -29,7 +30,6 @@ time = "0.3.36"
 tokio = "1.40.0"
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
-validator = "0.18.1"
 
 # Local crates
 db = { path = "crates/db" }
