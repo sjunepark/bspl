@@ -99,7 +99,7 @@ fn minify_and_trim_html(html: &[u8]) -> Result<String, SmesError> {
     use minify_html::Cfg;
 
     #[cfg(feature = "minify-html")]
-    let html = minify_html::minify(html, &Cfg::spec_compliant());
+    let html = &minify_html::minify(html, &Cfg::spec_compliant());
 
     let html = scraper::Html::parse_document(std::str::from_utf8(html)?);
     let selector = Selector::parse("#real_contents")?;
