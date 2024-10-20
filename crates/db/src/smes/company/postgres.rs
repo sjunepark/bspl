@@ -1,111 +1,88 @@
+use crate::schema::smes::company::dsl;
 use crate::smes::CompanyDb;
-use crate::{DbError, PostgresDb};
+use crate::{schema, DbError, PostgresDb};
+use diesel::prelude::*;
+use diesel::upsert::excluded;
 use hashbrown::HashSet;
 use model::{company, table, ModelError};
 use serde::{Deserialize, Serialize};
-use sqlx::{FromRow, QueryBuilder};
 
 impl CompanyDb for PostgresDb {
-    async fn get_companies(&self) -> Result<Vec<table::Company>, DbError> {
-        sqlx::query_as!(PostgresCompany, "SELECT * from smes.company")
-            .fetch_all(&self.pool)
-            .await?
-            .into_iter()
-            .map(table::Company::try_from)
-            .collect()
+    async fn get_companies(&mut self) -> Result<Vec<crate::model::smes::Company>, DbError> {
+        Ok(dsl::company.load(&mut self.conn)?)
     }
 
-    async fn get_company_ids(&self) -> Result<HashSet<company::Id>, DbError> {
-        sqlx::query!("SELECT company_id from smes.company")
-            .fetch_all(&self.pool)
-            .await?
+    async fn get_company_ids(&mut self) -> Result<HashSet<String>, DbError> {
+        Ok(dsl::company
+            .select(dsl::company_id)
+            .load::<String>(&mut self.conn)?
             .into_iter()
-            .map(|company| {
-                company::Id::try_from(company.company_id)
-                    .map_err(|e| DbError::from(ModelError::from(e)))
-            })
-            .collect()
+            .collect())
     }
 
-    async fn insert_companies(&self, companies: Vec<table::Company>) -> Result<(), DbError> {
-        let tx = self.pool.begin().await?;
+    async fn insert_companies(
+        &mut self,
+        companies: Vec<crate::model::smes::NewCompany>,
+    ) -> Result<(), DbError> {
         let total_company_count = companies.len() as u64;
 
-        let mut query_builder = QueryBuilder::new(
-            "INSERT INTO smes.company (company_id, representative_name, headquarters_address, business_registration_number,
-                          company_name, industry_code, industry_name) "
-        );
+        self.conn.transaction::<(), _, _>(|conn| {
+            let insert_count = diesel::insert_into(schema::smes::company::table)
+                .values(&companies)
+                .execute(conn)?;
 
-        query_builder.push_values(companies, |mut b, company| {
-            b.push_bind(company.company_id.to_string())
-                .push_bind(company.representative_name.to_string())
-                .push_bind(company.headquarters_address.to_string())
-                .push_bind(company.business_registration_number.to_string())
-                .push_bind(company.company_name.to_string())
-                .push_bind(company.industry_code.to_string())
-                .push_bind(company.industry_name.to_string());
-        });
-        let query = query_builder.build();
-        let insert_count = query.execute(&self.pool).await?.rows_affected();
-
-        if insert_count == total_company_count {
-            tracing::trace!("Inserted {} companies", insert_count);
-            tx.commit().await?;
-        } else {
-            tracing::error!(
-                "Inserted {}/{} companies. Rolling back transaction",
-                insert_count,
-                total_company_count
-            );
-            tx.rollback().await?;
-        }
+            if insert_count == total_company_count as usize {
+                tracing::trace!("Inserted {} companies", insert_count);
+                Ok(())
+            } else {
+                tracing::error!(
+                    "Inserted {}/{} companies. Rolling back transaction",
+                    insert_count,
+                    total_company_count
+                );
+                Err(diesel::result::Error::RollbackTransaction)
+            }
+        })?;
         Ok(())
     }
 
-    async fn upsert_companies(&self, companies: Vec<table::Company>) -> Result<(), DbError> {
-        let mut tx = self.pool.begin().await?;
-        let total_company_count = companies.len() as u64;
-        let mut upsert_count = 0_u64;
+    async fn upsert_companies(
+        &mut self,
+        companies: Vec<crate::model::smes::NewCompany>,
+    ) -> Result<(), DbError> {
+        self.conn.transaction(|conn| {
+            let insert_count = diesel::insert_into(schema::smes::company::table)
+                .values(&companies)
+                .on_conflict(dsl::company_id)
+                .do_update()
+                .set((
+                    dsl::representative_name.eq(excluded(dsl::representative_name)),
+                    dsl::headquarters_address.eq(excluded(dsl::headquarters_address)),
+                    dsl::business_registration_number
+                        .eq(excluded(dsl::business_registration_number)),
+                    dsl::company_name.eq(excluded(dsl::company_name)),
+                    dsl::industry_code.eq(excluded(dsl::industry_code)),
+                    dsl::industry_name.eq(excluded(dsl::industry_name)),
+                ))
+                .execute(conn)?;
 
-        for company in companies {
-            let result = sqlx::query!(
-                r#"INSERT INTO smes.company (company_id, representative_name, headquarters_address, business_registration_number,
-                          company_name, industry_code, industry_name)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
-ON CONFLICT (company_id) DO UPDATE SET representative_name          = $2,
-                                    headquarters_address         = $3,
-                                    business_registration_number = $4,
-                                    company_name                 = $5,
-                                    industry_code                = $6,
-                                    industry_name                = $7,
-                                    updated_at                 = DEFAULT"#,
-                company.company_id.to_string(),
-                company.representative_name.to_string(),
-                company.headquarters_address.to_string(),
-                company.business_registration_number.to_string(),
-                company.company_name.to_string(),
-                company.industry_code.to_string(),
-                company.industry_name.to_string(),
-            ).execute(&mut *tx).await?.rows_affected();
-            upsert_count += result;
-        }
-
-        if upsert_count == total_company_count {
-            tracing::trace!("Upserted {} companies", upsert_count);
-            tx.commit().await?;
-        } else {
-            tracing::error!(
-                "Upserted {}/{} companies. Rolling back transaction",
-                upsert_count,
-                total_company_count
-            );
-            tx.rollback().await?;
-        }
+            if insert_count == companies.len() {
+                tracing::trace!("Upserted {} companies", insert_count);
+                Ok(())
+            } else {
+                tracing::error!(
+                    "Upserted {}/{} companies. Rolling back transaction",
+                    insert_count,
+                    companies.len()
+                );
+                Err(diesel::result::Error::RollbackTransaction)
+            }
+        })?;
         Ok(())
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, FromRow)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PostgresCompany {
     pub company_id: String,
     pub representative_name: String,
@@ -162,40 +139,39 @@ impl From<table::Company> for PostgresCompany {
 
 #[cfg(test)]
 mod test {
+    use crate::model::smes::NewCompany;
     use crate::smes::CompanyDb;
     use crate::test_utils::{PostgresTestContext, TestContext};
     use fake::Fake;
     use hashbrown::HashSet;
-    use model::table;
 
     #[tokio::test]
     async fn insert_and_get_companies_should_work() {
         let function_id = utils::function_id!();
-        let ctx = PostgresTestContext::new(&function_id).await;
+        let mut ctx = PostgresTestContext::new(&function_id).await;
 
         let ids = (0..10_u64).map(|i| 1000000 + i).collect::<Vec<_>>();
-        let inserted_companies_without_date = ctx.populate_companies(&ids).await;
+        let mut inserted_companies = ctx.populate_companies(&ids).await;
 
-        let selected_companies: Vec<_> = ctx
+        let mut selected_companies: Vec<_> = ctx
             .db()
             .get_companies()
             .await
             .expect("Failed to get companies")
             .into_iter()
-            .map(|company| table::Company {
-                created_at: None,
-                updated_at: None,
-                ..company
-            })
+            .map(NewCompany::from)
             .collect();
 
-        assert_eq!(inserted_companies_without_date, selected_companies);
+        inserted_companies.sort_by_key(|c| c.company_id.clone());
+        selected_companies.sort_by_key(|c| c.company_id.clone());
+
+        assert_eq!(inserted_companies, selected_companies,);
     }
 
     #[tokio::test]
     async fn get_company_ids_should_work() {
         let function_id = utils::function_id!();
-        let ctx = PostgresTestContext::new(&function_id).await;
+        let mut ctx = PostgresTestContext::new(&function_id).await;
 
         let ids = (0..10_u64).map(|i| 1000000 + i).collect::<Vec<_>>();
         let inserted_ids: HashSet<_> = ctx
@@ -220,8 +196,7 @@ mod test {
         tracing_setup::span!("test");
 
         let function_id = utils::function_id!();
-        let ctx = PostgresTestContext::new(&function_id).await;
-        let db = ctx.db();
+        let mut ctx = PostgresTestContext::new(&function_id).await;
 
         // Set up basic companies
         let ids = (0..10_u64).map(|i| 1000000 + i).collect::<Vec<_>>();
@@ -231,18 +206,16 @@ mod test {
         const UPDATED_REPRESENTATIVE_NAME: &str = "Updated";
         let mut updated_companies = companies
             .iter()
-            .map(|c| table::Company {
+            .map(|c| NewCompany {
                 representative_name: UPDATED_REPRESENTATIVE_NAME.into(),
                 ..c.clone()
             })
             .collect::<Vec<_>>();
 
         // Add a new company to see that this company was properly updated
-        let mut new_company = ().fake::<table::Company>();
+        let mut new_company = ().fake::<NewCompany>();
         const NEW_COMPANY_ID: &str = "2000000";
-        new_company.company_id = NEW_COMPANY_ID
-            .try_into()
-            .expect("failed to create dummy company_id");
+        new_company.company_id = NEW_COMPANY_ID.to_string();
         let new_company_representative_name = new_company.representative_name.clone();
         updated_companies.push(new_company);
 
@@ -252,6 +225,7 @@ mod test {
         // endregion: Arrange
 
         // region: Action
+        let db = ctx.db();
         db.upsert_companies(updated_companies)
             .await
             .inspect_err(|e| tracing::error!(?e, "Failed to upsert companies"))

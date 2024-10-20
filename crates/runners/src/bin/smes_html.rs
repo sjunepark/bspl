@@ -16,7 +16,7 @@ async fn main() {
         .expect("Failed to load settings");
 
     let connection_string = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set");
-    let db = PostgresDb::new(connection_string).in_current_span().await;
+    let mut db = PostgresDb::new(connection_string).in_current_span().await;
 
     // 1. Get all companies from the database
     let all_ids_to_query = db

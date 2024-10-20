@@ -1,7 +1,7 @@
 use crate::test_utils::TestContext;
 use crate::PostgresDb;
-use sqlx::migrate;
-use sqlx::postgres::PgPoolOptions;
+use diesel::{Connection, PgConnection};
+use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use testcontainers_modules::postgres::Postgres;
 use testcontainers_modules::testcontainers::runners::AsyncRunner;
 use testcontainers_modules::testcontainers::{ContainerAsync, ImageExt};
@@ -26,35 +26,20 @@ impl TestContext<PostgresDb> for PostgresTestContext {
                 .await
                 .expect("Failed to get port for test db connection")
         );
-
-        // <https://github.com/rust10x/rust-web-app/blob/main/crates/libs/lib-core/src/model/store/mod.rs>
-        // This is not an ideal situation; however, with sqlx 0.7.1, when executing 'cargo test', some tests that use sqlx fail at a
-        // rather low level (in the tokio scheduler). It appears to be a low-level thread/async issue, as removing/adding
-        // tests causes different tests to fail. The cause remains uncertain, but setting max_connections to 1 resolves the issue.
-        // The good news is that max_connections still function normally for a regular run.
-        // This issue is likely due to the unique requirements unit tests impose on their execution, and therefore,
-        // while not ideal, it should serve as an acceptable temporary solution.
-        // It's a very challenging issue to investigate and narrow down. The alternative would have been to stick with sqlx 0.6.x, which
-        // is potentially less ideal and might lead to confusion as to why we are maintaining the older version in this blueprint.
-        let max_connections = if cfg!(test) { 1 } else { 5 };
-
-        let pool = PgPoolOptions::new()
-            .max_connections(max_connections)
-            .connect(&connection_string)
-            .await
-            .expect("Failed to create connection pool");
-
-        migrate!("../../migrations")
-            .run(&pool)
-            .await
+        // Run migrations via diesel
+        let mut conn = PgConnection::establish(&connection_string)
+            .expect("Failed to establish connection to test db");
+        const MIGRATIONS: EmbeddedMigrations = embed_migrations!("../../migrations");
+        conn.run_pending_migrations(MIGRATIONS)
             .expect("Failed to run migrations");
+        tracing::trace!("Migrations run");
 
-        let db = PostgresDb { pool };
+        let db = PostgresDb { conn };
 
         Self { db, _node: node }
     }
 
-    fn db(&self) -> &PostgresDb {
-        &self.db
+    fn db(&mut self) -> &mut PostgresDb {
+        &mut self.db
     }
 }

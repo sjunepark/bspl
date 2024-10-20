@@ -24,7 +24,6 @@ serde = "1.0.210"
 serde-aux = "4.5.0"
 serde_json = "1.0.128"
 static_assertions = "1.1.0"
-sqlx = "0.8.2"
 thiserror = "1.0.63"
 time = "0.3.36"
 tokio = "1.40.0"
@@ -44,9 +43,3 @@ fake = "2.10.0"
 goldrust = "0.1.8"
 testcontainers-modules = "0.11.2"
 wiremock = "0.6.2"
-
-# Benchmarks
-criterion = "0.5.1"
-
-[profile.dev.package.sqlx-macros]
-opt-level = 3

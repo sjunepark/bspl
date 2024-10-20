@@ -8,7 +8,7 @@ async fn main() {
     tracing_setup::span!("main");
 
     let connection_string = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set");
-    let db = PostgresDb::new(connection_string).await;
+    let mut db = PostgresDb::new(connection_string).await;
 
     let mut api = ListApi::new();
 

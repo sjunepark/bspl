@@ -4,17 +4,13 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 
-[[bench]]
-name = "postgres"
-harness = false
-
 [dependencies]
 diesel = { workspace = true, features = ["postgres", "r2d2", "time"] }
 diesel_migrations = { workspace = true }
+fake = { workspace = true, features = ["time"] }
 hashbrown = { workspace = true }
+rand = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-smes = { workspace = true }
-sqlx = { workspace = true, features = ["runtime-tokio-native-tls", "macros", "postgres", "time", "derive"] }
 thiserror = { workspace = true }
 time = { workspace = true, features = ["serde"] }
 tokio = { workspace = true, features = ["full"] }
@@ -26,9 +22,6 @@ model = { workspace = true }
 
 [dev-dependencies]
 anyhow = { workspace = true }
-criterion = { workspace = true, features = ["async_tokio"] }
-fake = { workspace = true }
-rand = { workspace = true }
 serde_json = { workspace = true }
 testcontainers-modules = { workspace = true, features = ["postgres"] }
 tracing-setup = { workspace = true }

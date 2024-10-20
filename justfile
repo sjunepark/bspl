@@ -73,21 +73,6 @@ tree crate:
     cargo tree --all-features --all-targets -i {{crate}}
 
 ## DB
-sqlx-add name:
-    sqlx migrate add {{name}}
-
-sqlx-run:
-    sqlx migrate run
-
-sqlx-revert:
-    sqlx migrate revert
-
-sqlx-info:
-    sqlx migrate info
-
-sqlx-prepare:
-    cargo sqlx prepare --workspace -- --all-targets
-
 backup-db:
     scripts/backup_postgres_db.sh
 

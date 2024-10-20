@@ -1,5 +1,6 @@
 use crate::SmesError;
 use cookie::CookieJar;
+use db::model::smes::NewHtml;
 use image::DynamicImage;
 use model::company::RepresentativeName;
 use model::{company, table, ModelError};
@@ -153,6 +154,22 @@ impl TryFrom<Company> for table::Company {
     }
 }
 
+impl TryFrom<Company> for db::model::smes::NewCompany {
+    type Error = SmesError;
+
+    fn try_from(value: Company) -> Result<Self, Self::Error> {
+        Ok(db::model::smes::NewCompany {
+            company_id: value.vnia_sn.to_string(),
+            representative_name: value.rprsv_nm,
+            headquarters_address: value.hdofc_addr,
+            business_registration_number: value.bizrno,
+            company_name: value.cmp_nm,
+            industry_code: value.indsty_cd,
+            industry_name: value.indsty_nm,
+        })
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub(crate) struct Html {
     pub(crate) vnia_sn: String,
@@ -177,6 +194,17 @@ impl TryFrom<Html> for table::Html {
             html: value.html.try_into().map_err(ModelError::from)?,
             created_at: None,
             updated_at: None,
+        })
+    }
+}
+
+impl TryFrom<Html> for NewHtml {
+    type Error = SmesError;
+
+    fn try_from(value: Html) -> Result<Self, Self::Error> {
+        Ok(NewHtml {
+            company_id: value.vnia_sn,
+            html_raw: value.html,
         })
     }
 }
