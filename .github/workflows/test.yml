@@ -58,7 +58,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-latest, windows-latest ]
+        os: [ macos-13, windows-latest ]
     steps:
       # if your project needs OpenSSL, uncomment this to fix Windows builds.
       # it's commented out by default as the installation command takes 5-10m.
@@ -71,18 +71,18 @@ jobs:
         with:
           submodules: true
       - name: Setup Docker on macOS
-        if: matrix.os == 'macos-latest'
+        if: runner.os == 'macOs'
         uses: douglascamata/setup-docker-macos-action@v1-alpha
       - name: Setup Docker
-        if: matrix.os == 'windows-latest'
+        if: runner.os == 'Windows'
         uses: crazy-max/ghaction-chocolatey@v3.0.0
         with:
           args: install docker-cli
       - name: Setup PostgreSQL
-        if: matrix.os == 'windows-latest'
+        if: runner.os == 'Windows'
         run: echo "PQ_LIB_DIR=C:/Program Files/PostgreSQL/14/lib" >> $GITHUB_ENV
       - name: Setup PostgreSQL
-        if: matrix.os == 'macos-latest'
+        if: runner.os == 'macOs'
         uses: tj-actions/install-postgresql@v3
         with:
           postgresql-version: 16
