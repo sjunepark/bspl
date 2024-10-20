@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT * from smes.html WHERE company_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "company_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "html",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "created_at",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 3,
+        "name": "updated_at",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "13217f548055f08e5635455f3c12f59b773cb731eb14602ea8426b6b39054aae"
+}

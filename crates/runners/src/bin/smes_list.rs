@@ -1,5 +1,5 @@
 use db::smes::CompanyDb;
-use db::{Db, LibsqlDb};
+use db::{Db, PostgresDb};
 use smes::{ListApi, ListPayloadBuilder};
 use tracing::Instrument;
 
@@ -7,13 +7,8 @@ use tracing::Instrument;
 async fn main() {
     tracing_setup::span!("main");
 
-    let db = LibsqlDb::new_local("db/local.db")
-        .in_current_span()
-        .await
-        .inspect_err(|e| {
-            tracing::error!(?e, "Failed to create db");
-        })
-        .expect("Failed to create db");
+    let connection_string = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set");
+    let mut db = PostgresDb::new(connection_string).await;
 
     let mut api = ListApi::new();
 

@@ -1,6 +1,4 @@
 mod db;
-mod libsql;
-mod model;
+mod postgres;
 
 pub use db::HtmlDb;
-pub use model::Html;

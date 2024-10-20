@@ -1,61 +1,60 @@
 #![cfg(test)]
 
-mod libsql;
+mod postgres;
 
 use crate::db::Db;
 use fake::{Fake, Faker};
-use model::table;
 use tokio::sync::mpsc;
 
-pub(crate) use libsql::LibsqlTestContext;
+use crate::model::smes::NewHtml;
+pub(crate) use postgres::PostgresTestContext;
 
 pub(crate) trait TestContext<D: Db> {
     async fn new(function_id: &str) -> Self;
-    fn db(&self) -> &D;
+    fn db(&mut self) -> &mut D;
 
     /// Populate the database with fake companies.
-    async fn populate_companies(&self, ids: &[u64]) -> Vec<table::Company> {
-        let companies: Vec<table::Company> = ids
+    async fn populate_companies(&mut self, ids: &[u64]) -> Vec<crate::model::smes::NewCompany> {
+        let new_companies: Vec<crate::model::smes::NewCompany> = ids
             .iter()
             .map(|id| {
-                let company = Faker.fake::<table::Company>();
-                table::Company {
-                    smes_id: id
-                        .to_string()
-                        .try_into()
-                        .expect("failed to create proper dummy smes_id"),
-                    ..company
+                let company = Faker.fake::<crate::model::smes::Company>();
+                crate::model::smes::NewCompany {
+                    company_id: id.to_string(),
+                    representative_name: company.representative_name,
+                    headquarters_address: company.headquarters_address,
+                    business_registration_number: company.business_registration_number,
+                    company_name: company.company_name,
+                    industry_code: company.industry_code,
+                    industry_name: company.industry_name,
                 }
             })
             .collect();
 
         self.db()
-            .insert_companies(companies.clone())
+            .insert_companies(new_companies.clone())
             .await
             .inspect_err(|e| {
                 tracing::error!(?e, "Failed to insert companies");
             })
             .unwrap();
 
-        companies
+        new_companies
     }
 
     /// Populate the database with fake HTMLs.
     ///
     /// ## Warning
     /// To satisfy the foreign key constraint, the Company table will be populated first.
-    async fn populate_htmls(&self, ids: &[u64]) -> Vec<table::Html> {
+    async fn populate_htmls(&mut self, ids: &[u64]) -> Vec<NewHtml> {
         self.populate_companies(ids).await;
 
-        let htmls: Vec<table::Html> = ids
+        let htmls: Vec<NewHtml> = ids
             .iter()
             .map(|id| {
-                let html = Faker.fake::<table::Html>();
-                table::Html {
-                    smes_id: id
-                        .to_string()
-                        .try_into()
-                        .expect("failed to create dummy smes_id"),
+                let html = Faker.fake::<NewHtml>();
+                NewHtml {
+                    company_id: id.to_string(),
                     ..html
                 }
             })
@@ -68,7 +67,7 @@ pub(crate) trait TestContext<D: Db> {
         drop(tx);
 
         self.db()
-            .insert_htmls(rx)
+            .insert_html_channel(rx)
             .await
             .inspect_err(|e| {
                 tracing::error!(?e, "Failed to insert HTMLs");

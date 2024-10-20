@@ -1,5 +1,5 @@
 use db::smes::{CompanyDb, HtmlDb};
-use db::{Db, LibsqlDb};
+use db::{Db, PostgresDb};
 use figment::providers::{Format, Toml};
 use figment::Figment;
 use runners::AppConfig;
@@ -15,10 +15,8 @@ async fn main() {
         .extract()
         .expect("Failed to load settings");
 
-    let db = LibsqlDb::new_local("db/local.db")
-        .in_current_span()
-        .await
-        .expect("Failed to get db");
+    let connection_string = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set");
+    let mut db = PostgresDb::new(connection_string).in_current_span().await;
 
     // 1. Get all companies from the database
     let all_ids_to_query = db
@@ -27,7 +25,7 @@ async fn main() {
         .await
         .expect("Failed to get companies");
     let ids_with_htmls = db
-        .get_html_ids()
+        .select_html_ids()
         .in_current_span()
         .await
         .expect("Failed to get html ids");
@@ -47,7 +45,7 @@ async fn main() {
     // We're calling `insert_htmls` rather than `upsert_htmls`
     // because we're sure that the HTMLs are new.
     // Or else, it means that an invariant has happened.
-    db.insert_htmls(new_htmls)
+    db.insert_html_channel(new_htmls)
         .in_current_span()
         .await
         .expect("Failed to upsert htmls");
@@ -57,7 +55,7 @@ async fn main() {
         let htmls = get_bspl_htmls(ids_already_queried.cloned().collect())
             .in_current_span()
             .await;
-        db.upsert_htmls(htmls)
+        db.upsert_html_channel(htmls)
             .in_current_span()
             .await
             .expect("Failed to upsert htmls");

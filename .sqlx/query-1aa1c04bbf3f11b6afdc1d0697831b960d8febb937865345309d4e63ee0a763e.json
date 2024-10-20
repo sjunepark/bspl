@@ -1,0 +1,68 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT * from smes.company",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "company_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "representative_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "headquarters_address",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "business_registration_number",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "company_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "industry_code",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "industry_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "created_at",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 8,
+        "name": "updated_at",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "1aa1c04bbf3f11b6afdc1d0697831b960d8febb937865345309d4e63ee0a763e"
+}

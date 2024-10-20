@@ -1,6 +1,4 @@
 mod db;
-mod lisbsql;
-mod model;
+mod postgres;
 
 pub use db::CompanyDb;
-pub use model::Company;

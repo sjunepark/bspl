@@ -1,7 +1,10 @@
 mod db;
 mod error;
+pub mod model;
+pub(crate) mod schema;
 pub mod smes;
-mod test_utils;
+pub(crate) mod test_utils;
+mod types;
 
-pub use db::{Db, LibsqlDb};
+pub use db::{Db, PostgresDb};
 pub use error::DbError;
