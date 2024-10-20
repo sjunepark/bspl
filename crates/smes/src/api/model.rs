@@ -3,8 +3,7 @@ use cookie::CookieJar;
 use db::model::smes::NewHtml;
 use image::DynamicImage;
 use serde::{Deserialize, Serialize};
-use types::company::RepresentativeName;
-use types::{company, table, TypeError};
+use types::TypeError;
 
 // region: Captcha
 /// Represents a captcha which could be in the following three `State`s:
@@ -131,29 +130,6 @@ pub(crate) struct Company {
     pub(crate) indsty_nm: String,
 }
 
-impl TryFrom<Company> for table::Company {
-    type Error = SmesError;
-
-    fn try_from(value: Company) -> Result<Self, Self::Error> {
-        Ok(table::Company {
-            company_id: company::Id::try_from(value.vnia_sn.to_string().as_str())
-                .map_err(TypeError::from)?,
-            representative_name: Into::<RepresentativeName>::into(value.rprsv_nm),
-            headquarters_address: Into::<company::HeadquartersAddress>::into(value.hdofc_addr),
-            business_registration_number: company::BusinessRegistrationNumber::try_from(
-                value.bizrno,
-            )
-            .map_err(TypeError::from)?,
-            company_name: Into::<company::CompanyName>::into(value.cmp_nm),
-            industry_code: company::IndustryCode::try_from(value.indsty_cd)
-                .map_err(TypeError::from)?,
-            industry_name: Into::<company::IndustryName>::into(value.indsty_nm),
-            created_at: None,
-            updated_at: None,
-        })
-    }
-}
-
 impl TryFrom<Company> for db::model::smes::NewCompany {
     type Error = SmesError;
 
@@ -179,28 +155,6 @@ impl TryFrom<Company> for db::model::smes::NewCompany {
 pub(crate) struct Html {
     pub(crate) vnia_sn: String,
     pub(crate) html: String,
-}
-
-impl From<table::Html> for Html {
-    fn from(value: table::Html) -> Self {
-        Self {
-            vnia_sn: value.company_id.to_string(),
-            html: value.html.into(),
-        }
-    }
-}
-
-impl TryFrom<Html> for table::Html {
-    type Error = SmesError;
-
-    fn try_from(value: Html) -> Result<Self, Self::Error> {
-        Ok(table::Html {
-            company_id: company::Id::try_from(value.vnia_sn.as_str()).map_err(TypeError::from)?,
-            html: value.html.try_into().map_err(TypeError::from)?,
-            created_at: None,
-            updated_at: None,
-        })
-    }
 }
 
 impl TryFrom<Html> for NewHtml {

@@ -1,7 +1,7 @@
 use crate::error::InitError;
-use crate::utils::{is_digits, is_html_with_bspl, is_length_10_or_empty};
+use crate::utils::{is_digits, is_html_with_bspl};
 use crate::{string, TypeError};
-use derive_more::{AsRef, Display};
+use derive_more::{AsRef, Display, From, Into};
 use diesel_derive_newtype::DieselNewType;
 use serde::{Deserialize, Serialize};
 
@@ -45,30 +45,140 @@ impl TryFrom<&str> for Id {
     }
 }
 
-string!(RepresentativeName, [From] {
-    /// 대표자명
-});
+/// 대표자명
+#[derive(
+    Debug,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Hash,
+    // derive_more
+    AsRef,
+    Display,
+    From,
+    Into,
+    // serde
+    Serialize,
+    Deserialize,
+    // diesel
+    DieselNewType,
+)]
+pub struct RepresentativeName(String);
 
-string!(HeadquartersAddress, [From] {
-    /// 본사주소
-});
+impl RepresentativeName {
+    pub fn new(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
 
-string!(BusinessRegistrationNumber, [TryFrom] {
-    /// 사업자번호
-    ///
-    /// This field is a 10-digit number.
-    /// It also allows empty strings, since the website provides empty strings for some companies.
-} => {
-    validate(predicate = is_length_10_or_empty),
-});
+/// 본사주소
+#[derive(
+    Debug,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Hash,
+    // derive_more
+    AsRef,
+    Display,
+    From,
+    Into,
+    // serde
+    Serialize,
+    Deserialize,
+    // diesel
+    DieselNewType,
+)]
+pub struct HeadquartersAddress(String);
 
-string!(CorporationRegistrationNumber, [TryFrom] {
-    /// 법인등록번호
-    ///
-    /// This field is a 13-digit number.
-} => {
-    validate(len_char_min = 13, len_char_max = 13, predicate = is_digits),
-});
+/// 사업자번호
+///
+/// This field is a 10-digit number.
+/// It also allows empty strings, since the website provides empty strings for some companies.
+#[derive(
+    Debug,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Hash,
+    // derive_more
+    AsRef,
+    Display,
+    // serde
+    Serialize,
+    Deserialize,
+    // diesel
+    DieselNewType,
+)]
+pub struct BusinessRegistrationNumber(String);
+
+impl BusinessRegistrationNumber {
+    pub fn try_new(value: &str) -> Result<Self, TypeError> {
+        if value.is_empty() || (value.len() == 10 && is_digits(value)) {
+            Ok(Self(value.to_string()))
+        } else {
+            Err(InitError {
+                value: value.to_string(),
+                message: "BusinessRegistrationNumber must be a 10-digit number".to_string(),
+            })?
+        }
+    }
+}
+
+impl TryFrom<&str> for BusinessRegistrationNumber {
+    type Error = TypeError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Self::try_new(value)
+    }
+}
+
+/// 법인등록번호
+#[derive(
+    Debug,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Hash,
+    // derive_more
+    AsRef,
+    Display,
+    // serde
+    Serialize,
+    Deserialize,
+    // diesel
+    DieselNewType,
+)]
+pub struct CorporationRegistrationNumber(String);
+
+impl CorporationRegistrationNumber {
+    pub fn try_new(value: &str) -> Result<Self, TypeError> {
+        if value.len() == 13 && is_digits(value) {
+            Ok(Self(value.to_string()))
+        } else {
+            Err(InitError {
+                value: value.to_string(),
+                message: "CorporationRegistrationNumber must be a 13-digit number".to_string(),
+            })?
+        }
+    }
+}
+
+impl TryFrom<&str> for CorporationRegistrationNumber {
+    type Error = TypeError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Self::try_new(value)
+    }
+}
 
 string!(CompanyName, [From] {
     /// 기업명

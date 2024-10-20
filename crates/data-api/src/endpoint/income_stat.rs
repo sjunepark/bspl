@@ -57,7 +57,7 @@ mod tests {
             service_key: DataApiKey::new("test"),
             crno: Some(
                 "1234567890123"
-                    .parse()
+                    .try_into()
                     .expect("Failed to parse CorporationRegistrationNumber"),
             ),
             biz_year: None,

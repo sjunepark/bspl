@@ -4,9 +4,8 @@ use crate::{schema, DbError, PostgresDb};
 use diesel::prelude::*;
 use diesel::upsert::excluded;
 use hashbrown::HashSet;
-use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc::UnboundedReceiver;
-use types::{company, table, TypeError};
+use types::company;
 
 impl HtmlDb for PostgresDb {
     async fn select_html(
@@ -58,37 +57,5 @@ impl HtmlDb for PostgresDb {
                 .execute(&mut self.conn)?;
         }
         Ok(())
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct PostgresHtml {
-    pub company_id: company::Id,
-    pub html_raw: String,
-    pub created_at: Option<time::PrimitiveDateTime>,
-    pub updated_at: Option<time::PrimitiveDateTime>,
-}
-
-impl From<table::Html> for PostgresHtml {
-    fn from(value: table::Html) -> Self {
-        Self {
-            company_id: value.company_id,
-            html_raw: value.html.into(),
-            created_at: value.created_at,
-            updated_at: value.updated_at,
-        }
-    }
-}
-
-impl TryFrom<PostgresHtml> for table::Html {
-    type Error = DbError;
-
-    fn try_from(value: PostgresHtml) -> Result<Self, Self::Error> {
-        Ok(table::Html {
-            company_id: value.company_id,
-            html: value.html_raw.try_into().map_err(TypeError::from)?,
-            created_at: value.created_at,
-            updated_at: value.updated_at,
-        })
     }
 }
