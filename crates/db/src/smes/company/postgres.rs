@@ -152,7 +152,7 @@ mod test {
         let mut updated_companies = companies
             .iter()
             .map(|c| NewCompany {
-                representative_name: UPDATED_REPRESENTATIVE_NAME.into(),
+                representative_name: UPDATED_REPRESENTATIVE_NAME.to_string().into(),
                 ..c.clone()
             })
             .collect::<Vec<_>>();
@@ -200,7 +200,7 @@ mod test {
                 }
                 _ => {
                     assert_eq!(
-                        company.representative_name.as_str(),
+                        company.representative_name.as_ref(),
                         UPDATED_REPRESENTATIVE_NAME
                     );
                 }

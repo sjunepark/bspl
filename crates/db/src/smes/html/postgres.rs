@@ -53,7 +53,7 @@ impl HtmlDb for PostgresDb {
                 .values(&html)
                 .on_conflict(dsl::company_id)
                 .do_update()
-                .set((dsl::html_raw.eq(excluded(dsl::html_raw)),))
+                .set((dsl::html_content.eq(excluded(dsl::html_content)),))
                 .execute(&mut self.conn)?;
         }
         Ok(())

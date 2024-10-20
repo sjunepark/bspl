@@ -647,7 +647,6 @@ dependencies = [
 name = "db"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "derive_more 1.0.0",
  "diesel",
  "diesel-derive-newtype",
@@ -656,7 +655,6 @@ dependencies = [
  "hashbrown 0.15.0",
  "rand",
  "serde",
- "serde_json",
  "testcontainers-modules",
  "thiserror",
  "time",
@@ -3628,17 +3626,13 @@ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
 name = "types"
 version = "0.1.0"
 dependencies = [
- "bytes",
  "derive_more 1.0.0",
  "diesel",
  "diesel-derive-newtype",
  "fake",
  "serde",
- "serde_json",
- "static_assertions",
  "thiserror",
  "time",
- "tracing",
 ]
 
 [[package]]

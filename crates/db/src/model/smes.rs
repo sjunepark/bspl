@@ -6,18 +6,20 @@ use fake::faker::number::raw::NumberWithFormat;
 use fake::locales::EN;
 use fake::{Dummy, Fake};
 use rand::Rng;
+use types::company;
 
+// region: Table company
 #[derive(Queryable, Selectable, Clone)]
 #[diesel(table_name = crate::schema::smes::company)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Company {
-    pub company_id: types::company::Id,
-    pub representative_name: String,
-    pub headquarters_address: String,
-    pub business_registration_number: String,
-    pub company_name: String,
-    pub industry_code: String,
-    pub industry_name: String,
+    pub company_id: company::Id,
+    pub representative_name: company::RepresentativeName,
+    pub headquarters_address: company::HeadquartersAddress,
+    pub business_registration_number: company::BusinessRegistrationNumber,
+    pub company_name: company::Name,
+    pub industry_code: company::IndustryCode,
+    pub industry_name: company::IndustryName,
     pub created_at: time::PrimitiveDateTime,
     pub updated_at: time::PrimitiveDateTime,
 }
@@ -47,13 +49,13 @@ impl<T> Dummy<T> for Company {
 #[diesel(table_name = crate::schema::smes::company)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewCompany {
-    pub company_id: types::company::Id,
-    pub representative_name: String,
-    pub headquarters_address: String,
-    pub business_registration_number: String,
-    pub company_name: String,
-    pub industry_code: String,
-    pub industry_name: String,
+    pub company_id: company::Id,
+    pub representative_name: company::RepresentativeName,
+    pub headquarters_address: company::HeadquartersAddress,
+    pub business_registration_number: company::BusinessRegistrationNumber,
+    pub company_name: company::Name,
+    pub industry_code: company::IndustryCode,
+    pub industry_name: company::IndustryName,
 }
 
 impl<T> Dummy<T> for NewCompany {
@@ -63,16 +65,25 @@ impl<T> Dummy<T> for NewCompany {
                 .fake::<String>()
                 .as_str()
                 .try_into()
-                .expect("failed to create dummy company_id"),
-            representative_name: Name().fake_with_rng::<String, R>(rng),
+                .expect("dummy creation logic needs to be fixed within the source code"),
+            representative_name: Name().fake_with_rng::<String, R>(rng).into(),
             headquarters_address: format!(
                 "{}, South Korea",
                 CityName().fake_with_rng::<String, R>(rng)
-            ),
-            business_registration_number: NumberWithFormat(EN, "^#########").fake::<String>(),
-            company_name: CompanyName().fake_with_rng::<String, R>(rng),
-            industry_code: NumberWithFormat(EN, "^####").fake::<String>(),
-            industry_name: Industry().fake_with_rng::<String, R>(rng),
+            )
+            .into(),
+            business_registration_number: NumberWithFormat(EN, "^#########")
+                .fake::<String>()
+                .as_str()
+                .try_into()
+                .expect("dummy creation logic needs to be fixed within the source code"),
+            company_name: CompanyName().fake_with_rng::<String, R>(rng).into(),
+            industry_code: NumberWithFormat(EN, "^####")
+                .fake::<String>()
+                .as_str()
+                .try_into()
+                .expect("dummy creation logic needs to be fixed within the source code"),
+            industry_name: Industry().fake_with_rng::<String, R>(rng).into(),
         }
     }
 }
@@ -102,13 +113,15 @@ impl PartialEq for NewCompany {
             && self.industry_name == other.industry_name
     }
 }
+// endregion: Table company
 
+// region: Table html
 #[derive(Queryable, Selectable, Clone)]
 #[diesel(table_name = crate::schema::smes::html)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Html {
-    pub company_id: String,
-    pub html_raw: String,
+    pub company_id: company::Id,
+    pub html_content: company::HtmlContent,
     pub created_at: time::PrimitiveDateTime,
     pub updated_at: time::PrimitiveDateTime,
 }
@@ -121,7 +134,7 @@ impl<T> Dummy<T> for Html {
 
         Html {
             company_id: new_html.company_id,
-            html_raw: new_html.html_raw,
+            html_content: new_html.html_content,
             created_at: fake_time,
             updated_at: fake_time,
         }
@@ -132,19 +145,19 @@ impl<T> Dummy<T> for Html {
 #[diesel(table_name = crate::schema::smes::html)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewHtml {
-    pub company_id: String,
-    pub html_raw: String,
+    pub company_id: company::Id,
+    pub html_content: company::HtmlContent,
 }
 impl<T> Dummy<T> for NewHtml {
     fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
         NewHtml {
             company_id: NumberWithFormat(EN, "^######")
-                .fake::<String>(),
-            html_raw: format!(
+                .fake::<String>().as_str().try_into().expect("dummy creation logic needs to be fixed within the source code"),
+            html_content: format!(
                 "<html><head><title>{}</title></head><body><h2>유동자산</h2><p>{}</p></body></html>",
                 CompanyName().fake_with_rng::<String, R>(rng),
                 Name().fake_with_rng::<String, R>(rng)
-            )
+            ).as_str().try_into().expect("dummy creation logic needs to be fixed within the source code"),
         }
     }
 }
@@ -153,7 +166,8 @@ impl From<Html> for NewHtml {
     fn from(html: Html) -> Self {
         NewHtml {
             company_id: html.company_id,
-            html_raw: html.html_raw,
+            html_content: html.html_content,
         }
     }
 }
+// endregion: Table html

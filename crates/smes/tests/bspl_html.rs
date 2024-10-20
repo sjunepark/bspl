@@ -41,7 +41,7 @@ async fn get_bspl_htmls_should_work_as_expected() {
 
     while let Some(bspl) = rx.recv().await {
         bspl_count += 1;
-        let html = bspl.html_raw.as_str();
+        let html = bspl.html_content.as_ref();
         let success = html.contains("유동자산");
 
         if !success {

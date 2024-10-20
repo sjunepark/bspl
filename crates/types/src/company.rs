@@ -210,9 +210,9 @@ impl TryFrom<&str> for CorporationRegistrationNumber {
     // diesel
     DieselNewType,
 )]
-pub struct CompanyName(String);
+pub struct Name(String);
 
-impl CompanyName {
+impl Name {
     pub fn new(value: &str) -> Self {
         Self(value.to_string())
     }
