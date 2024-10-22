@@ -1,5 +1,6 @@
 use crate::error::DbError;
 use crate::smes::{CompanyDb, HtmlDb};
+
 use diesel::prelude::*;
 use diesel::sql_query;
 use std::fmt::Debug;

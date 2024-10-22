@@ -36,12 +36,10 @@ pub enum SmesError {
     Scraper(#[from] scraper::error::SelectorErrorKind<'static>),
     #[error("Serde JSON error: {0}")]
     SerdeJson(#[from] serde_json::Error),
+    #[error("Unsuccessful response error: {0}")]
+    Response(#[from] ResponseError),
     #[error("Type error: {0}")]
     Type(#[from] TypeError),
-    #[error("Unsuccessful response error: {0}")]
-    UnsuccessfulResponse(#[from] UnsuccessfulResponseError),
-    #[error("Invariant error: {0}")]
-    Invariant(#[from] InvariantError),
 }
 
 #[derive(Error, Debug)]
@@ -57,14 +55,6 @@ pub struct HtmlParseError {
     #[source]
     pub source: Option<Box<dyn std::error::Error>>,
     pub message: &'static str,
-}
-
-#[derive(Error, Debug)]
-#[error("Invariant error: {message}")]
-pub struct InvariantError {
-    #[source]
-    pub source: Option<Box<dyn std::error::Error>>,
-    pub message: String,
 }
 
 #[derive(Error, Debug)]
@@ -176,12 +166,12 @@ pub struct DeserializationError {
 #[error(
     "Unsuccessful response error: {message}, status: {status}, headers: {headers:?}, body: {body}"
 )]
-pub struct UnsuccessfulResponseError {
+pub struct ResponseError {
     #[source]
     pub source: Option<Box<dyn std::error::Error>>,
     pub message: &'static str,
     pub status: reqwest::StatusCode,
-    pub headers: reqwest::header::HeaderMap,
+    pub headers: Box<reqwest::header::HeaderMap>,
     pub body: String,
 }
 

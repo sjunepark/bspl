@@ -154,7 +154,7 @@ impl<'a> Table<'a> {
     }
 
     fn years(&self) -> Result<Vec<String>, SmesError> {
-        let selector = Selector::parse("thead>tr>th").unwrap();
+        let selector = Selector::parse("thead>tr>th")?;
         let mut header = self.root.select(&selector);
         if header.next().is_none() {
             Err(HtmlParseError {

@@ -50,6 +50,7 @@ pub(crate) trait TestContext<D: Db> {
     ///
     /// ## Warning
     /// To satisfy the foreign key constraint, the Company table will be populated first.
+    #[tracing::instrument(skip(self))]
     async fn populate_htmls(&mut self, ids: &[u64]) -> Vec<NewHtml> {
         self.populate_companies(ids).await;
 
@@ -67,7 +68,9 @@ pub(crate) trait TestContext<D: Db> {
                 .collect();
 
         let (tx, rx) = mpsc::unbounded_channel();
+
         for html in &htmls {
+            tracing::trace!(?html, "Sending HTML");
             tx.send(html.clone()).expect("Failed to send HTML");
         }
         drop(tx);

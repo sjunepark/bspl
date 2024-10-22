@@ -1,4 +1,4 @@
-use crate::error::{NopechaError, NopechaErrorBody, UnsuccessfulResponseError};
+use crate::error::{NopechaError, NopechaErrorBody, ResponseError};
 use crate::{api, SmesError};
 use reqwest::header::{HeaderMap, CONTENT_TYPE};
 use reqwest::StatusCode;
@@ -50,10 +50,10 @@ impl ParsedResponse {
                 }
             }
 
-            return Err(SmesError::UnsuccessfulResponse(UnsuccessfulResponseError {
+            return Err(SmesError::Response(ResponseError {
                 message: "Request returned an unsuccessful status code",
                 status,
-                headers,
+                headers: Box::new(headers),
                 body: body.to_string(),
                 source: None,
             }));

@@ -1,6 +1,6 @@
 use crate::api::base::Api;
 use crate::api::header::HeaderMapExt;
-use crate::error::{BuildError, DeserializationError, UnsuccessfulResponseError};
+use crate::error::{BuildError, DeserializationError, ResponseError};
 use crate::{ListPayload, ListPayloadBuilder, ListResponse, SmesError};
 use reqwest::header::HeaderMap;
 use reqwest::{Client, Method};
@@ -74,10 +74,10 @@ impl ListApi {
 
         // Check if the response returned a successful result
         if !response.is_success() {
-            return Err(Into::<SmesError>::into(UnsuccessfulResponseError {
+            return Err(Into::<SmesError>::into(ResponseError {
                 message: "Response returned an unsuccessful result",
                 status: request_response.status,
-                headers: request_response.headers,
+                headers: Box::new(request_response.headers),
                 body: text.to_string(),
                 source: None,
             }));
