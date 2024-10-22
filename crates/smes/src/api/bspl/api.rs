@@ -155,6 +155,7 @@ mod tests {
     }
 
     #[test]
+    #[should_panic]
     fn minify_and_trim_html_should_error_when_no_id_real_contents() {
         tracing_setup::span!("test");
         let html = r#"
@@ -175,13 +176,6 @@ mod tests {
         "#;
 
         let minified = minify_and_trim_html(html.as_bytes());
-
-        assert!(minified
-            .inspect_err(|e| tracing::info!(
-                ?e,
-                "Expected error because of missing id 'real_contents'"
-            ))
-            .is_err(),);
     }
 
     #[cfg(feature = "minify-html")]

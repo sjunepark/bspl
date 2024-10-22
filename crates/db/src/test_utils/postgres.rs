@@ -14,6 +14,7 @@ pub(crate) struct PostgresTestContext {
 impl TestContext<PostgresDb> for PostgresTestContext {
     #[tracing::instrument]
     async fn new(_function_id: &str) -> Self {
+        tracing::trace!("Starting Postgres container");
         let node = Postgres::default()
             .with_tag("16")
             .start()
@@ -26,13 +27,17 @@ impl TestContext<PostgresDb> for PostgresTestContext {
                 .await
                 .expect("Failed to get port for test db connection")
         );
+        tracing::trace!(%connection_string, "Connection string");
+
         // Run migrations via diesel
+        tracing::trace!("Running migrations");
         let mut conn = PgConnection::establish(&connection_string)
             .expect("Failed to establish connection to test db");
         const MIGRATIONS: EmbeddedMigrations = embed_migrations!("../../migrations");
-        conn.run_pending_migrations(MIGRATIONS)
+        let migration_versions = conn
+            .run_pending_migrations(MIGRATIONS)
             .expect("Failed to run migrations");
-        tracing::trace!("Migrations run");
+        tracing::debug!(?migration_versions, "Migrations ran successfully");
 
         let db = PostgresDb { conn };
 
