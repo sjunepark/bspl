@@ -1,5 +1,6 @@
 use crate::schema::smes::company::dsl;
 use crate::{DbError, PostgresDb};
+
 use diesel::prelude::*;
 use diesel::upsert::excluded;
 use hashbrown::HashSet;
@@ -80,6 +81,21 @@ impl CompanyDb for PostgresDb {
         })?;
         Ok(())
     }
+}
+
+pub trait CompanyDb {
+    fn get_companies(
+        &mut self,
+    ) -> impl Future<Output = Result<Vec<crate::model::smes::Company>, DbError>>;
+    fn get_company_ids(&mut self) -> impl Future<Output = Result<HashSet<company::Id>, DbError>>;
+    fn insert_companies(
+        &mut self,
+        companies: Vec<crate::model::smes::NewCompany>,
+    ) -> impl Future<Output = Result<(), DbError>>;
+    fn upsert_companies(
+        &mut self,
+        companies: Vec<crate::model::smes::NewCompany>,
+    ) -> impl Future<Output = Result<(), DbError>>;
 }
 
 #[cfg(test)]
@@ -208,19 +224,4 @@ mod test {
         }
         // endregion: Assert
     }
-}
-
-pub trait CompanyDb {
-    fn get_companies(
-        &mut self,
-    ) -> impl Future<Output = Result<Vec<crate::model::smes::Company>, DbError>>;
-    fn get_company_ids(&mut self) -> impl Future<Output = Result<HashSet<company::Id>, DbError>>;
-    fn insert_companies(
-        &mut self,
-        companies: Vec<crate::model::smes::NewCompany>,
-    ) -> impl Future<Output = Result<(), DbError>>;
-    fn upsert_companies(
-        &mut self,
-        companies: Vec<crate::model::smes::NewCompany>,
-    ) -> impl Future<Output = Result<(), DbError>>;
 }

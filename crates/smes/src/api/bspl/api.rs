@@ -1,7 +1,6 @@
 use crate::api::base::Api;
 use crate::api::header::HeaderMapExt;
 use crate::api::model::{Captcha, Solved, Unsubmitted};
-use crate::error::InvariantError;
 use crate::SmesError;
 use reqwest::header::HeaderMap;
 use reqwest::{Client, Method};
@@ -105,19 +104,15 @@ fn minify_and_trim_html(html: &[u8]) -> Result<String, SmesError> {
     let selector = Selector::parse("#real_contents")?;
     let mut html = html.select(&selector);
 
-    let element = html.next().ok_or(SmesError::Invariant(InvariantError {
-        source: None,
-        message: "Expected at least one element with id 'real_contents'".to_string(),
-    }))?;
+    let element = html
+        .next()
+        .expect("Expected at least one element with id 'real_contents'");
 
     if let Some(element) = html.next() {
-        return Err(SmesError::Invariant(InvariantError {
-            source: None,
-            message: format!(
-                "Expected only one element with id 'real_contents', but received another {:?}",
-                element
-            ),
-        }));
+        unreachable!(
+            "Expected only one element with id 'real_contents', found more than one: {:?}",
+            element
+        );
     }
 
     Ok(element.html())
