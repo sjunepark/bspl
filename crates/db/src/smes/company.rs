@@ -21,7 +21,46 @@ impl CompanyDb for PostgresDb {
             .collect::<Result<HashSet<_>, _>>()
     }
 
+    #[tracing::instrument(skip(self, companies))]
     async fn insert_companies(
+        &mut self,
+        companies: Vec<crate::model::smes::NewCompany>,
+    ) -> Result<(), DbError> {
+        const POSTGRES_MAX_PARAMETERS: usize = 65535;
+        // A single INSERT statement can have more than 1 binding,
+        // as so we're putting a generous buffer.
+        // If you use a small divisor(ex. 4), it could fail due to multiple bindings.
+        const BUFFER_DIVISOR: usize = 100;
+
+        for chunk in companies.chunks(POSTGRES_MAX_PARAMETERS / BUFFER_DIVISOR) {
+            tracing::trace!(chunk_size = chunk.len(), "Inserting chunk of companies");
+            self.insert_companies_inner(chunk.to_vec()).await?;
+        }
+        Ok(())
+    }
+
+    #[tracing::instrument(skip(self, companies))]
+    async fn upsert_companies(
+        &mut self,
+        companies: Vec<crate::model::smes::NewCompany>,
+    ) -> Result<(), DbError> {
+        const POSTGRES_MAX_PARAMETERS: usize = 65535;
+        // A single INSERT statement can have more than 1 binding,
+        // as so we're putting a generous buffer.
+        // If you use a small divisor(ex. 4), it could fail due to multiple bindings.
+        const BUFFER_DIVISOR: usize = 100;
+
+        for chunk in companies.chunks(POSTGRES_MAX_PARAMETERS / BUFFER_DIVISOR) {
+            tracing::trace!(chunk_size = chunk.len(), "Upserting chunk of companies");
+            self.upsert_companies_inner(chunk.to_vec()).await?;
+        }
+        Ok(())
+    }
+}
+
+impl PostgresDb {
+    #[tracing::instrument(skip(self, companies))]
+    async fn insert_companies_inner(
         &mut self,
         companies: Vec<crate::model::smes::NewCompany>,
     ) -> Result<(), DbError> {
@@ -47,7 +86,8 @@ impl CompanyDb for PostgresDb {
         Ok(())
     }
 
-    async fn upsert_companies(
+    #[tracing::instrument(skip(self, companies))]
+    async fn upsert_companies_inner(
         &mut self,
         companies: Vec<crate::model::smes::NewCompany>,
     ) -> Result<(), DbError> {
