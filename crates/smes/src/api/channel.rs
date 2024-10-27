@@ -25,7 +25,7 @@ mod captcha;
 ///
 /// The skipped operations should be inspected and re-scraped in the future if necessary.
 #[tracing::instrument(skip(companies))]
-pub async fn get_bspl_htmls(companies: HashSet<company::Id>) -> UnboundedReceiver<NewHtml> {
+pub async fn get_bspl_htmls(companies: HashSet<company::SmesId>) -> UnboundedReceiver<NewHtml> {
     let (tx, rx) = unbounded_channel::<NewHtml>();
     let size = companies.len();
     let mut captcha_cookies = captcha::get_solved_captchas(size).await;

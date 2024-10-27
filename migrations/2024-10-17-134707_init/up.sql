@@ -27,3 +27,22 @@ CREATE TABLE smes.html
     FOREIGN KEY (company_id) REFERENCES smes.company (company_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 SELECT diesel_manage_updated_at('smes.html');
+
+
+CREATE SCHEMA dart;
+
+CREATE TABLE dart.filing
+(
+    corp_code  TEXT PRIMARY KEY CHECK (corp_code ~ '^[0-9]{8}$'),
+    corp_name  TEXT      NOT NULL,
+    stock_code TEXT      NOT NULL CHECK (stock_code ~ '^[0-9]{6}$'),
+    corp_cls   TEXT      NOT NULL CHECK (corp_cls IN ('Y', 'K', 'N', 'E')),
+    report_nm  TEXT      NOT NULL,
+    rcept_no   TEXT      NOT NULL CHECK (rcept_no ~ '^[0-9]{14}$'),
+    flr_nm     TEXT      NOT NULL,
+    rcept_dt   DATE      NOT NULL,
+    rm         TEXT      NOT NULL CHECK (rm ~ '^[유코채넥공연정철]+$'),
+    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp
+);
+SELECT diesel_manage_updated_at('dart.filing');

@@ -2,12 +2,17 @@
 # see https://diesel.rs/guides/configuring-diesel-cli
 
 [print_schema.public]
-file = "crates/db/src/schema.rs"
+file = "crates/db/src/schema/public.rs"
 custom_type_derives = ["diesel::query_builder::QueryId", "Clone"]
 
 [print_schema.smes]
 schema = "smes"
-file = "crates/db/src/schema.rs"
+file = "crates/db/src/schema/smes.rs"
+custom_type_derives = ["diesel::query_builder::QueryId", "Clone"]
+
+[print_schema.dart]
+schema = "dart"
+file = "crates/db/src/schema/dart.rs"
 custom_type_derives = ["diesel::query_builder::QueryId", "Clone"]
 
 [migrations_directory]

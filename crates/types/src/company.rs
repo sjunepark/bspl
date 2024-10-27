@@ -22,9 +22,9 @@ use serde::{Deserialize, Serialize};
     // diesel
     DieselNewType,
 )]
-pub struct Id(String);
+pub struct SmesId(String);
 
-impl Id {
+impl SmesId {
     pub fn try_new(value: &str) -> Result<Self, TypeError> {
         if value.len() == 7 && is_digits(value) {
             Ok(Self(value.to_string()))
@@ -37,7 +37,47 @@ impl Id {
     }
 }
 
-impl TryFrom<&str> for Id {
+impl TryFrom<&str> for SmesId {
+    type Error = TypeError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Self::try_new(value)
+    }
+}
+
+#[derive(
+    Debug,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Hash,
+    // derive_more
+    AsRef,
+    Display,
+    // serde
+    Serialize,
+    Deserialize,
+    // diesel
+    DieselNewType,
+)]
+pub struct DartId(String);
+
+impl DartId {
+    pub fn try_new(value: &str) -> Result<Self, TypeError> {
+        if value.len() == 8 && is_digits(value) {
+            Ok(Self(value.to_string()))
+        } else {
+            Err(InitError {
+                value: value.to_string(),
+                message: "Id must be a 7-digit number".to_string(),
+            })?
+        }
+    }
+}
+
+impl TryFrom<&str> for crate::company::DartId {
     type Error = TypeError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
@@ -342,10 +382,10 @@ mod tests {
 
     #[test]
     fn company_id_should_be_seven_digits() {
-        assert!(Id::try_from("1234567").is_ok());
-        assert!(Id::try_from("12345678").is_err());
-        assert!(Id::try_new("1234567").is_ok());
-        assert!(Id::try_new("123456a").is_err())
+        assert!(SmesId::try_from("1234567").is_ok());
+        assert!(SmesId::try_from("12345678").is_err());
+        assert!(SmesId::try_new("1234567").is_ok());
+        assert!(SmesId::try_new("123456a").is_err())
     }
 
     #[test]

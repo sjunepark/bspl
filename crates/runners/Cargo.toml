@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+chrono = { workspace = true }
 figment = { workspace = true, features = ["toml"] }
 hashbrown = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
@@ -16,3 +17,6 @@ types = { workspace = true }
 smes = { workspace = true }
 tracing-setup = { workspace = true }
 utils = { workspace = true }
+
+# GitHub crates
+open-dart = { workspace = true }

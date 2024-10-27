@@ -6,7 +6,8 @@ resolver = "2"
 anyhow = "1.0.89"
 backon = "1.2.0"
 base64 = "0.22.1"
-bytes = "1.7.2"
+bytes = "1.8.0"
+chrono = "0.4.38"
 cookie = "0.18.1"
 derive_builder = "0.20.1"
 derive_more = "1.0.0"
@@ -36,6 +37,9 @@ smes = { path = "crates/smes" }
 tracing-setup = { path = "crates/tracing-setup" }
 utils = { path = "crates/utils" }
 types = { path = "crates/types" }
+
+# GitHub crates
+open-dart = { git = "https://github.com/sjunepark/open-dart", branch = "dev" }
 
 # Testig
 fake = "2.10.0"

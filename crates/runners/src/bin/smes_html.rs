@@ -69,25 +69,28 @@ mod tests {
 
     #[test]
     fn hashset_difference_should_work_as_expected() {
-        let set1: HashSet<company::Id> = [1000000, 2000000, 3000000]
+        let set1: HashSet<company::SmesId> = [1000000, 2000000, 3000000]
             .into_iter()
             .map(|id| {
-                company::Id::try_new(id.to_string().as_str()).expect("Failed to create company id")
+                company::SmesId::try_new(id.to_string().as_str())
+                    .expect("Failed to create company id")
             })
             .collect();
-        let set2: HashSet<company::Id> = [2000000, 3000000, 4000000]
+        let set2: HashSet<company::SmesId> = [2000000, 3000000, 4000000]
             .into_iter()
             .map(|id| {
-                company::Id::try_new(id.to_string().as_str()).expect("Failed to create company id")
+                company::SmesId::try_new(id.to_string().as_str())
+                    .expect("Failed to create company id")
             })
             .collect();
 
-        let difference: HashSet<company::Id> = set1.difference(&set2).cloned().collect();
+        let difference: HashSet<company::SmesId> = set1.difference(&set2).cloned().collect();
 
-        let expected: HashSet<company::Id> = [1000000]
+        let expected: HashSet<company::SmesId> = [1000000]
             .into_iter()
             .map(|id| {
-                company::Id::try_new(id.to_string().as_str()).expect("Failed to create company id")
+                company::SmesId::try_new(id.to_string().as_str())
+                    .expect("Failed to create company id")
             })
             .collect();
 
