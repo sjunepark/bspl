@@ -71,7 +71,7 @@ impl DartId {
         } else {
             Err(InitError {
                 value: value.to_string(),
-                message: "Id must be a 7-digit number".to_string(),
+                message: "Id must be a 8-digit number".to_string(),
             })?
         }
     }

@@ -2,16 +2,13 @@
 
 pub mod dart {
     diesel::table! {
-        dart.filing (corp_code) {
-            corp_code -> Text,
-            corp_name -> Text,
-            stock_code -> Text,
-            corp_cls -> Text,
-            report_nm -> Text,
-            rcept_no -> Text,
-            flr_nm -> Text,
-            rcept_dt -> Date,
-            rm -> Text,
+        dart.filing (dart_id) {
+            dart_id -> Text,
+            report_name -> Text,
+            receipt_number -> Text,
+            filer_name -> Text,
+            receipt_date -> Date,
+            remark -> Text,
             created_at -> Timestamp,
             updated_at -> Timestamp,
         }
