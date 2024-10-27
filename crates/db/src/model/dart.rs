@@ -7,6 +7,7 @@ use fake::{Dummy, Fake};
 use rand::Rng;
 use types::{company, filing};
 
+// region: Table filing
 #[derive(Queryable, Selectable, Clone)]
 #[diesel(table_name = crate::schema::dart::dart::filing)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
