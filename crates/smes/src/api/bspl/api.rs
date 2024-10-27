@@ -175,7 +175,7 @@ mod tests {
             </html>
         "#;
 
-        let minified = minify_and_trim_html(html.as_bytes());
+        let _minified = minify_and_trim_html(html.as_bytes());
     }
 
     #[cfg(feature = "minify-html")]

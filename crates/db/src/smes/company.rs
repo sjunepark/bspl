@@ -1,23 +1,40 @@
-use crate::schema::smes::company::dsl;
 use crate::{DbError, PostgresDb};
 
+use crate::schema::smes::smes::company::dsl;
 use diesel::prelude::*;
 use diesel::upsert::excluded;
 use hashbrown::HashSet;
 use std::future::Future;
 use types::company;
 
+pub trait CompanyDb {
+    fn get_companies(
+        &mut self,
+    ) -> impl Future<Output = Result<Vec<crate::model::smes::Company>, DbError>>;
+    fn get_company_ids(
+        &mut self,
+    ) -> impl Future<Output = Result<HashSet<company::SmesId>, DbError>>;
+    fn insert_companies(
+        &mut self,
+        companies: Vec<crate::model::smes::NewCompany>,
+    ) -> impl Future<Output = Result<(), DbError>>;
+    fn upsert_companies(
+        &mut self,
+        companies: Vec<crate::model::smes::NewCompany>,
+    ) -> impl Future<Output = Result<(), DbError>>;
+}
+
 impl CompanyDb for PostgresDb {
     async fn get_companies(&mut self) -> Result<Vec<crate::model::smes::Company>, DbError> {
         Ok(dsl::company.load(&mut self.conn)?)
     }
 
-    async fn get_company_ids(&mut self) -> Result<HashSet<company::Id>, DbError> {
+    async fn get_company_ids(&mut self) -> Result<HashSet<company::SmesId>, DbError> {
         dsl::company
             .select(dsl::company_id)
             .load::<String>(&mut self.conn)?
             .into_iter()
-            .map(|id| company::Id::try_from(id.as_str()).map_err(DbError::from))
+            .map(|id| company::SmesId::try_from(id.as_str()).map_err(DbError::from))
             .collect::<Result<HashSet<_>, _>>()
     }
 
@@ -121,21 +138,6 @@ impl PostgresDb {
         })?;
         Ok(())
     }
-}
-
-pub trait CompanyDb {
-    fn get_companies(
-        &mut self,
-    ) -> impl Future<Output = Result<Vec<crate::model::smes::Company>, DbError>>;
-    fn get_company_ids(&mut self) -> impl Future<Output = Result<HashSet<company::Id>, DbError>>;
-    fn insert_companies(
-        &mut self,
-        companies: Vec<crate::model::smes::NewCompany>,
-    ) -> impl Future<Output = Result<(), DbError>>;
-    fn upsert_companies(
-        &mut self,
-        companies: Vec<crate::model::smes::NewCompany>,
-    ) -> impl Future<Output = Result<(), DbError>>;
 }
 
 #[cfg(test)]

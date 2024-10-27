@@ -1,4 +1,4 @@
-use crate::schema::smes::html::dsl;
+use crate::schema::smes::smes::html::dsl;
 use crate::{DbError, PostgresDb};
 use diesel::upsert::excluded;
 use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};
@@ -22,7 +22,7 @@ impl HtmlDb for PostgresDb {
         Ok(dsl::html.load(&mut self.conn)?)
     }
 
-    async fn select_html_ids(&mut self) -> Result<HashSet<company::Id>, DbError> {
+    async fn select_html_ids(&mut self) -> Result<HashSet<company::SmesId>, DbError> {
         Ok(dsl::html
             .select(dsl::company_id)
             .load(&mut self.conn)?
@@ -72,7 +72,9 @@ pub trait HtmlDb {
     fn select_htmls(
         &mut self,
     ) -> impl Future<Output = Result<Vec<crate::model::smes::Html>, DbError>>;
-    fn select_html_ids(&mut self) -> impl Future<Output = Result<HashSet<company::Id>, DbError>>;
+    fn select_html_ids(
+        &mut self,
+    ) -> impl Future<Output = Result<HashSet<company::SmesId>, DbError>>;
     fn insert_html_channel(
         &mut self,
         htmls: UnboundedReceiver<crate::model::smes::NewHtml>,
