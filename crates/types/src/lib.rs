@@ -5,8 +5,11 @@
 //! - They will be validated during construction, usually with the `try_new` method.
 //! - When no failures are expected, the `new` method can be used.
 
-pub mod company;
 mod error;
 mod utils;
+
+pub mod company;
+mod dart_common;
+pub mod filing;
 
 pub use error::TypeError;

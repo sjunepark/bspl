@@ -14,6 +14,7 @@ pub(crate) trait TestContext<D: Db> {
     fn db(&mut self) -> &mut D;
 
     /// Populate the database with fake companies.
+    #[tracing::instrument(skip(self))]
     async fn populate_companies(&mut self, ids: &[u64]) -> Vec<crate::model::smes::NewCompany> {
         let new_companies: Vec<crate::model::smes::NewCompany> = ids
             .iter()
@@ -84,5 +85,37 @@ pub(crate) trait TestContext<D: Db> {
             .expect("Failed to insert HTMLs");
 
         htmls
+    }
+
+    #[tracing::instrument(skip(self))]
+    async fn populate_filings(&mut self, ids: &[u64]) -> Vec<crate::model::dart::NewFiling> {
+        let new_filings: Vec<crate::model::dart::NewFiling> = ids
+            .iter()
+            .map(|id| {
+                let filing = Faker.fake::<crate::model::dart::NewFiling>();
+                crate::model::dart::NewFiling {
+                    dart_id: id
+                        .to_string()
+                        .as_str()
+                        .try_into()
+                        .expect("failed to create dummy dart_id"),
+                    report_name: filing.report_name,
+                    receipt_number: filing.receipt_number,
+                    filer_name: filing.filer_name,
+                    receipt_date: filing.receipt_date,
+                    remark: filing.remark,
+                }
+            })
+            .collect();
+
+        self.db()
+            .insert_filings(new_filings.clone())
+            .await
+            .inspect_err(|e| {
+                tracing::error!(?e, "Failed to insert filings");
+            })
+            .unwrap();
+
+        new_filings
     }
 }

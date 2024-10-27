@@ -33,13 +33,13 @@ CREATE SCHEMA dart;
 
 CREATE TABLE dart.filing
 (
-    corp_code  TEXT PRIMARY KEY CHECK (corp_code ~ '^[0-9]{8}$'),
-    report_nm  TEXT      NOT NULL,
-    rcept_no   TEXT      NOT NULL CHECK (rcept_no ~ '^[0-9]{14}$'),
-    flr_nm     TEXT      NOT NULL,
-    rcept_dt   DATE      NOT NULL,
-    rm         TEXT      NOT NULL CHECK (rm ~ '^[유코채넥공연정철]+$'),
-    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp
+    dart_id        TEXT PRIMARY KEY CHECK (dart_id ~ '^[0-9]{8}$'),
+    report_name    TEXT      NOT NULL,
+    receipt_number TEXT      NOT NULL CHECK (receipt_number ~ '^[0-9]{14}$'),
+    filer_name     TEXT      NOT NULL,
+    receipt_date   DATE      NOT NULL,
+    remark         TEXT      NOT NULL,
+    created_at     TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    updated_at     TIMESTAMP NOT NULL DEFAULT current_timestamp
 );
 SELECT diesel_manage_updated_at('dart.filing');

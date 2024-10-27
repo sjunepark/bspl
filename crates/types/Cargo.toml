@@ -5,6 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
+chrono = { workspace = true, features = ["serde"] }
 derive_more = { workspace = true, features = ["as_ref", "display", "from", "into"] }
 diesel = { workspace = true }
 diesel-derive-newtype = { workspace = true }
