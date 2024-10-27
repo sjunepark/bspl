@@ -34,9 +34,6 @@ CREATE SCHEMA dart;
 CREATE TABLE dart.filing
 (
     corp_code  TEXT PRIMARY KEY CHECK (corp_code ~ '^[0-9]{8}$'),
-    corp_name  TEXT      NOT NULL,
-    stock_code TEXT      NOT NULL CHECK (stock_code ~ '^[0-9]{6}$'),
-    corp_cls   TEXT      NOT NULL CHECK (corp_cls IN ('Y', 'K', 'N', 'E')),
     report_nm  TEXT      NOT NULL,
     rcept_no   TEXT      NOT NULL CHECK (rcept_no ~ '^[0-9]{14}$'),
     flr_nm     TEXT      NOT NULL,
