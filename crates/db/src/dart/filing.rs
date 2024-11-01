@@ -1,7 +1,7 @@
 use diesel::prelude::*;
 use std::future::Future;
 
-use crate::schema::dart::dart::filing::dsl;
+use crate::schema::dart::filing::dsl;
 use crate::{model, DbError, PostgresDb};
 
 pub trait FilingDb {

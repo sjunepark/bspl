@@ -43,6 +43,6 @@ open-dart = { git = "https://github.com/sjunepark/open-dart", branch = "dev" }
 
 # Testig
 fake = "2.10.0"
-goldrust = "0.1.8"
+goldrust = { git = "https://github.com/sjunepark/goldrust", branch = "dev" }
 testcontainers-modules = "0.11.2"
 wiremock = "0.6.2"
