@@ -6,8 +6,8 @@
 //! - When no failures are expected, the `new` method can be used.
 
 mod error;
-mod utils;
 
+mod base;
 pub mod company;
 mod dart_common;
 pub mod filing;

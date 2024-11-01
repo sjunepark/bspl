@@ -72,7 +72,7 @@ impl<T> Dummy<T> for NewFiling {
             receipt_date: filing::ReceiptDate::new(
                 NaiveDate::from_ymd_opt(2021, 1, 1).expect("invalid date passed"),
             ),
-            remark: filing::Remark::new("Remark"),
+            remark: filing::Remark::try_new("Remark").expect("invalid remark"),
         }
     }
 }

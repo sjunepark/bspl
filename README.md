@@ -1,5 +1,6 @@
 ## Todo
 
+- Create macros for defining newtypes
 - Upgrade fake to v3
 - Finish data_api
 - Migrate sqlite db to postgres

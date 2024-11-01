@@ -1,423 +1,51 @@
-use crate::error::InitError;
-use crate::utils::{is_digits, is_html_with_bspl};
-use crate::TypeError;
-use derive_more::{AsRef, Display, From, Into};
-use diesel_derive_newtype::DieselNewType;
-use serde::{Deserialize, Serialize};
+use crate::base::{digit, text};
 
-#[derive(
-    Debug,
-    Clone,
-    Eq,
-    PartialEq,
-    Ord,
-    PartialOrd,
-    Hash,
-    // derive_more
-    AsRef,
-    Display,
-    // serde
-    Serialize,
-    Deserialize,
-    // diesel
-    DieselNewType,
-)]
-pub struct SmesId(String);
+digit!(SmesId, false, 7);
+digit!(DartId, false, 8);
+digit!(BusinessRegistrationNumber, true, 10, {
+    /// ## 사업자번호
+    ///
+    /// This field is a 10-digit number.
+    /// It also allows empty strings, since the website provides empty strings for some companies.
+});
+digit!(CorporationRegistrationNumber, false, 13, {
+    /// ## 법인등록번호
+    ///
+    /// This is a 13-digit number.
+});
+digit!(IndustryCode, false, 5, {
+    /// ## 업종코드
+    ///
+    /// This field is a 5-digit number.
+});
+digit!(StockCode, false, 6, {
+    /// ## 종목코드
+    ///
+    /// This field is a 6-digit number.
+});
 
-impl SmesId {
-    pub fn try_new(value: &str) -> Result<Self, TypeError> {
-        if value.len() == 7 && is_digits(value) {
-            Ok(Self(value.to_string()))
-        } else {
-            Err(InitError {
-                value: value.to_string(),
-                message: "Id must be a 7-digit number".to_string(),
-            })?
-        }
-    }
-}
-
-impl TryFrom<&str> for SmesId {
-    type Error = TypeError;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Self::try_new(value)
-    }
-}
-
-#[derive(
-    Debug,
-    Clone,
-    Eq,
-    PartialEq,
-    Ord,
-    PartialOrd,
-    Hash,
-    // derive_more
-    AsRef,
-    Display,
-    // serde
-    Serialize,
-    Deserialize,
-    // diesel
-    DieselNewType,
-)]
-pub struct DartId(String);
-
-impl DartId {
-    pub fn try_new(value: &str) -> Result<Self, TypeError> {
-        if value.len() == 8 && is_digits(value) {
-            Ok(Self(value.to_string()))
-        } else {
-            Err(InitError {
-                value: value.to_string(),
-                message: "Id must be a 8-digit number".to_string(),
-            })?
-        }
-    }
-}
-
-impl TryFrom<&str> for DartId {
-    type Error = TypeError;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Self::try_new(value)
-    }
-}
-
-/// 대표자명
-#[derive(
-    Debug,
-    Clone,
-    Eq,
-    PartialEq,
-    Ord,
-    PartialOrd,
-    Hash,
-    // derive_more
-    AsRef,
-    Display,
-    From,
-    Into,
-    // serde
-    Serialize,
-    Deserialize,
-    // diesel
-    DieselNewType,
-)]
-pub struct RepresentativeName(String);
-
-impl RepresentativeName {
-    pub fn new(value: &str) -> Self {
-        Self(value.to_string())
-    }
-}
-
-/// 본사주소
-#[derive(
-    Debug,
-    Clone,
-    Eq,
-    PartialEq,
-    Ord,
-    PartialOrd,
-    Hash,
-    // derive_more
-    AsRef,
-    Display,
-    From,
-    Into,
-    // serde
-    Serialize,
-    Deserialize,
-    // diesel
-    DieselNewType,
-)]
-pub struct HeadquartersAddress(String);
-
-/// 사업자번호
-///
-/// This field is a 10-digit number.
-/// It also allows empty strings, since the website provides empty strings for some companies.
-///
-/// ## Cleansing
-/// Will automatically remove hyphens(-) from the input.
-#[derive(
-    Debug,
-    Clone,
-    Eq,
-    PartialEq,
-    Ord,
-    PartialOrd,
-    Hash,
-    // derive_more
-    AsRef,
-    Display,
-    // serde
-    Serialize,
-    Deserialize,
-    // diesel
-    DieselNewType,
-)]
-pub struct BusinessRegistrationNumber(String);
-
-impl BusinessRegistrationNumber {
-    pub fn try_new(value: &str) -> Result<Self, TypeError> {
-        let value = value.replace("-", "");
-        if value.is_empty() || (value.len() == 10 && is_digits(&value)) {
-            Ok(Self(value.to_string()))
-        } else {
-            Err(InitError {
-                value: value.to_string(),
-                message: "BusinessRegistrationNumber must be a 10-digit number".to_string(),
-            })?
-        }
-    }
-}
-
-impl TryFrom<&str> for BusinessRegistrationNumber {
-    type Error = TypeError;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Self::try_new(value)
-    }
-}
-
-/// 법인등록번호
-///
-/// This is a 13-digit number.
-///
-/// ## Cleansing
-/// Will automatically remove hyphens(-) from the input.
-#[derive(
-    Debug,
-    Clone,
-    Eq,
-    PartialEq,
-    Ord,
-    PartialOrd,
-    Hash,
-    // derive_more
-    AsRef,
-    Display,
-    // serde
-    Serialize,
-    Deserialize,
-    // diesel
-    DieselNewType,
-)]
-pub struct CorporationRegistrationNumber(String);
-
-impl CorporationRegistrationNumber {
-    pub fn try_new(value: &str) -> Result<Self, TypeError> {
-        let value = value.replace("-", "");
-        if value.len() == 13 && is_digits(&value) {
-            Ok(Self(value.to_string()))
-        } else {
-            Err(InitError {
-                value: value.to_string(),
-                message: "CorporationRegistrationNumber must be a 13-digit number".to_string(),
-            })?
-        }
-    }
-}
-
-impl TryFrom<&str> for CorporationRegistrationNumber {
-    type Error = TypeError;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Self::try_new(value)
-    }
-}
-
-/// 기업명
-#[derive(
-    Debug,
-    Clone,
-    Eq,
-    PartialEq,
-    Ord,
-    PartialOrd,
-    Hash,
-    // derive_more
-    AsRef,
-    Display,
-    From,
-    Into,
-    // serde
-    Serialize,
-    Deserialize,
-    // diesel
-    DieselNewType,
-)]
-pub struct Name(String);
-
-impl Name {
-    pub fn new(value: &str) -> Self {
-        Self(value.to_string())
-    }
-}
-
-/// 업종코드
-///
-/// This field is a 5-digit number.
-#[derive(
-    Debug,
-    Clone,
-    Eq,
-    PartialEq,
-    Ord,
-    PartialOrd,
-    Hash,
-    // derive_more
-    AsRef,
-    Display,
-    // serde
-    Serialize,
-    Deserialize,
-    // diesel
-    DieselNewType,
-)]
-pub struct IndustryCode(String);
-
-impl IndustryCode {
-    pub fn try_new(value: &str) -> Result<Self, TypeError> {
-        if value.len() == 5 && is_digits(value) {
-            Ok(Self(value.to_string()))
-        } else {
-            Err(InitError {
-                value: value.to_string(),
-                message: "IndustryCode must be a 5-digit number".to_string(),
-            })?
-        }
-    }
-}
-
-impl TryFrom<&str> for IndustryCode {
-    type Error = TypeError;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Self::try_new(value)
-    }
-}
-
-/// 업종
-#[derive(
-    Debug,
-    Clone,
-    Eq,
-    PartialEq,
-    Ord,
-    PartialOrd,
-    Hash,
-    // derive_more
-    AsRef,
-    Display,
-    From,
-    Into,
-    // serde
-    Serialize,
-    Deserialize,
-    // diesel
-    DieselNewType,
-)]
-pub struct IndustryName(String);
-
-impl IndustryName {
-    pub fn new(value: &str) -> Self {
-        Self(value.to_string())
-    }
-}
-
-// While storing HTML as bytes can be beneficial for handling various encodings,
-// we use a string representation due to the requirements of the `scraper` crate.
-//
-// Note: This approach assumes UTF-8 encoding.
-// If dealing with non-UTF-8 content,
-// additional handling may be required during the bytes-to-string conversion.
-/// HTML content, represented as a UTF-8 encoded string.
-#[derive(
-    Debug,
-    Clone,
-    Eq,
-    PartialEq,
-    Ord,
-    PartialOrd,
-    Hash,
-    // derive_more
-    AsRef,
-    Display,
-    // serde
-    Serialize,
-    Deserialize,
-    // diesel
-    DieselNewType,
-)]
-pub struct HtmlContent(String);
-
-impl HtmlContent {
-    pub fn try_new(value: &str) -> Result<Self, TypeError> {
-        if is_html_with_bspl(value) {
-            Ok(Self(value.to_string()))
-        } else {
-            Err(InitError {
-                value: value.to_string(),
-                message: "HtmlContent must contain '유동자산'".to_string(),
-            })?
-        }
-    }
-}
-
-impl TryFrom<&str> for HtmlContent {
-    type Error = TypeError;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Self::try_new(value)
-    }
-}
-
-/// 종목코드
-#[derive(
-    Debug,
-    Clone,
-    Eq,
-    PartialEq,
-    Ord,
-    PartialOrd,
-    Hash,
-    // derive_more
-    AsRef,
-    Display,
-    From,
-    Into,
-    // serde
-    Serialize,
-    Deserialize,
-    // diesel
-    DieselNewType,
-)]
-pub struct StockCode(String);
-
-impl StockCode {
-    pub fn try_new(value: &str) -> Result<Self, TypeError> {
-        if value.len() == 6 && is_digits(value) {
-            Ok(Self(value.to_string()))
-        } else {
-            Err(InitError {
-                value: value.to_string(),
-                message: "StockCode must be a 6-digit number".to_string(),
-            })?
-        }
-    }
-}
-
-impl TryFrom<&str> for StockCode {
-    type Error = TypeError;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Self::try_new(value)
-    }
-}
+text!(RepresentativeName, false, {
+    /// ## 대표자명
+});
+text!(HeadquartersAddress, false, {
+    /// ## 본사주소
+});
+text!(Name, false, {
+    /// ## 기업명
+});
+text!(IndustryName, false, {
+    /// ## 업종
+});
+text!(HtmlContent, false, {
+    /// ## HTML content
+    ///
+    /// While storing HTML as bytes can be beneficial for handling various encodings,
+    /// we use a string representation due to the requirements of the `scraper` crate.
+    ///
+    /// Note: This approach assumes UTF-8 encoding.
+    /// If dealing with non-UTF-8 content,
+    /// additional handling may be required during the bytes-to-string conversion.
+});
 
 #[cfg(test)]
 mod tests {
