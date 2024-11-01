@@ -77,7 +77,7 @@ impl DartId {
     }
 }
 
-impl TryFrom<&str> for crate::company::DartId {
+impl TryFrom<&str> for DartId {
     type Error = TypeError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
@@ -369,6 +369,49 @@ impl HtmlContent {
 }
 
 impl TryFrom<&str> for HtmlContent {
+    type Error = TypeError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Self::try_new(value)
+    }
+}
+
+/// 종목코드
+#[derive(
+    Debug,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Hash,
+    // derive_more
+    AsRef,
+    Display,
+    From,
+    Into,
+    // serde
+    Serialize,
+    Deserialize,
+    // diesel
+    DieselNewType,
+)]
+pub struct StockCode(String);
+
+impl StockCode {
+    pub fn try_new(value: &str) -> Result<Self, TypeError> {
+        if value.len() == 6 && is_digits(value) {
+            Ok(Self(value.to_string()))
+        } else {
+            Err(InitError {
+                value: value.to_string(),
+                message: "StockCode must be a 6-digit number".to_string(),
+            })?
+        }
+    }
+}
+
+impl TryFrom<&str> for StockCode {
     type Error = TypeError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {

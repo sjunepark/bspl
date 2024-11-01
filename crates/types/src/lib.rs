@@ -12,4 +12,5 @@ pub mod company;
 mod dart_common;
 pub mod filing;
 
+pub use dart_common::DartDate;
 pub use error::TypeError;

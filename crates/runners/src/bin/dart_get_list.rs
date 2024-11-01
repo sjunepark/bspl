@@ -12,7 +12,7 @@ async fn main() {
         .expect("Failed to build ListRequestParams");
     tracing::info!(?params, "Request parameters");
 
-    let list = OpenDartApi::new(Default::default())
+    let list = OpenDartApi::default()
         .get_list(params)
         .in_current_span()
         .await

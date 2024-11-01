@@ -1,4 +1,4 @@
-use crate::schema::smes::smes::html::dsl;
+use crate::schema::smes::html::dsl;
 use crate::{DbError, PostgresDb};
 use diesel::upsert::excluded;
 use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, RunQueryDsl};

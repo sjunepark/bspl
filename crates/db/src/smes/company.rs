@@ -1,6 +1,6 @@
 use crate::{DbError, PostgresDb};
 
-use crate::schema::smes::smes::company::dsl;
+use crate::schema::smes::company::dsl;
 use diesel::prelude::*;
 use diesel::upsert::excluded;
 use hashbrown::HashSet;

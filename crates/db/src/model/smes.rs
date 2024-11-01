@@ -10,7 +10,7 @@ use types::company;
 
 // region: Table company
 #[derive(Queryable, Selectable, Clone)]
-#[diesel(table_name = crate::schema::smes::smes::company)]
+#[diesel(table_name = crate::schema::smes::company)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Company {
     pub company_id: company::SmesId,
@@ -46,7 +46,7 @@ impl<T> Dummy<T> for Company {
 }
 
 #[derive(Insertable, Clone, Debug)]
-#[diesel(table_name = crate::schema::smes::smes::company)]
+#[diesel(table_name = crate::schema::smes::company)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewCompany {
     pub company_id: company::SmesId,
@@ -117,7 +117,7 @@ impl PartialEq for NewCompany {
 
 // region: Table html
 #[derive(Queryable, Selectable, Clone)]
-#[diesel(table_name = crate::schema::smes::smes::html)]
+#[diesel(table_name = crate::schema::smes::html)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Html {
     pub company_id: company::SmesId,
@@ -142,7 +142,7 @@ impl<T> Dummy<T> for Html {
 }
 
 #[derive(Insertable, Clone, PartialEq, Debug)]
-#[diesel(table_name = crate::schema::smes::smes::html)]
+#[diesel(table_name = crate::schema::smes::html)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewHtml {
     pub company_id: company::SmesId,

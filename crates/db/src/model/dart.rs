@@ -5,11 +5,11 @@ use fake::faker::number::raw::NumberWithFormat;
 use fake::locales::EN;
 use fake::{Dummy, Fake};
 use rand::Rng;
-use types::{company, filing};
-
+use types::{company, filing, DartDate};
 // region: Table filing
+
 #[derive(Queryable, Selectable, Clone)]
-#[diesel(table_name = crate::schema::dart::dart::filing)]
+#[diesel(table_name = crate::schema::dart::filing)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Filing {
     pub dart_id: company::DartId,
@@ -43,7 +43,7 @@ impl<T> Dummy<T> for Filing {
 }
 
 #[derive(Insertable, Clone, Debug)]
-#[diesel(table_name = crate::schema::dart::dart::filing)]
+#[diesel(table_name = crate::schema::dart::filing)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewFiling {
     pub dart_id: company::DartId,
@@ -100,4 +100,41 @@ impl PartialEq for NewFiling {
             && self.remark == other.remark
     }
 }
+
 // endregion: Table filing
+
+// region: Table company_all
+
+#[derive(Queryable, Selectable, Clone, Insertable)]
+#[diesel(table_name = crate::schema::dart::company_all)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct CompanyAll {
+    company_id: company::DartId,
+    company_name: company::Name,
+    stock_code: company::StockCode,
+    modify_date: DartDate,
+}
+
+impl<T> Dummy<T> for CompanyAll {
+    // todo: check
+    fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
+        CompanyAll {
+            company_id: NumberWithFormat(EN, "^#######")
+                .fake::<String>()
+                .as_str()
+                .try_into()
+                .expect("dummy creation logic needs to be fixed within the source code"),
+            company_name: Name().fake_with_rng::<String, R>(rng).into(),
+            stock_code: NumberWithFormat(EN, "^#####")
+                .fake::<String>()
+                .as_str()
+                .try_into()
+                .expect("dummy creation logic needs to be fixed within the source code"),
+            modify_date: DartDate::new(
+                NaiveDate::from_ymd_opt(2021, 1, 1).expect("invalid date passed"),
+            ),
+        }
+    }
+}
+
+// endregion: Table company_all
