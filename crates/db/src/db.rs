@@ -7,7 +7,7 @@ use std::fmt::Debug;
 use std::future::Future;
 use std::path::Path;
 
-pub trait Db: Sized + smes::CompanyDb + smes::HtmlDb + dart::FilingDb {
+pub trait Db: Sized + smes::CompanyDb + smes::HtmlDb + dart::FilingDb + dart::CompanyIdDb {
     fn new<P: AsRef<Path> + Debug>(db_url: P) -> impl Future<Output = Self>;
     fn health_check(&mut self) -> impl Future<Output = Result<(), DbError>>;
 }

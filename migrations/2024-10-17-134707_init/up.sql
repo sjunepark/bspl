@@ -44,10 +44,10 @@ CREATE TABLE dart.filing
 );
 SELECT diesel_manage_updated_at('dart.filing');
 
-CREATE TABLE dart.company_all
+CREATE TABLE dart.company_id
 (
-    company_id   TEXT PRIMARY KEY CHECK (company_id ~ '^[0-9]{8}$'),
-    company_name TEXT NOT NULL,
-    stock_code   TEXT NOT NULL CHECK (stock_code ~ '^[0-9]{6}$'),
-    modify_date  DATE NOT NULL
+    dart_id        TEXT PRIMARY KEY CHECK (dart_id ~ '^[0-9]{8}$'),
+    company_name   TEXT NOT NULL,
+    stock_code     TEXT NOT NULL CHECK (stock_code ~ '^[0-9]{6}$'),
+    id_modify_date DATE NOT NULL
 );

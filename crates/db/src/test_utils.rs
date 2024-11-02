@@ -39,10 +39,7 @@ pub(crate) trait TestContext<D: Db> {
         self.db()
             .insert_companies(new_companies.clone())
             .await
-            .inspect_err(|e| {
-                tracing::error!(?e, "Failed to insert companies");
-            })
-            .unwrap();
+            .expect("Failed to insert companies");
 
         new_companies
     }
@@ -111,11 +108,35 @@ pub(crate) trait TestContext<D: Db> {
         self.db()
             .insert_filings(new_filings.clone())
             .await
-            .inspect_err(|e| {
-                tracing::error!(?e, "Failed to insert filings");
-            })
-            .unwrap();
+            .expect("Failed to insert filings");
 
         new_filings
+    }
+
+    #[tracing::instrument(skip(self))]
+    async fn populate_company_ids(&mut self, ids: &[u64]) -> Vec<crate::model::dart::CompanyId> {
+        let new_company_ids: Vec<crate::model::dart::CompanyId> = ids
+            .iter()
+            .map(|id| {
+                let company_id = Faker.fake::<crate::model::dart::CompanyId>();
+                crate::model::dart::CompanyId {
+                    dart_id: id
+                        .to_string()
+                        .as_str()
+                        .try_into()
+                        .expect("failed to create dummy company_id"),
+                    company_name: company_id.company_name,
+                    stock_code: company_id.stock_code,
+                    id_modify_date: company_id.id_modify_date,
+                }
+            })
+            .collect();
+
+        self.db()
+            .insert_company_ids(new_company_ids.clone())
+            .await
+            .expect("Failed to insert company_ids");
+
+        new_company_ids
     }
 }

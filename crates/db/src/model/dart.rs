@@ -103,23 +103,23 @@ impl PartialEq for NewFiling {
 
 // endregion: Table filing
 
-// region: Table company_all
+// region: Table company_id
 
-#[derive(Queryable, Selectable, Clone, Insertable)]
-#[diesel(table_name = crate::schema::dart::company_all)]
+#[derive(Queryable, Selectable, Clone, Insertable, PartialEq, Debug)]
+#[diesel(table_name = crate::schema::dart::company_id)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct CompanyAll {
-    company_id: company::DartId,
-    company_name: company::Name,
-    stock_code: company::StockCode,
-    modify_date: YYYYMMDD,
+pub struct CompanyId {
+    pub dart_id: company::DartId,
+    pub company_name: company::Name,
+    pub stock_code: company::StockCode,
+    pub id_modify_date: YYYYMMDD,
 }
 
-impl<T> Dummy<T> for CompanyAll {
+impl<T> Dummy<T> for CompanyId {
     // todo: check
     fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
-        CompanyAll {
-            company_id: NumberWithFormat(EN, "^#######")
+        CompanyId {
+            dart_id: NumberWithFormat(EN, "^#######")
                 .fake::<String>()
                 .as_str()
                 .try_into()
@@ -130,11 +130,11 @@ impl<T> Dummy<T> for CompanyAll {
                 .as_str()
                 .try_into()
                 .expect("dummy creation logic needs to be fixed within the source code"),
-            modify_date: YYYYMMDD::new(
+            id_modify_date: YYYYMMDD::new(
                 NaiveDate::from_ymd_opt(2021, 1, 1).expect("invalid date passed"),
             ),
         }
     }
 }
 
-// endregion: Table company_all
+// endregion: Table company_id
