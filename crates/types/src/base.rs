@@ -1,8 +1,8 @@
-macro_rules! text {
-    ($name:ident, $allow_empty:expr) => {
-        text!($name, $allow_empty, {});
+macro_rules! non_empty_text {
+    ($name:ident) => {
+        non_empty_text!($name, {});
     };
-    ($name:ident, $allow_empty:expr, {$(#[$doc:meta])*}) => {
+    ($name:ident, {$(#[$doc:meta])*}) => {
         $(#[$doc])*
         #[derive(
             std::fmt::Debug,
@@ -28,14 +28,10 @@ macro_rules! text {
         impl $name {
             pub fn try_new(value: &str) -> Result<Self, $crate::error::TypeError> {
                 if value.is_empty() {
-                    if $allow_empty {
-                        return Ok(Self(value.to_string()));
-                    } else {
-                        return Err($crate::error::ValidationError {
-                            value: value.to_string(),
-                            message: format!("Empty value is not allowed for {}", stringify!($name)),
-                        })?;
-                    }
+                    return Err($crate::error::ValidationError {
+                        value: value.to_string(),
+                        message: format!("Empty value is not allowed for {}", stringify!($name)),
+                    })?;
                 };
                 Ok(Self(value.to_string()))
             }
@@ -54,11 +50,57 @@ macro_rules! text {
         }
     };
 }
+pub(crate) use non_empty_text;
+
+macro_rules! text {
+    ($name:ident) => {
+        text!($name, {});
+    };
+    ($name:ident, {$(#[$doc:meta])*}) => {
+        $(#[$doc])*
+        #[derive(
+            std::fmt::Debug,
+            Clone,
+            Eq,
+            PartialEq,
+            Ord,
+            PartialOrd,
+            Hash,
+            // derive_more
+            derive_more::AsRef,
+            derive_more::Display,
+            derive_more::From,
+            derive_more::Into,
+            // serde
+            serde::Serialize,
+            serde::Deserialize,
+            // diesel
+            diesel_derive_newtype::DieselNewType,
+        )]
+        pub struct $name(String);
+
+        impl $name {
+            pub fn new(value: &str) -> Self {
+                Self(value.to_string())
+            }
+
+            pub fn into_inner(self) -> String {
+                self.0
+            }
+        }
+
+        impl From<&str> for $name {
+            fn from(value: &str) -> Self {
+                Self::new(value)
+            }
+        }
+    };
+}
 pub(crate) use text;
 
-macro_rules! digit {
+macro_rules! digits {
     ($name:ident, $allow_empty:expr, $digits:expr) => {
-        digit!($name, $allow_empty, $digits, {});
+        digits!($name, $allow_empty, $digits, {});
     };
     ($name:ident, $allow_empty:expr, $digits:expr, {$(#[$doc:meta])*}) => {
         $(#[$doc])*
@@ -120,4 +162,4 @@ macro_rules! digit {
         }
     };
 }
-pub(crate) use digit;
+pub(crate) use digits;

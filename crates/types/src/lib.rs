@@ -5,12 +5,11 @@
 //! - They will be validated during construction, usually with the `try_new` method.
 //! - When no failures are expected, the `new` method can be used.
 
-mod error;
-
 mod base;
 pub mod company;
-mod dart_common;
+pub mod date;
+mod error;
 pub mod filing;
 
-pub use dart_common::DartDate;
+pub use date::YYYYMMDD;
 pub use error::TypeError;

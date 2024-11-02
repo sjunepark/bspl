@@ -2,11 +2,11 @@
 
 pub mod dart {
     diesel::table! {
-        dart.company_all (company_id) {
-            company_id -> Text,
+        dart.company_id (dart_id) {
+            dart_id -> Text,
             company_name -> Text,
             stock_code -> Text,
-            modify_date -> Date,
+            id_modify_date -> Date,
         }
     }
 
@@ -23,5 +23,5 @@ pub mod dart {
         }
     }
 
-    diesel::allow_tables_to_appear_in_same_query!(company_all, filing,);
+    diesel::allow_tables_to_appear_in_same_query!(company_id, filing,);
 }

@@ -1,42 +1,39 @@
-use crate::base::{digit, text};
+use crate::base::{digits, non_empty_text};
 
-digit!(SmesId, false, 7);
-digit!(DartId, false, 8);
-digit!(BusinessRegistrationNumber, true, 10, {
+// region: Digits
+
+digits!(BusinessRegistrationNumber, true, 10, {
     /// ## 사업자번호
     ///
     /// This field is a 10-digit number.
     /// It also allows empty strings, since the website provides empty strings for some companies.
 });
-digit!(CorporationRegistrationNumber, false, 13, {
+digits!(CorporationRegistrationNumber, false, 13, {
     /// ## 법인등록번호
     ///
     /// This is a 13-digit number.
 });
-digit!(IndustryCode, false, 5, {
+digits!(DartId, false, 8);
+digits!(IndustryCode, false, 5, {
     /// ## 업종코드
     ///
     /// This field is a 5-digit number.
 });
-digit!(StockCode, false, 6, {
+digits!(SmesId, false, 7);
+digits!(StockCode, false, 6, {
     /// ## 종목코드
     ///
     /// This field is a 6-digit number.
 });
 
-text!(RepresentativeName, false, {
-    /// ## 대표자명
-});
-text!(HeadquartersAddress, false, {
+// endregion: Digits
+
+// region: Text
+
+non_empty_text!(HeadquartersAddress, {
     /// ## 본사주소
 });
-text!(Name, false, {
-    /// ## 기업명
-});
-text!(IndustryName, false, {
-    /// ## 업종
-});
-text!(HtmlContent, false, {
+non_empty_text!(HtmlContent, {
     /// ## HTML content
     ///
     /// While storing HTML as bytes can be beneficial for handling various encodings,
@@ -46,6 +43,17 @@ text!(HtmlContent, false, {
     /// If dealing with non-UTF-8 content,
     /// additional handling may be required during the bytes-to-string conversion.
 });
+non_empty_text!(IndustryName, {
+    /// ## 업종
+});
+non_empty_text!(Name, {
+    /// ## 기업명
+});
+non_empty_text!(RepresentativeName, {
+    /// ## 대표자명
+});
+
+// endregion: Text
 
 #[cfg(test)]
 mod tests {
