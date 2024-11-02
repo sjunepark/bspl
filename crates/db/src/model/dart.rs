@@ -5,7 +5,7 @@ use fake::faker::number::raw::NumberWithFormat;
 use fake::locales::EN;
 use fake::{Dummy, Fake};
 use rand::Rng;
-use types::{company, filing, DartDate};
+use types::{company, filing, YYYYMMDD};
 // region: Table filing
 
 #[derive(Queryable, Selectable, Clone)]
@@ -72,7 +72,7 @@ impl<T> Dummy<T> for NewFiling {
             receipt_date: filing::ReceiptDate::new(
                 NaiveDate::from_ymd_opt(2021, 1, 1).expect("invalid date passed"),
             ),
-            remark: filing::Remark::try_new("Remark").expect("invalid remark"),
+            remark: filing::Remark::new("Remark"),
         }
     }
 }
@@ -112,7 +112,7 @@ pub struct CompanyAll {
     company_id: company::DartId,
     company_name: company::Name,
     stock_code: company::StockCode,
-    modify_date: DartDate,
+    modify_date: YYYYMMDD,
 }
 
 impl<T> Dummy<T> for CompanyAll {
@@ -130,7 +130,7 @@ impl<T> Dummy<T> for CompanyAll {
                 .as_str()
                 .try_into()
                 .expect("dummy creation logic needs to be fixed within the source code"),
-            modify_date: DartDate::new(
+            modify_date: YYYYMMDD::new(
                 NaiveDate::from_ymd_opt(2021, 1, 1).expect("invalid date passed"),
             ),
         }

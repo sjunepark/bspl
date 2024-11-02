@@ -9,7 +9,5 @@ chrono = { workspace = true, features = ["serde"] }
 derive_more = { workspace = true, features = ["as_ref", "display", "from", "into"] }
 diesel = { workspace = true }
 diesel-derive-newtype = { workspace = true }
-fake = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 thiserror = { workspace = true }
-time = { workspace = true, features = ["serde"] }

@@ -3841,10 +3841,8 @@ dependencies = [
  "derive_more 1.0.0",
  "diesel",
  "diesel-derive-newtype",
- "fake",
  "serde",
  "thiserror",
- "time",
 ]
 
 [[package]]

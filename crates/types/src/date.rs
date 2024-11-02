@@ -1,6 +1,6 @@
 use crate::TypeError;
 use chrono::NaiveDate;
-use derive_more::{AsRef, Display, From, Into};
+use derive_more::{AsRef, Display};
 use diesel_derive_newtype::DieselNewType;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
@@ -23,47 +23,19 @@ use std::str::FromStr;
     // diesel
     DieselNewType,
 )]
-pub struct DartDate(NaiveDate);
+pub struct YYYYMMDD(NaiveDate);
 
-impl DartDate {
+impl YYYYMMDD {
     pub fn new(date: NaiveDate) -> Self {
         Self(date)
     }
 }
 
-impl FromStr for DartDate {
+impl FromStr for YYYYMMDD {
     type Err = TypeError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let date = NaiveDate::parse_from_str(s, "%Y%m%d")?;
-        Ok(DartDate::new(date))
-    }
-}
-
-/// 비고
-#[derive(
-    Debug,
-    Clone,
-    Eq,
-    PartialEq,
-    Ord,
-    PartialOrd,
-    Hash,
-    // derive_more
-    AsRef,
-    Display,
-    From,
-    Into,
-    // serde
-    Serialize,
-    Deserialize,
-    // diesel
-    DieselNewType,
-)]
-pub struct Remark(String);
-
-impl Remark {
-    pub fn new(value: &str) -> Self {
-        Self(value.to_string())
+        Ok(YYYYMMDD::new(date))
     }
 }
