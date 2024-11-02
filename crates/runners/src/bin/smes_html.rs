@@ -20,7 +20,7 @@ async fn main() {
 
     // 1. Get all companies from the database
     let all_ids_to_query = db
-        .get_company_ids()
+        .get_smes_ids()
         .in_current_span()
         .await
         .expect("Failed to get companies");

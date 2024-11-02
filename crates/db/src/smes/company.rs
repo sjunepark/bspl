@@ -11,9 +11,7 @@ pub trait CompanyDb {
     fn get_companies(
         &mut self,
     ) -> impl Future<Output = Result<Vec<crate::model::smes::Company>, DbError>>;
-    fn get_company_ids(
-        &mut self,
-    ) -> impl Future<Output = Result<HashSet<company::SmesId>, DbError>>;
+    fn get_smes_ids(&mut self) -> impl Future<Output = Result<HashSet<company::SmesId>, DbError>>;
     fn insert_companies(
         &mut self,
         companies: Vec<crate::model::smes::NewCompany>,
@@ -29,9 +27,9 @@ impl CompanyDb for PostgresDb {
         Ok(dsl::company.load(&mut self.conn)?)
     }
 
-    async fn get_company_ids(&mut self) -> Result<HashSet<company::SmesId>, DbError> {
+    async fn get_smes_ids(&mut self) -> Result<HashSet<company::SmesId>, DbError> {
         dsl::company
-            .select(dsl::company_id)
+            .select(dsl::smes_id)
             .load::<String>(&mut self.conn)?
             .into_iter()
             .map(|id| company::SmesId::try_from(id.as_str()).map_err(DbError::from))
@@ -111,7 +109,7 @@ impl PostgresDb {
         self.conn.transaction(|conn| {
             let insert_count = diesel::insert_into(dsl::company)
                 .values(&companies)
-                .on_conflict(dsl::company_id)
+                .on_conflict(dsl::smes_id)
                 .do_update()
                 .set((
                     dsl::representative_name.eq(excluded(dsl::representative_name)),
@@ -165,14 +163,14 @@ mod test {
             .map(NewCompany::from)
             .collect();
 
-        inserted_companies.sort_by_key(|c| c.company_id.clone());
-        selected_companies.sort_by_key(|c| c.company_id.clone());
+        inserted_companies.sort_by_key(|c| c.smes_id.clone());
+        selected_companies.sort_by_key(|c| c.smes_id.clone());
 
         assert_eq!(inserted_companies, selected_companies,);
     }
 
     #[tokio::test]
-    async fn get_company_ids_should_work() {
+    async fn get_smes_ids_should_work() {
         let function_id = utils::function_id!();
         let mut ctx = PostgresTestContext::new(&function_id).await;
 
@@ -181,12 +179,12 @@ mod test {
             .populate_companies(&ids)
             .await
             .into_iter()
-            .map(|company| company.company_id)
+            .map(|company| company.smes_id)
             .collect();
 
         let selected_ids = ctx
             .db()
-            .get_company_ids()
+            .get_smes_ids()
             .await
             .expect("Failed to get company ids");
 
@@ -218,15 +216,15 @@ mod test {
         // Add a new company to see that this company was properly updated
         let mut new_company = ().fake::<NewCompany>();
         const NEW_COMPANY_ID: &str = "2000000";
-        new_company.company_id = NEW_COMPANY_ID
+        new_company.smes_id = NEW_COMPANY_ID
             .try_into()
-            .expect("failed to create dummy company_id");
+            .expect("failed to create dummy smes_id");
         let new_company_representative_name = new_company.representative_name.clone();
         updated_companies.push(new_company);
 
         // Remove a company to check that this company was not updated
         let removed_company = updated_companies.pop().unwrap();
-        let removed_company_id = removed_company.company_id;
+        let removed_smes_id = removed_company.smes_id;
         // endregion: Arrange
 
         // region: Action
@@ -245,11 +243,11 @@ mod test {
             .unwrap();
 
         for company in &db_companies {
-            match company.company_id.as_ref().as_str() {
+            match company.smes_id.as_ref().as_str() {
                 NEW_COMPANY_ID => {
                     assert_eq!(company.representative_name, new_company_representative_name);
                 }
-                id if id == removed_company_id.as_ref() => {
+                id if id == removed_smes_id.as_ref() => {
                     // Not upserted company name should not change
                     assert_eq!(
                         company.representative_name,

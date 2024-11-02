@@ -13,7 +13,7 @@ use types::company;
 #[diesel(table_name = crate::schema::smes::company)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Company {
-    pub company_id: company::SmesId,
+    pub smes_id: company::SmesId,
     pub representative_name: company::RepresentativeName,
     pub headquarters_address: company::HeadquartersAddress,
     pub business_registration_number: company::BusinessRegistrationNumber,
@@ -32,7 +32,7 @@ impl<T> Dummy<T> for Company {
         let new_company = NewCompany::dummy_with_rng(_config, rng);
 
         Company {
-            company_id: new_company.company_id,
+            smes_id: new_company.smes_id,
             representative_name: new_company.representative_name,
             headquarters_address: new_company.headquarters_address,
             business_registration_number: new_company.business_registration_number,
@@ -49,7 +49,7 @@ impl<T> Dummy<T> for Company {
 #[diesel(table_name = crate::schema::smes::company)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewCompany {
-    pub company_id: company::SmesId,
+    pub smes_id: company::SmesId,
     pub representative_name: company::RepresentativeName,
     pub headquarters_address: company::HeadquartersAddress,
     pub business_registration_number: company::BusinessRegistrationNumber,
@@ -61,7 +61,7 @@ pub struct NewCompany {
 impl<T> Dummy<T> for NewCompany {
     fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
         NewCompany {
-            company_id: NumberWithFormat(EN, "^######")
+            smes_id: NumberWithFormat(EN, "^######")
                 .fake::<String>()
                 .as_str()
                 .try_into()
@@ -91,7 +91,7 @@ impl<T> Dummy<T> for NewCompany {
 impl From<Company> for NewCompany {
     fn from(company: Company) -> Self {
         NewCompany {
-            company_id: company.company_id,
+            smes_id: company.smes_id,
             representative_name: company.representative_name,
             headquarters_address: company.headquarters_address,
             business_registration_number: company.business_registration_number,
@@ -104,7 +104,7 @@ impl From<Company> for NewCompany {
 
 impl PartialEq for NewCompany {
     fn eq(&self, other: &Self) -> bool {
-        self.company_id == other.company_id
+        self.smes_id == other.smes_id
             && self.representative_name == other.representative_name
             && self.headquarters_address == other.headquarters_address
             && self.business_registration_number == other.business_registration_number
@@ -120,7 +120,7 @@ impl PartialEq for NewCompany {
 #[diesel(table_name = crate::schema::smes::html)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Html {
-    pub company_id: company::SmesId,
+    pub smes_id: company::SmesId,
     pub html_content: company::HtmlContent,
     pub created_at: time::PrimitiveDateTime,
     pub updated_at: time::PrimitiveDateTime,
@@ -133,7 +133,7 @@ impl<T> Dummy<T> for Html {
         let new_html = NewHtml::dummy_with_rng(_config, rng);
 
         Html {
-            company_id: new_html.company_id,
+            smes_id: new_html.smes_id,
             html_content: new_html.html_content,
             created_at: fake_time,
             updated_at: fake_time,
@@ -145,13 +145,13 @@ impl<T> Dummy<T> for Html {
 #[diesel(table_name = crate::schema::smes::html)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewHtml {
-    pub company_id: company::SmesId,
+    pub smes_id: company::SmesId,
     pub html_content: company::HtmlContent,
 }
 impl<T> Dummy<T> for NewHtml {
     fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
         NewHtml {
-            company_id: NumberWithFormat(EN, "^######")
+            smes_id: NumberWithFormat(EN, "^######")
                 .fake::<String>().as_str().try_into().expect("dummy creation logic needs to be fixed within the source code"),
             html_content: format!(
                 "<html><head><title>{}</title></head><body><h2>유동자산</h2><p>{}</p></body></html>",
@@ -165,7 +165,7 @@ impl<T> Dummy<T> for NewHtml {
 impl From<Html> for NewHtml {
     fn from(html: Html) -> Self {
         NewHtml {
-            company_id: html.company_id,
+            smes_id: html.smes_id,
             html_content: html.html_content,
         }
     }

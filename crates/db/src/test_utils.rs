@@ -21,7 +21,7 @@ pub(crate) trait TestContext<D: Db> {
             .map(|id| {
                 let company = Faker.fake::<crate::model::smes::Company>();
                 crate::model::smes::NewCompany {
-                    company_id: id
+                    smes_id: id
                         .to_string()
                         .as_str()
                         .try_into()
@@ -57,7 +57,7 @@ pub(crate) trait TestContext<D: Db> {
                 .map(|id| {
                     let html = Faker.fake::<NewHtml>();
                     NewHtml {
-                        company_id: id.to_string().as_str().try_into().expect(
+                        smes_id: id.to_string().as_str().try_into().expect(
                             "dummy creation logic needs to be fixed within the source code",
                         ),
                         ..html

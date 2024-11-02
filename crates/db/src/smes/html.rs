@@ -10,10 +10,10 @@ use types::company;
 impl HtmlDb for PostgresDb {
     async fn select_html(
         &mut self,
-        company_id: &str,
+        smes_id: &str,
     ) -> Result<Option<crate::model::smes::Html>, DbError> {
         Ok(dsl::html
-            .filter(dsl::company_id.eq(company_id))
+            .filter(dsl::smes_id.eq(smes_id))
             .first(&mut self.conn)
             .optional()?)
     }
@@ -24,7 +24,7 @@ impl HtmlDb for PostgresDb {
 
     async fn select_html_ids(&mut self) -> Result<HashSet<company::SmesId>, DbError> {
         Ok(dsl::html
-            .select(dsl::company_id)
+            .select(dsl::smes_id)
             .load(&mut self.conn)?
             .into_iter()
             .collect())
@@ -55,7 +55,7 @@ impl HtmlDb for PostgresDb {
             tracing::trace!(?html, "Upserting html");
             query
                 .values(&html)
-                .on_conflict(dsl::company_id)
+                .on_conflict(dsl::smes_id)
                 .do_update()
                 .set((dsl::html_content.eq(excluded(dsl::html_content)),))
                 .execute(&mut self.conn)?;
@@ -67,7 +67,7 @@ impl HtmlDb for PostgresDb {
 pub trait HtmlDb {
     fn select_html(
         &mut self,
-        company_id: &str,
+        smes_id: &str,
     ) -> impl Future<Output = Result<Option<crate::model::smes::Html>, DbError>>;
     fn select_htmls(
         &mut self,
@@ -109,8 +109,8 @@ mod tests {
             .map(NewHtml::from)
             .collect();
 
-        inserted_htmls.sort_by_key(|c| c.company_id.clone());
-        selected_htmls.sort_by_key(|c| c.company_id.clone());
+        inserted_htmls.sort_by_key(|c| c.smes_id.clone());
+        selected_htmls.sort_by_key(|c| c.smes_id.clone());
 
         assert_eq!(inserted_htmls, selected_htmls,);
     }
@@ -142,15 +142,15 @@ mod tests {
         // Add a new HTML to see that this HTML was properly updated
         let mut new_html = ().fake::<NewHtml>();
         const NEW_COMPANY_ID: &str = "2000000";
-        new_html.company_id = NEW_COMPANY_ID
+        new_html.smes_id = NEW_COMPANY_ID
             .try_into()
-            .expect("failed to create dummy company_id");
+            .expect("failed to create dummy smes_id");
         let new_html_content = new_html.html_content.clone();
         updated_htmls.push(new_html);
 
         // Remove an HTML to check that this HTML was not updated
         let removed_html = updated_htmls.pop().unwrap();
-        let removed_html_id = removed_html.company_id;
+        let removed_html_id = removed_html.smes_id;
         // endregion: Arrange
 
         // region: Action
@@ -175,7 +175,7 @@ mod tests {
             .unwrap();
 
         for html in &db_htmls {
-            match html.company_id.as_ref().as_str() {
+            match html.smes_id.as_ref().as_str() {
                 NEW_COMPANY_ID => {
                     assert_eq!(html.html_content, new_html_content);
                 }
