@@ -2180,7 +2180,7 @@ checksum = "1261fe7e33c73b354eab43b1273a57c8f967d0391e80353e51f764ac02cf6775"
 [[package]]
 name = "open-dart"
 version = "0.0.1"
-source = "git+https://github.com/sjunepark/open-dart?branch=dev#171539c44873f282c68a35b18121d711559fc4f3"
+source = "git+https://github.com/sjunepark/open-dart?branch=dev#aedd1dd36ad1546e7700b097b05a270c2640382a"
 dependencies = [
  "bytes",
  "chrono",
@@ -2189,7 +2189,10 @@ dependencies = [
  "quick-xml",
  "reqwest",
  "serde",
+ "serde-aux",
  "serde_json",
+ "serde_path_to_error",
+ "serde_with",
  "static_assertions",
  "thiserror",
  "tokio",
@@ -3115,6 +3118,16 @@ dependencies = [
  "itoa",
  "memchr",
  "ryu",
+ "serde",
+]
+
+[[package]]
+name = "serde_path_to_error"
+version = "0.1.16"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "af99884400da37c88f5e9146b7f1fd0fbcae8f6eec4e9da38b67d05486f814a6"
+dependencies = [
+ "itoa",
  "serde",
 ]
 
