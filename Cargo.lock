@@ -2325,7 +2325,7 @@ checksum = "1261fe7e33c73b354eab43b1273a57c8f967d0391e80353e51f764ac02cf6775"
 [[package]]
 name = "open-dart"
 version = "0.0.1"
-source = "git+https://github.com/sjunepark/open-dart?branch=dev#43d0a2a38698c51b9c904ef2fb4c11b2c0596041"
+source = "git+https://github.com/sjunepark/open-dart?branch=dev#85e7a07dee1d24cd810c705c1400c4ac3bbf6add"
 dependencies = [
  "bytes",
  "chrono",
