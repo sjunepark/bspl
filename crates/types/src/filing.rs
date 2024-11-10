@@ -46,5 +46,5 @@ digits!(ReceiptNumber, false, 14, {
 
 // endregion: Digits
 
-///  공시 접수일자(YYYYMMDD)
+/// ## 공시 접수일자(YYYYMMDD)
 pub type ReceiptDate = date::YYYYMMDD;
