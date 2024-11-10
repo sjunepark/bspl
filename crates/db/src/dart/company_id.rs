@@ -152,11 +152,11 @@ mod tests {
         let mut ctx = PostgresTestContext::new(&function_id).await;
 
         let ids = (0..10_u64).map(|i| 10000000 + i).collect::<Vec<_>>();
-        let mut inserted_company_ids = ctx.populate_company_ids(&ids).await;
+        let inserted_company_ids = ctx.populate_company_ids(&ids).await;
 
         // Create companies to upsert: from existing companies.
         const UPDATED_COMPANY_NAME: &str = "Updated";
-        let updated_company_ids = inserted_company_ids
+        let mut updated_company_ids = inserted_company_ids
             .iter()
             .map(|company_id| CompanyId {
                 company_name: UPDATED_COMPANY_NAME.try_into().expect("Failed to convert"),
@@ -165,26 +165,46 @@ mod tests {
             .collect::<Vec<_>>();
 
         // Add a new company to see that this company was properly updated
-        let new_company_id = ().fake::<CompanyId>();
+        let mut new_company_id = ().fake::<CompanyId>();
         const NEW_DART_ID: &str = "20000000";
-        new_company_id
-            .dart_id
-            .try_into()
-            .expect("Failed to convert");
+        new_company_id.dart_id = NEW_DART_ID.try_into().expect("Failed to convert");
         let new_company_name = new_company_id.company_name.clone();
         updated_company_ids.push(new_company_id.clone());
 
-        let mut selected_company_ids: Vec<_> = ctx
-            .db()
+        // Remove a company to check that this company was not updated
+        let removed_company_id = updated_company_ids.pop().unwrap();
+        let removed_dart_id = removed_company_id.dart_id;
+        // endregion: Arrange
+
+        // region: Action
+        let db = ctx.db();
+        db.upsert_company_ids(updated_company_ids)
+            .await
+            .inspect_err(|e| tracing::error!(?e, "Failed to upsert companies"))
+            .unwrap();
+        // endregion: Action
+
+        // region: Assert
+        let db_company_ids = db
             .get_company_ids()
             .await
-            .expect("Failed to get company_ids")
-            .into_iter()
-            .collect();
+            .inspect_err(|e| tracing::error!(?e, "Failed to get company_ids"))
+            .unwrap();
 
-        inserted_company_ids.sort_by_key(|c| c.dart_id.clone());
-        selected_company_ids.sort_by_key(|c| c.dart_id.clone());
-
-        assert_eq!(inserted_company_ids, selected_company_ids,);
+        for company_id in &db_company_ids {
+            match company_id.dart_id.as_ref().as_str() {
+                NEW_DART_ID => {
+                    assert_eq!(company_id.company_name, new_company_name);
+                }
+                id if id == removed_dart_id.as_ref() => {
+                    // Not upserted company name should not change
+                    assert_eq!(company_id.company_name, removed_company_id.company_name);
+                }
+                _ => {
+                    assert_eq!(company_id.company_name.as_ref(), UPDATED_COMPANY_NAME,);
+                }
+            }
+        }
+        // endregion: Assert
     }
 }

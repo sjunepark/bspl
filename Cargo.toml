@@ -25,7 +25,7 @@ serde = "1.0.210"
 serde-aux = "4.5.0"
 serde_json = "1.0.128"
 static_assertions = "1.1.0"
-thiserror = "1.0.63"
+thiserror = "2.0.2"
 time = "0.3.36"
 tokio = "1.40.0"
 tracing = "0.1.40"
@@ -41,7 +41,7 @@ types = { path = "crates/types" }
 # GitHub crates
 open-dart = { git = "https://github.com/sjunepark/open-dart", branch = "dev" }
 
-# Testig
+# Testing
 fake = "2.10.0"
 goldrust = { git = "https://github.com/sjunepark/goldrust", branch = "dev" }
 testcontainers-modules = "0.11.2"
