@@ -7,7 +7,7 @@ async fn main() {
     tracing_setup::span!("main");
 
     let params = list::ParamsBuilder::default()
-        .bgn_de(chrono::NaiveDate::from_ymd_opt(2024, 10, 1).expect("Invalid date"))
+        .bgn_de("20241001".to_string())
         .build()
         .expect("Failed to build ListRequestParams");
     tracing::info!(?params, "Request parameters");

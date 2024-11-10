@@ -39,3 +39,11 @@ impl FromStr for YYYYMMDD {
         Ok(YYYYMMDD::new(date))
     }
 }
+
+impl TryFrom<&str> for YYYYMMDD {
+    type Error = TypeError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        value.parse()
+    }
+}
