@@ -33,16 +33,19 @@ digits!(StockCode, false, 6, {
 non_empty_text!(HeadquartersAddress, {
     /// ## 본사주소
 });
-non_empty_text!(HtmlContent, {
-    /// ## HTML content
+
+// While storing HTML as bytes can be beneficial for handling various encodings,
+// we use a string representation due to the requirements of the `scraper` crate.
+//
+// Note: This approach assumes UTF-8 encoding.
+// If dealing with non-UTF-8 content,
+// additional handling may be required during the bytes-to-string conversion.
+non_empty_text!(SmesHtmlContent, {
+    /// ## SMES HTML content
     ///
-    /// While storing HTML as bytes can be beneficial for handling various encodings,
-    /// we use a string representation due to the requirements of the `scraper` crate.
-    ///
-    /// Note: This approach assumes UTF-8 encoding.
-    /// If dealing with non-UTF-8 content,
-    /// additional handling may be required during the bytes-to-string conversion.
+    /// The scraped HTML content of the company from SMES.
 });
+
 non_empty_text!(IndustryName, {
     /// ## 업종
 });

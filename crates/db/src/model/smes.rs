@@ -121,7 +121,7 @@ impl PartialEq for NewCompany {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Html {
     pub smes_id: company::SmesId,
-    pub html_content: company::HtmlContent,
+    pub html_content: company::SmesHtmlContent,
     pub created_at: time::PrimitiveDateTime,
     pub updated_at: time::PrimitiveDateTime,
 }
@@ -146,7 +146,7 @@ impl<T> Dummy<T> for Html {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewHtml {
     pub smes_id: company::SmesId,
-    pub html_content: company::HtmlContent,
+    pub html_content: company::SmesHtmlContent,
 }
 impl<T> Dummy<T> for NewHtml {
     fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
