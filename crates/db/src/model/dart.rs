@@ -116,7 +116,6 @@ pub struct CompanyId {
 }
 
 impl<T> Dummy<T> for CompanyId {
-    // todo: check
     fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
         CompanyId {
             dart_id: NumberWithFormat(EN, "^#######")

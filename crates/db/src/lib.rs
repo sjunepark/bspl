@@ -10,3 +10,5 @@ pub mod smes;
 
 pub use db::{Db, PostgresDb};
 pub use error::DbError;
+
+pub(crate) const POSTGRES_MAX_PARAMETERS: usize = 65535;

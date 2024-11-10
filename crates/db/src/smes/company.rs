@@ -1,4 +1,4 @@
-use crate::{DbError, PostgresDb};
+use crate::{DbError, PostgresDb, POSTGRES_MAX_PARAMETERS};
 
 use crate::schema::smes::company::dsl;
 use diesel::prelude::*;
@@ -41,7 +41,6 @@ impl CompanyDb for PostgresDb {
         &mut self,
         companies: Vec<crate::model::smes::NewCompany>,
     ) -> Result<(), DbError> {
-        const POSTGRES_MAX_PARAMETERS: usize = 65535;
         // A single INSERT statement can have more than 1 binding,
         // as so we're putting a generous buffer.
         // If you use a small divisor(ex. 4), it could fail due to multiple bindings.
@@ -59,7 +58,6 @@ impl CompanyDb for PostgresDb {
         &mut self,
         companies: Vec<crate::model::smes::NewCompany>,
     ) -> Result<(), DbError> {
-        const POSTGRES_MAX_PARAMETERS: usize = 65535;
         // A single INSERT statement can have more than 1 binding,
         // as so we're putting a generous buffer.
         // If you use a small divisor(ex. 4), it could fail due to multiple bindings.

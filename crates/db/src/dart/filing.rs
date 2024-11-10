@@ -2,7 +2,7 @@ use diesel::prelude::*;
 use std::future::Future;
 
 use crate::schema::dart::filing::dsl;
-use crate::{model, DbError, PostgresDb};
+use crate::{model, DbError, PostgresDb, POSTGRES_MAX_PARAMETERS};
 
 pub trait FilingDb {
     fn get_filings(&mut self) -> impl Future<Output = Result<Vec<model::dart::Filing>, DbError>>;
@@ -23,7 +23,6 @@ impl FilingDb for PostgresDb {
         &mut self,
         filings: Vec<model::dart::NewFiling>,
     ) -> Result<(), DbError> {
-        const POSTGRES_MAX_PARAMETERS: usize = 65535;
         const BUFFER_DIVISOR: usize = 100;
 
         for chunk in filings.chunks(POSTGRES_MAX_PARAMETERS / BUFFER_DIVISOR) {
