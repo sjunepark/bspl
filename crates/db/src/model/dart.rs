@@ -6,6 +6,7 @@ use fake::locales::EN;
 use fake::{Dummy, Fake};
 use rand::Rng;
 use types::{company, filing, YYYYMMDD};
+
 // region: Table filing
 
 #[derive(Queryable, Selectable, Clone)]

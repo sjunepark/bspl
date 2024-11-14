@@ -5,6 +5,7 @@ pub(crate) mod schema;
 pub(crate) mod test_utils;
 
 pub mod dart;
+mod entities;
 pub mod model;
 pub mod smes;
 

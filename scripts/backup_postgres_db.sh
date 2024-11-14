@@ -5,7 +5,7 @@ CONTAINER_NAME="bspl-db-1"
 DB_NAME="${POSTGRES_DB}"
 DB_USER="${POSTGRES_USER}"
 DB_PASSWORD="${POSTGRES_PASSWORD}"
-BACKUP_DIR="db/postgresql/backup"
+BACKUP_DIR="db/backup"
 DATE=$(date +"%Y%m%d_%H%M%S")
 BACKUP_FILE="${BACKUP_DIR}/backup_${DATE}.sql"
 
