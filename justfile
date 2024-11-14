@@ -105,13 +105,13 @@ compose-config:
 git-gc:
     git gc --prune=now --aggressive
 
-# Sea ORM
+# SeaORM
 # The migration itself runs on the public schema,
 # but the actual data should be stored in the appropraite schema, other than `public`.
 # They should be explicitly defined in the SQL script,
 # rather than relying on the search_path.
 #
-# Sea ORM supports running scripts on specific schemas(using the `-s` flag),
+# SeaORM supports running scripts on specific schemas(using the `-s` flag),
 # but this isn't appropriate since the initial script for creating schemas won't work when there is no schema to run on.
 # (e.g. `CREATE SCHEMA dart;` won't work if the schema `dart` doesn't exist)
 #

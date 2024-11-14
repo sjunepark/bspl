@@ -15,7 +15,7 @@ pub trait FilingDb {
 impl FilingDb for PostgresDb {
     #[tracing::instrument(skip(self))]
     async fn get_filings(&mut self) -> Result<Vec<model::dart::Filing>, DbError> {
-        Ok(dsl::filing.load(&mut self.conn)?)
+        Ok(dsl::filing.load(&mut self.diesel_conn)?)
     }
 
     #[tracing::instrument(skip(self, filings))]
@@ -40,7 +40,7 @@ impl PostgresDb {
     ) -> Result<(), DbError> {
         let total_filing_count = filings.len();
 
-        self.conn.transaction(|conn| {
+        self.diesel_conn.transaction(|conn| {
             let insert_count = diesel::insert_into(dsl::filing)
                 .values(&filings)
                 .execute(conn)?;

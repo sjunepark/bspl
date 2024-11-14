@@ -22,7 +22,7 @@ pub trait CompanyIdDb {
 impl CompanyIdDb for PostgresDb {
     #[tracing::instrument(skip(self))]
     async fn get_company_ids(&mut self) -> Result<Vec<model::dart::CompanyId>, DbError> {
-        Ok(dsl::company_id.load(&mut self.conn)?)
+        Ok(dsl::company_id.load(&mut self.diesel_conn)?)
     }
 
     #[tracing::instrument(skip(self, company_ids))]
@@ -61,7 +61,7 @@ impl PostgresDb {
     ) -> Result<(), DbError> {
         let total_company_id_count = company_ids.len();
 
-        self.conn.transaction(|conn| {
+        self.diesel_conn.transaction(|conn| {
             let insert_count = diesel::insert_into(dsl::company_id)
                 .values(&company_ids)
                 .execute(conn)?;
@@ -87,7 +87,7 @@ impl PostgresDb {
     ) -> Result<(), DbError> {
         let total_company_id_count = company_ids.len();
 
-        self.conn.transaction(|conn| {
+        self.diesel_conn.transaction(|conn| {
             for company_id in &company_ids {
                 let insert_count = diesel::insert_into(dsl::company_id)
                     .values(company_id)

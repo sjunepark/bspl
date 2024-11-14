@@ -14,7 +14,7 @@ pub trait Db: Sized + smes::CompanyDb + smes::HtmlDb + dart::FilingDb + dart::Co
 
 // region: Postgres
 pub struct PostgresDb {
-    pub conn: PgConnection,
+    pub diesel_conn: PgConnection,
 }
 
 impl Db for PostgresDb {
@@ -24,12 +24,12 @@ impl Db for PostgresDb {
         let conn = PgConnection::establish(&connection_string)
             .expect("Failed to establish connection to db");
 
-        Self { conn }
+        Self { diesel_conn: conn }
     }
 
     #[tracing::instrument(skip(self))]
     async fn health_check(&mut self) -> Result<(), DbError> {
-        sql_query("SELECT 1").execute(&mut self.conn)?;
+        sql_query("SELECT 1").execute(&mut self.diesel_conn)?;
         Ok(())
     }
 }

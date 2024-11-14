@@ -14,18 +14,18 @@ impl HtmlDb for PostgresDb {
     ) -> Result<Option<crate::model::smes::Html>, DbError> {
         Ok(dsl::html
             .filter(dsl::smes_id.eq(smes_id))
-            .first(&mut self.conn)
+            .first(&mut self.diesel_conn)
             .optional()?)
     }
 
     async fn select_htmls(&mut self) -> Result<Vec<crate::model::smes::Html>, DbError> {
-        Ok(dsl::html.load(&mut self.conn)?)
+        Ok(dsl::html.load(&mut self.diesel_conn)?)
     }
 
     async fn select_html_ids(&mut self) -> Result<HashSet<company::SmesId>, DbError> {
         Ok(dsl::html
             .select(dsl::smes_id)
-            .load(&mut self.conn)?
+            .load(&mut self.diesel_conn)?
             .into_iter()
             .collect())
     }
@@ -39,7 +39,7 @@ impl HtmlDb for PostgresDb {
 
         while let Some(html) = htmls.recv().await {
             tracing::trace!(?html, "Inserting html");
-            query.values(&html).execute(&mut self.conn)?;
+            query.values(&html).execute(&mut self.diesel_conn)?;
         }
         Ok(())
     }
@@ -58,7 +58,7 @@ impl HtmlDb for PostgresDb {
                 .on_conflict(dsl::smes_id)
                 .do_update()
                 .set((dsl::html_content.eq(excluded(dsl::html_content)),))
-                .execute(&mut self.conn)?;
+                .execute(&mut self.diesel_conn)?;
         }
         Ok(())
     }

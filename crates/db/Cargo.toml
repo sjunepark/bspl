@@ -25,5 +25,7 @@ utils = { workspace = true }
 types = { workspace = true }
 
 [dev-dependencies]
+migration = { workspace = true } # Local crate
+sea-orm-migration = { workspace = true }
 testcontainers-modules = { workspace = true, features = ["postgres"] }
 tracing-setup = { workspace = true }

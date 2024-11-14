@@ -24,13 +24,13 @@ pub trait CompanyDb {
 
 impl CompanyDb for PostgresDb {
     async fn get_companies(&mut self) -> Result<Vec<crate::model::smes::Company>, DbError> {
-        Ok(dsl::company.load(&mut self.conn)?)
+        Ok(dsl::company.load(&mut self.diesel_conn)?)
     }
 
     async fn get_smes_ids(&mut self) -> Result<HashSet<company::SmesId>, DbError> {
         dsl::company
             .select(dsl::smes_id)
-            .load::<String>(&mut self.conn)?
+            .load::<String>(&mut self.diesel_conn)?
             .into_iter()
             .map(|id| company::SmesId::try_from(id.as_str()).map_err(DbError::from))
             .collect::<Result<HashSet<_>, _>>()
@@ -79,7 +79,7 @@ impl PostgresDb {
     ) -> Result<(), DbError> {
         let total_company_count = companies.len() as u64;
 
-        self.conn.transaction::<(), _, _>(|conn| {
+        self.diesel_conn.transaction::<(), _, _>(|conn| {
             let insert_count = diesel::insert_into(dsl::company)
                 .values(&companies)
                 .execute(conn)?;
@@ -104,7 +104,7 @@ impl PostgresDb {
         &mut self,
         companies: Vec<crate::model::smes::NewCompany>,
     ) -> Result<(), DbError> {
-        self.conn.transaction(|conn| {
+        self.diesel_conn.transaction(|conn| {
             let insert_count = diesel::insert_into(dsl::company)
                 .values(&companies)
                 .on_conflict(dsl::smes_id)
