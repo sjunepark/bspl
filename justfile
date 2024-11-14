@@ -104,3 +104,37 @@ compose-config:
 # Others
 git-gc:
     git gc --prune=now --aggressive
+
+# Sea ORM
+# The migration itself runs on the public schema,
+# but the actual data should be stored in the appropraite schema, other than `public`.
+# They should be explicitly defined in the SQL script,
+# rather than relying on the search_path.
+#
+# Sea ORM supports running scripts on specific schemas(using the `-s` flag),
+# but this isn't appropriate since the initial script for creating schemas won't work when there is no schema to run on.
+# (e.g. `CREATE SCHEMA dart;` won't work if the schema `dart` doesn't exist)
+#
+# TODO
+# There's a pull request for specifying the migration directory with a env variable,
+# which will remove the need for using the `-d` flag every time.
+# <https://github.com/SeaQL/sea-orm/pull/2419>
+
+sea:
+    sea-orm-cli migrate status -d crates/migration
+
+sea-status:
+    sea-orm-cli migrate status -d crates/migration
+
+sea-up:
+    sea-orm-cli migrate up -d crates/migration
+
+sea-generate:
+    just sea-generate-smes
+    just sea-generate-dart
+
+sea-generate-smes:
+    sea-orm-cli generate entity -o crates/db/src/entities/smes -s smes
+
+sea-generate-dart:
+    sea-orm-cli generate entity -o crates/db/src/entities/dart -s dart
