@@ -11,3 +11,6 @@ diesel = { workspace = true }
 diesel-derive-newtype = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 thiserror = { workspace = true }
+
+[dev-dependencies]
+fake = { workspace = true }

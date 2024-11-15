@@ -1,6 +1,9 @@
 use crate::base::{digits, non_empty_text, text};
 use crate::date;
 
+#[cfg(test)]
+use fake::Fake;
+
 // region: Text
 
 non_empty_text!(FilerName, {
