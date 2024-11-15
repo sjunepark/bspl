@@ -1,5 +1,7 @@
 ## Todo
 
+- `derive_more::Into` and `derive_more::From` are not appropriate for the digits macro since it should only use
+  `TryFrom`. (I'm not sure which I should remove)
 - Create macros for defining newtypes
 - Upgrade fake to v3
 - Finish data_api

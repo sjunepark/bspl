@@ -1,5 +1,6 @@
 use diesel::prelude::*;
 use diesel::upsert::excluded;
+use sea_orm::EntityTrait;
 use std::future::Future;
 
 use crate::schema::dart::company_id::dsl;
@@ -22,7 +23,12 @@ pub trait CompanyIdDb {
 impl CompanyIdDb for PostgresDb {
     #[tracing::instrument(skip(self))]
     async fn get_company_ids(&mut self) -> Result<Vec<model::dart::CompanyId>, DbError> {
-        Ok(dsl::company_id.load(&mut self.diesel_conn)?)
+        let id = crate::entities::dart::prelude::CompanyId::find()
+            .all(&self.conn)
+            .await?;
+        id.into_iter()
+            .map(TryInto::try_into)
+            .collect::<Result<_, _>>()
     }
 
     #[tracing::instrument(skip(self, company_ids))]

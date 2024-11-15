@@ -35,16 +35,16 @@ impl TestContext<PostgresDb> for PostgresTestContext {
 
         // Run migrations via SeaORM
         tracing::trace!("Running migrations");
-        let db = Database::connect(connection_string)
+        let conn = Database::connect(connection_string)
             .await
             .expect("Failed to connect to db");
-        let connection = db.into_schema_manager_connection();
+        let sm_conn = conn.into_schema_manager_connection();
 
-        migration::Migrator::refresh(connection)
+        migration::Migrator::refresh(sm_conn)
             .await
             .expect("Failed to refresh db");
 
-        let db = PostgresDb { diesel_conn };
+        let db = PostgresDb { diesel_conn, conn };
 
         Self { db, _node: node }
     }
@@ -53,17 +53,3 @@ impl TestContext<PostgresDb> for PostgresTestContext {
         &mut self.db
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//
-//     #[tokio::test]
-//     async fn create_db() {
-//         tracing_setup::span!("test");
-//         let _ctx = PostgresTestContext::new("create_db").await;
-//
-//         // Sleep for 1 minute
-//         tokio::time::sleep(tokio::time::Duration::from_secs(60)).await;
-//     }
-// }

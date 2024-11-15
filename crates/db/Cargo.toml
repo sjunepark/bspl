@@ -13,7 +13,7 @@ diesel_migrations = { workspace = true }
 fake = { workspace = true, features = ["time"] }
 hashbrown = { workspace = true }
 rand = { workspace = true }
-sea-orm = { workspace = true, features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
+sea-orm = { workspace = true, features = ["sqlx-postgres", "runtime-tokio-rustls", "macros", "with-chrono"] }
 serde = { workspace = true, features = ["derive"] }
 thiserror = { workspace = true }
 time = { workspace = true, features = ["serde"] }

@@ -3,6 +3,7 @@ use crate::{dart, smes};
 
 use diesel::prelude::*;
 use diesel::sql_query;
+use sea_orm::Database;
 use std::fmt::Debug;
 use std::future::Future;
 use std::path::Path;
@@ -15,16 +16,21 @@ pub trait Db: Sized + smes::CompanyDb + smes::HtmlDb + dart::FilingDb + dart::Co
 // region: Postgres
 pub struct PostgresDb {
     pub diesel_conn: PgConnection,
+    pub conn: sea_orm::DatabaseConnection,
 }
 
 impl Db for PostgresDb {
     #[tracing::instrument]
     async fn new<P: AsRef<Path> + Debug>(connection_string: P) -> Self {
         let connection_string = connection_string.as_ref().to_string_lossy();
-        let conn = PgConnection::establish(&connection_string)
+        let diesel_conn = PgConnection::establish(&connection_string)
             .expect("Failed to establish connection to db");
 
-        Self { diesel_conn: conn }
+        let conn = Database::connect(std::env::var("DATABASE_URL").expect("DATABASE_URL not set"))
+            .await
+            .expect("Failed to connect to db");
+
+        Self { diesel_conn, conn }
     }
 
     #[tracing::instrument(skip(self))]
