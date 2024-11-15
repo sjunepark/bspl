@@ -1,3 +1,4 @@
+use crate::DbError;
 use chrono::NaiveDate;
 use diesel::{Insertable, Queryable, Selectable};
 use fake::faker::name::ja_jp::Name;
@@ -134,6 +135,19 @@ impl<T> Dummy<T> for CompanyId {
                 NaiveDate::from_ymd_opt(2021, 1, 1).expect("invalid date passed"),
             ),
         }
+    }
+}
+
+impl TryFrom<crate::entities::dart::company_id::Model> for CompanyId {
+    type Error = DbError;
+
+    fn try_from(model: crate::entities::dart::company_id::Model) -> Result<Self, Self::Error> {
+        Ok(CompanyId {
+            dart_id: model.dart_id.as_str().try_into()?,
+            company_name: model.company_name.as_str().try_into()?,
+            stock_code: model.stock_code.as_str().try_into()?,
+            id_modify_date: model.id_modify_date.into(),
+        })
     }
 }
 

@@ -17,6 +17,8 @@ use std::str::FromStr;
     // derive_more
     AsRef,
     Display,
+    derive_more::From,
+    derive_more::Into,
     // serde
     Serialize,
     Deserialize,

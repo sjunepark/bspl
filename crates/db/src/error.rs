@@ -4,6 +4,8 @@ use thiserror::Error;
 pub enum DbError {
     #[error("Serde error: {0}")]
     Deserialize(#[from] serde::de::value::Error),
+    #[error("SeaORM error: {0}")]
+    SeaORM(#[from] sea_orm::error::DbErr),
     #[error("Diesel error: {0}")]
     Diesel(#[from] diesel::result::Error),
     #[error("Io error: {0}")]
