@@ -151,4 +151,15 @@ impl TryFrom<crate::entities::dart::company_id::Model> for CompanyId {
     }
 }
 
+impl From<CompanyId> for crate::entities::dart::company_id::Model {
+    fn from(company_id: CompanyId) -> Self {
+        crate::entities::dart::company_id::Model {
+            dart_id: company_id.dart_id.into(),
+            company_name: company_id.company_name.into(),
+            stock_code: company_id.stock_code.into(),
+            id_modify_date: company_id.id_modify_date.into(),
+        }
+    }
+}
+
 // endregion: Table company_id

@@ -1,5 +1,8 @@
 use crate::base::{digits, non_empty_text};
 
+#[cfg(test)]
+use fake::Fake;
+
 // region: Digits
 
 digits!(BusinessRegistrationNumber, true, 10, {
@@ -14,6 +17,7 @@ digits!(CorporationRegistrationNumber, false, 13, {
     /// This is a 13-digit number.
 });
 digits!(DartId, false, 8);
+
 digits!(IndustryCode, false, 5, {
     /// ## 업종코드
     ///

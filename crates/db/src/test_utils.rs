@@ -6,6 +6,7 @@ use crate::db::Db;
 use fake::{Fake, Faker};
 use tokio::sync::mpsc;
 
+use crate::entities::dart::company_id;
 use crate::model::smes::NewHtml;
 pub(crate) use postgres::PostgresTestContext;
 
@@ -113,8 +114,9 @@ pub(crate) trait TestContext<D: Db> {
         new_filings
     }
 
+    // TODO: Simplify
     #[tracing::instrument(skip(self))]
-    async fn populate_company_ids(&mut self, ids: &[u64]) -> Vec<crate::model::dart::CompanyId> {
+    async fn populate_company_ids(&mut self, ids: &[u64]) -> Vec<company_id::Model> {
         let new_company_ids: Vec<crate::model::dart::CompanyId> = ids
             .iter()
             .map(|id| {
@@ -138,5 +140,8 @@ pub(crate) trait TestContext<D: Db> {
             .expect("Failed to insert company_ids");
 
         new_company_ids
+            .into_iter()
+            .map(|company_id| company_id.into())
+            .collect()
     }
 }
