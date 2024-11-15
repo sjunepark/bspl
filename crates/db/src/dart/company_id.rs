@@ -168,11 +168,11 @@ mod tests {
             .collect::<Vec<_>>();
 
         // Add a new company to see that this company was properly updated
-        let mut new_company_id = ().fake::<CompanyId>().into();
+        let mut new_company_id: CompanyId = ().fake::<CompanyId>().into();
         const NEW_DART_ID: &str = "20000000";
         new_company_id.dart_id = NEW_DART_ID.try_into().expect("Failed to convert");
         let new_company_name = new_company_id.company_name.clone();
-        updated_company_ids.push(new_company_id.clone());
+        updated_company_ids.push(company_id::Model::from(new_company_id));
 
         // Remove a company to check that this company was not updated
         let removed_company_id = updated_company_ids.pop().unwrap();
@@ -181,10 +181,17 @@ mod tests {
 
         // region: Action
         let db = ctx.db();
-        db.upsert_company_ids(updated_company_ids)
-            .await
-            .inspect_err(|e| tracing::error!(?e, "Failed to upsert companies"))
-            .unwrap();
+        db.upsert_company_ids(
+            updated_company_ids
+                .into_iter()
+                .map(|company_id| {
+                    TryInto::<CompanyId>::try_into(company_id).expect("Failed to convert")
+                })
+                .collect(),
+        )
+        .await
+        .inspect_err(|e| tracing::error!(?e, "Failed to upsert companies"))
+        .unwrap();
         // endregion: Action
 
         // region: Assert
@@ -199,12 +206,9 @@ mod tests {
                 NEW_DART_ID => {
                     assert_eq!(&company_id.company_name, new_company_name.as_ref());
                 }
-                id if id == removed_dart_id.as_ref() => {
+                id if id == removed_dart_id.as_str() => {
                     // Not upserted company name should not change
-                    assert_eq!(
-                        company_id.company_name,
-                        removed_company_id.company_name.as_ref().to_string()
-                    );
+                    assert_eq!(company_id.company_name, removed_company_id.company_name);
                 }
                 _ => {
                     assert_eq!(company_id.company_name.as_str(), UPDATED_COMPANY_NAME,);
