@@ -85,4 +85,10 @@ mod tests {
         assert!(BusinessRegistrationNumber::try_from("").is_ok());
         assert!(BusinessRegistrationNumber::try_new("").is_ok());
     }
+
+    #[test]
+    fn corporation_registration_number_should_not_allow_empty_string() {
+        assert!(CorporationRegistrationNumber::try_from("").is_err());
+        assert!(CorporationRegistrationNumber::try_new("").is_err());
+    }
 }
