@@ -125,7 +125,7 @@ impl<T> Dummy<T> for CompanyId {
                 .as_str()
                 .try_into()
                 .expect("dummy creation logic needs to be fixed within the source code"),
-            company_name: Name().fake_with_rng::<String, R>(rng).into(),
+            company_name: Name().fake_with_rng::<String, R>(rng),
             stock_code: NumberWithFormat(EN, "^#####")
                 .fake::<String>()
                 .as_str()
@@ -155,7 +155,7 @@ impl From<CompanyId> for crate::entities::dart::company_id::Model {
     fn from(company_id: CompanyId) -> Self {
         crate::entities::dart::company_id::Model {
             dart_id: company_id.dart_id.into(),
-            company_name: company_id.company_name.into(),
+            company_name: company_id.company_name,
             stock_code: company_id.stock_code.into(),
             id_modify_date: company_id.id_modify_date.into(),
         }

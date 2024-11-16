@@ -162,13 +162,13 @@ mod tests {
         let mut updated_company_ids = inserted_company_ids
             .iter()
             .map(|company_id| company_id::Model {
-                company_name: UPDATED_COMPANY_NAME.try_into().expect("Failed to convert"),
+                company_name: UPDATED_COMPANY_NAME.into(),
                 ..company_id.clone()
             })
             .collect::<Vec<_>>();
 
         // Add a new company to see that this company was properly updated
-        let mut new_company_id: CompanyId = ().fake::<CompanyId>().into();
+        let mut new_company_id: CompanyId = ().fake::<CompanyId>();
         const NEW_DART_ID: &str = "20000000";
         new_company_id.dart_id = NEW_DART_ID.try_into().expect("Failed to convert");
         let new_company_name = new_company_id.company_name.clone();

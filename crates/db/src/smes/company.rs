@@ -206,7 +206,7 @@ mod test {
         let mut updated_companies = companies
             .iter()
             .map(|c| NewCompany {
-                representative_name: UPDATED_REPRESENTATIVE_NAME.to_string().into(),
+                representative_name: UPDATED_REPRESENTATIVE_NAME.to_string(),
                 ..c.clone()
             })
             .collect::<Vec<_>>();
