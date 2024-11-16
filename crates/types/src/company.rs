@@ -1,9 +1,8 @@
 use crate::base::{digits, non_empty_text};
 
-use crate::TypeError;
 #[cfg(test)]
 use fake::Fake;
-use sea_orm::{DbErr, TryFromU64};
+
 // region: Digits
 
 digits!(BusinessRegistrationNumber, true, 10, {
