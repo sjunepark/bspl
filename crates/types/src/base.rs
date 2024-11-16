@@ -159,6 +159,18 @@ macro_rules! digits {
                 Self::try_new(value)
             }
         }
+
+        #[cfg(test)]
+        impl<T> fake::Dummy<T> for $name {
+            fn dummy_with_rng<R: fake::Rng + ?Sized>(_config: &T, _rng: &mut R) -> Self {
+                let format = format!("^{}", "#".repeat($digits));
+                fake::faker::number::raw::NumberWithFormat(fake::locales::EN, &format)
+                    .fake::<String>()
+                    .as_str()
+                    .try_into()
+                    .expect("Failed to create mock")
+            }
+        }
     };
 }
 pub(crate) use digits;

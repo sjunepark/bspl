@@ -3,13 +3,12 @@ use diesel::upsert::excluded;
 use sea_orm::EntityTrait;
 use std::future::Future;
 
+use crate::entities::dart::company_id;
 use crate::schema::dart::company_id::dsl;
 use crate::{model, DbError, PostgresDb, POSTGRES_MAX_PARAMETERS};
 
 pub trait CompanyIdDb {
-    fn get_company_ids(
-        &mut self,
-    ) -> impl Future<Output = Result<Vec<model::dart::CompanyId>, DbError>>;
+    fn get_company_ids(&mut self) -> impl Future<Output = Result<Vec<company_id::Model>, DbError>>;
     fn insert_company_ids(
         &mut self,
         company_ids: Vec<model::dart::CompanyId>,
@@ -22,13 +21,10 @@ pub trait CompanyIdDb {
 
 impl CompanyIdDb for PostgresDb {
     #[tracing::instrument(skip(self))]
-    async fn get_company_ids(&mut self) -> Result<Vec<model::dart::CompanyId>, DbError> {
-        let id = crate::entities::dart::prelude::CompanyId::find()
+    async fn get_company_ids(&mut self) -> Result<Vec<company_id::Model>, DbError> {
+        Ok(crate::entities::dart::prelude::CompanyId::find()
             .all(&self.conn)
-            .await?;
-        id.into_iter()
-            .map(TryInto::try_into)
-            .collect::<Result<_, _>>()
+            .await?)
     }
 
     #[tracing::instrument(skip(self, company_ids))]
@@ -124,6 +120,7 @@ impl PostgresDb {
 #[cfg(test)]
 mod tests {
     use crate::dart::CompanyIdDb;
+    use crate::entities::dart::company_id;
     use crate::model::dart::CompanyId;
     use crate::test_utils::{PostgresTestContext, TestContext};
     use fake::Fake;
@@ -164,18 +161,18 @@ mod tests {
         const UPDATED_COMPANY_NAME: &str = "Updated";
         let mut updated_company_ids = inserted_company_ids
             .iter()
-            .map(|company_id| CompanyId {
+            .map(|company_id| company_id::Model {
                 company_name: UPDATED_COMPANY_NAME.try_into().expect("Failed to convert"),
                 ..company_id.clone()
             })
             .collect::<Vec<_>>();
 
         // Add a new company to see that this company was properly updated
-        let mut new_company_id = ().fake::<CompanyId>();
+        let mut new_company_id: CompanyId = ().fake::<CompanyId>().into();
         const NEW_DART_ID: &str = "20000000";
         new_company_id.dart_id = NEW_DART_ID.try_into().expect("Failed to convert");
         let new_company_name = new_company_id.company_name.clone();
-        updated_company_ids.push(new_company_id.clone());
+        updated_company_ids.push(company_id::Model::from(new_company_id));
 
         // Remove a company to check that this company was not updated
         let removed_company_id = updated_company_ids.pop().unwrap();
@@ -184,10 +181,17 @@ mod tests {
 
         // region: Action
         let db = ctx.db();
-        db.upsert_company_ids(updated_company_ids)
-            .await
-            .inspect_err(|e| tracing::error!(?e, "Failed to upsert companies"))
-            .unwrap();
+        db.upsert_company_ids(
+            updated_company_ids
+                .into_iter()
+                .map(|company_id| {
+                    TryInto::<CompanyId>::try_into(company_id).expect("Failed to convert")
+                })
+                .collect(),
+        )
+        .await
+        .inspect_err(|e| tracing::error!(?e, "Failed to upsert companies"))
+        .unwrap();
         // endregion: Action
 
         // region: Assert
@@ -198,16 +202,16 @@ mod tests {
             .unwrap();
 
         for company_id in &db_company_ids {
-            match company_id.dart_id.as_ref().as_str() {
+            match company_id.dart_id.as_str() {
                 NEW_DART_ID => {
-                    assert_eq!(company_id.company_name, new_company_name);
+                    assert_eq!(&company_id.company_name, new_company_name.as_ref());
                 }
-                id if id == removed_dart_id.as_ref() => {
+                id if id == removed_dart_id.as_str() => {
                     // Not upserted company name should not change
                     assert_eq!(company_id.company_name, removed_company_id.company_name);
                 }
                 _ => {
-                    assert_eq!(company_id.company_name.as_ref(), UPDATED_COMPANY_NAME,);
+                    assert_eq!(company_id.company_name.as_str(), UPDATED_COMPANY_NAME,);
                 }
             }
         }
