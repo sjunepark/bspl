@@ -204,7 +204,7 @@ mod tests {
         for company_id in &db_company_ids {
             match company_id.dart_id.as_str() {
                 NEW_DART_ID => {
-                    assert_eq!(&company_id.company_name, new_company_name.as_ref());
+                    assert_eq!(&company_id.company_name, new_company_name.as_str());
                 }
                 id if id == removed_dart_id.as_str() => {
                     // Not upserted company name should not change

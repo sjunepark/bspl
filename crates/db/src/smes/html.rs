@@ -184,7 +184,7 @@ mod tests {
                     assert_eq!(html.html_content, removed_html.html_content);
                 }
                 _ => {
-                    assert_eq!(html.html_content.as_ref(), UPDATED_HTML_CONTENT);
+                    assert_eq!(html.html_content.as_str(), UPDATED_HTML_CONTENT);
                 }
             }
         }

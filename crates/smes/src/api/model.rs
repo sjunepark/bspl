@@ -157,7 +157,7 @@ impl TryFrom<Html> for NewHtml {
     fn try_from(value: Html) -> Result<Self, Self::Error> {
         Ok(NewHtml {
             smes_id: value.vnia_sn.as_str().try_into()?,
-            html_content: value.html.as_str().try_into()?,
+            html_content: value.html,
         })
     }
 }

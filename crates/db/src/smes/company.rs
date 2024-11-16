@@ -254,7 +254,7 @@ mod test {
                 }
                 _ => {
                     assert_eq!(
-                        company.representative_name.as_ref(),
+                        company.representative_name.as_str(),
                         UPDATED_REPRESENTATIVE_NAME
                     );
                 }

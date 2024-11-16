@@ -24,6 +24,8 @@ use std::str::FromStr;
     Deserialize,
     // diesel
     DieselNewType,
+    // SeaORM
+    sea_orm::DeriveValueType,
 )]
 pub struct YYYYMMDD(NaiveDate);
 

@@ -64,17 +64,17 @@ impl<T> Dummy<T> for NewFiling {
                 .as_str()
                 .try_into()
                 .expect("dummy creation logic needs to be fixed within the source code"),
-            report_name: Name().fake_with_rng::<String, R>(rng).into(),
+            report_name: Name().fake_with_rng::<String, R>(rng),
             receipt_number: NumberWithFormat(EN, "^#############")
                 .fake::<String>()
                 .as_str()
                 .try_into()
                 .expect("dummy creation logic needs to be fixed within the source code"),
-            filer_name: Name().fake_with_rng::<String, R>(rng).into(),
+            filer_name: Name().fake_with_rng::<String, R>(rng),
             receipt_date: filing::ReceiptDate::new(
                 NaiveDate::from_ymd_opt(2021, 1, 1).expect("invalid date passed"),
             ),
-            remark: filing::Remark::new("Remark"),
+            remark: "Remark".into(),
         }
     }
 }
@@ -144,7 +144,7 @@ impl TryFrom<crate::entities::dart::company_id::Model> for CompanyId {
     fn try_from(model: crate::entities::dart::company_id::Model) -> Result<Self, Self::Error> {
         Ok(CompanyId {
             dart_id: model.dart_id.as_str().try_into()?,
-            company_name: model.company_name.as_str().try_into()?,
+            company_name: model.company_name,
             stock_code: model.stock_code.as_str().try_into()?,
             id_modify_date: model.id_modify_date.into(),
         })

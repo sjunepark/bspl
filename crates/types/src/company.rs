@@ -1,4 +1,4 @@
-use crate::base::{digits, non_empty_text};
+use crate::base::digits;
 
 #[cfg(test)]
 use fake::Fake;
@@ -35,9 +35,8 @@ digits!(StockCode, false, 6, {
 
 // region: Text
 
-non_empty_text!(HeadquartersAddress, {
-    /// ## 본사주소
-});
+/// ## 본사주소
+pub type HeadquartersAddress = String;
 
 // While storing HTML as bytes can be beneficial for handling various encodings,
 // we use a string representation due to the requirements of the `scraper` crate.
@@ -45,21 +44,19 @@ non_empty_text!(HeadquartersAddress, {
 // Note: This approach assumes UTF-8 encoding.
 // If dealing with non-UTF-8 content,
 // additional handling may be required during the bytes-to-string conversion.
-non_empty_text!(SmesHtmlContent, {
-    /// ## SMES HTML content
-    ///
-    /// The scraped HTML content of the company from SMES.
-});
+/// ## SMES HTML content
+///
+/// The scraped HTML content of the company from SMES.
+pub type SmesHtmlContent = String;
 
-non_empty_text!(IndustryName, {
-    /// ## 업종
-});
-non_empty_text!(CompanyName, {
-    /// ## 기업명
-});
-non_empty_text!(RepresentativeName, {
-    /// ## 대표자명
-});
+/// ## 업종
+pub type IndustryName = String;
+
+/// ## 기업명
+pub type CompanyName = String;
+
+/// ## 대표자명
+pub type RepresentativeName = String;
 
 // endregion: Text
 
