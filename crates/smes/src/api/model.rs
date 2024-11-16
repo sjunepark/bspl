@@ -135,12 +135,12 @@ impl TryFrom<Company> for db::model::smes::NewCompany {
     fn try_from(value: Company) -> Result<Self, Self::Error> {
         Ok(db::model::smes::NewCompany {
             smes_id: value.vnia_sn.to_string().as_str().try_into()?,
-            representative_name: value.rprsv_nm.into(),
-            headquarters_address: value.hdofc_addr.into(),
+            representative_name: value.rprsv_nm,
+            headquarters_address: value.hdofc_addr,
             business_registration_number: value.bizrno.as_str().try_into()?,
-            company_name: value.cmp_nm.into(),
+            company_name: value.cmp_nm,
             industry_code: value.indsty_cd.as_str().try_into()?,
-            industry_name: value.indsty_nm.into(),
+            industry_name: value.indsty_nm,
         })
     }
 }
@@ -157,7 +157,7 @@ impl TryFrom<Html> for NewHtml {
     fn try_from(value: Html) -> Result<Self, Self::Error> {
         Ok(NewHtml {
             smes_id: value.vnia_sn.as_str().try_into()?,
-            html_content: value.html.as_str().try_into()?,
+            html_content: value.html,
         })
     }
 }

@@ -64,17 +64,17 @@ impl<T> Dummy<T> for NewFiling {
                 .as_str()
                 .try_into()
                 .expect("dummy creation logic needs to be fixed within the source code"),
-            report_name: Name().fake_with_rng::<String, R>(rng).into(),
+            report_name: Name().fake_with_rng::<String, R>(rng),
             receipt_number: NumberWithFormat(EN, "^#############")
                 .fake::<String>()
                 .as_str()
                 .try_into()
                 .expect("dummy creation logic needs to be fixed within the source code"),
-            filer_name: Name().fake_with_rng::<String, R>(rng).into(),
+            filer_name: Name().fake_with_rng::<String, R>(rng),
             receipt_date: filing::ReceiptDate::new(
                 NaiveDate::from_ymd_opt(2021, 1, 1).expect("invalid date passed"),
             ),
-            remark: filing::Remark::new("Remark"),
+            remark: "Remark".into(),
         }
     }
 }
@@ -112,7 +112,7 @@ impl PartialEq for NewFiling {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CompanyId {
     pub dart_id: company::DartId,
-    pub company_name: company::Name,
+    pub company_name: company::CompanyName,
     pub stock_code: company::StockCode,
     pub id_modify_date: YYYYMMDD,
 }
@@ -125,7 +125,7 @@ impl<T> Dummy<T> for CompanyId {
                 .as_str()
                 .try_into()
                 .expect("dummy creation logic needs to be fixed within the source code"),
-            company_name: Name().fake_with_rng::<String, R>(rng).into(),
+            company_name: Name().fake_with_rng::<String, R>(rng),
             stock_code: NumberWithFormat(EN, "^#####")
                 .fake::<String>()
                 .as_str()
@@ -143,10 +143,10 @@ impl TryFrom<crate::entities::dart::company_id::Model> for CompanyId {
 
     fn try_from(model: crate::entities::dart::company_id::Model) -> Result<Self, Self::Error> {
         Ok(CompanyId {
-            dart_id: model.dart_id.as_str().try_into()?,
-            company_name: model.company_name.as_str().try_into()?,
-            stock_code: model.stock_code.as_str().try_into()?,
-            id_modify_date: model.id_modify_date.into(),
+            dart_id: model.dart_id,
+            company_name: model.company_name,
+            stock_code: model.stock_code,
+            id_modify_date: model.id_modify_date,
         })
     }
 }
@@ -154,10 +154,10 @@ impl TryFrom<crate::entities::dart::company_id::Model> for CompanyId {
 impl From<CompanyId> for crate::entities::dart::company_id::Model {
     fn from(company_id: CompanyId) -> Self {
         crate::entities::dart::company_id::Model {
-            dart_id: company_id.dart_id.into(),
-            company_name: company_id.company_name.into(),
-            stock_code: company_id.stock_code.into(),
-            id_modify_date: company_id.id_modify_date.into(),
+            dart_id: company_id.dart_id,
+            company_name: company_id.company_name,
+            stock_code: company_id.stock_code,
+            id_modify_date: company_id.id_modify_date,
         }
     }
 }

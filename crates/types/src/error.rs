@@ -4,6 +4,8 @@ use thiserror::Error;
 pub enum TypeError {
     #[error("chrono format parse error: {0}")]
     ChronoParse(#[from] chrono::format::ParseError),
+    #[error("SeaORM error: {0}")]
+    SeaORM(#[from] sea_orm::DbErr),
     #[error("Validation error: {0}")]
     Validation(#[from] ValidationError),
 }

@@ -132,9 +132,7 @@ mod tests {
         let mut updated_htmls = htmls
             .iter()
             .map(|c| NewHtml {
-                html_content: UPDATED_HTML_CONTENT
-                    .try_into()
-                    .expect("failed to create dummy html_content"),
+                html_content: UPDATED_HTML_CONTENT.to_string(),
                 ..c.clone()
             })
             .collect::<Vec<_>>();
@@ -184,7 +182,7 @@ mod tests {
                     assert_eq!(html.html_content, removed_html.html_content);
                 }
                 _ => {
-                    assert_eq!(html.html_content.as_ref(), UPDATED_HTML_CONTENT);
+                    assert_eq!(html.html_content.as_str(), UPDATED_HTML_CONTENT);
                 }
             }
         }

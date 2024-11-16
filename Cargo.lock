@@ -5213,8 +5213,10 @@ dependencies = [
  "diesel",
  "diesel-derive-newtype",
  "fake",
+ "sea-orm",
  "serde",
  "thiserror 2.0.2",
+ "tracing",
 ]
 
 [[package]]

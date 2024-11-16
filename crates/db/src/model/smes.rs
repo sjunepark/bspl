@@ -17,7 +17,7 @@ pub struct Company {
     pub representative_name: company::RepresentativeName,
     pub headquarters_address: company::HeadquartersAddress,
     pub business_registration_number: company::BusinessRegistrationNumber,
-    pub company_name: company::Name,
+    pub company_name: company::CompanyName,
     pub industry_code: company::IndustryCode,
     pub industry_name: company::IndustryName,
     pub created_at: time::PrimitiveDateTime,
@@ -53,7 +53,7 @@ pub struct NewCompany {
     pub representative_name: company::RepresentativeName,
     pub headquarters_address: company::HeadquartersAddress,
     pub business_registration_number: company::BusinessRegistrationNumber,
-    pub company_name: company::Name,
+    pub company_name: company::CompanyName,
     pub industry_code: company::IndustryCode,
     pub industry_name: company::IndustryName,
 }
@@ -66,24 +66,23 @@ impl<T> Dummy<T> for NewCompany {
                 .as_str()
                 .try_into()
                 .expect("dummy creation logic needs to be fixed within the source code"),
-            representative_name: Name().fake_with_rng::<String, R>(rng).into(),
+            representative_name: Name().fake_with_rng::<String, R>(rng),
             headquarters_address: format!(
                 "{}, South Korea",
                 CityName().fake_with_rng::<String, R>(rng)
-            )
-            .into(),
+            ),
             business_registration_number: NumberWithFormat(EN, "^#########")
                 .fake::<String>()
                 .as_str()
                 .try_into()
                 .expect("dummy creation logic needs to be fixed within the source code"),
-            company_name: CompanyName().fake_with_rng::<String, R>(rng).into(),
+            company_name: CompanyName().fake_with_rng::<String, R>(rng),
             industry_code: NumberWithFormat(EN, "^####")
                 .fake::<String>()
                 .as_str()
                 .try_into()
                 .expect("dummy creation logic needs to be fixed within the source code"),
-            industry_name: Industry().fake_with_rng::<String, R>(rng).into(),
+            industry_name: Industry().fake_with_rng::<String, R>(rng),
         }
     }
 }
@@ -157,7 +156,7 @@ impl<T> Dummy<T> for NewHtml {
                 "<html><head><title>{}</title></head><body><h2>유동자산</h2><p>{}</p></body></html>",
                 CompanyName().fake_with_rng::<String, R>(rng),
                 Name().fake_with_rng::<String, R>(rng)
-            ).as_str().try_into().expect("dummy creation logic needs to be fixed within the source code"),
+            ),
         }
     }
 }
