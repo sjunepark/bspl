@@ -143,10 +143,10 @@ impl TryFrom<crate::entities::dart::company_id::Model> for CompanyId {
 
     fn try_from(model: crate::entities::dart::company_id::Model) -> Result<Self, Self::Error> {
         Ok(CompanyId {
-            dart_id: model.dart_id.as_str().try_into()?,
+            dart_id: model.dart_id,
             company_name: model.company_name,
-            stock_code: model.stock_code.as_str().try_into()?,
-            id_modify_date: model.id_modify_date.into(),
+            stock_code: model.stock_code,
+            id_modify_date: model.id_modify_date,
         })
     }
 }
@@ -154,10 +154,10 @@ impl TryFrom<crate::entities::dart::company_id::Model> for CompanyId {
 impl From<CompanyId> for crate::entities::dart::company_id::Model {
     fn from(company_id: CompanyId) -> Self {
         crate::entities::dart::company_id::Model {
-            dart_id: company_id.dart_id.into(),
+            dart_id: company_id.dart_id,
             company_name: company_id.company_name,
-            stock_code: company_id.stock_code.into(),
-            id_modify_date: company_id.id_modify_date.into(),
+            stock_code: company_id.stock_code,
+            id_modify_date: company_id.id_modify_date,
         }
     }
 }

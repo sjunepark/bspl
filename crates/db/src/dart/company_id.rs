@@ -202,11 +202,11 @@ mod tests {
             .unwrap();
 
         for company_id in &db_company_ids {
-            match company_id.dart_id.as_str() {
+            match company_id.dart_id.as_ref().as_str() {
                 NEW_DART_ID => {
                     assert_eq!(&company_id.company_name, new_company_name.as_str());
                 }
-                id if id == removed_dart_id.as_str() => {
+                id if id == removed_dart_id.as_ref() => {
                     // Not upserted company name should not change
                     assert_eq!(company_id.company_name, removed_company_id.company_name);
                 }
