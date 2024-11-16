@@ -9,8 +9,10 @@ chrono = { workspace = true, features = ["serde"] }
 derive_more = { workspace = true, features = ["as_ref", "display", "from", "into"] }
 diesel = { workspace = true }
 diesel-derive-newtype = { workspace = true }
+sea-orm = { workspace = true, features = ["macros"] }
 serde = { workspace = true, features = ["derive"] }
 thiserror = { workspace = true }
+tracing = { workspace = true }
 
 [dev-dependencies]
 fake = { workspace = true }

@@ -5,8 +5,7 @@ CREATE TABLE smes.company
     smes_id                      TEXT PRIMARY KEY CHECK (smes_id ~ '^[0-9]{7}$'),
     representative_name          TEXT      NOT NULL,
     headquarters_address         TEXT      NOT NULL,
-    business_registration_number TEXT      NOT NULL CHECK (
-        business_registration_number = '' OR
+    business_registration_number TEXT CHECK (
         business_registration_number ~ '^[0-9]{10}$'
         ),
     company_name                 TEXT      NOT NULL,

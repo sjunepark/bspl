@@ -129,6 +129,9 @@ sea-status:
 sea-up:
     sea-orm-cli migrate up -d crates/migration
 
+sea-down:
+    sea-orm-cli migrate down -d crates/migration
+
 sea-generate:
     just sea-generate-smes
     just sea-generate-dart

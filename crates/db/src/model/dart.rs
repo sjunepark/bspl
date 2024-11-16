@@ -112,7 +112,7 @@ impl PartialEq for NewFiling {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CompanyId {
     pub dart_id: company::DartId,
-    pub company_name: company::Name,
+    pub company_name: company::CompanyName,
     pub stock_code: company::StockCode,
     pub id_modify_date: YYYYMMDD,
 }

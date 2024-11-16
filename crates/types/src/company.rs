@@ -1,8 +1,9 @@
 use crate::base::{digits, non_empty_text};
 
+use crate::TypeError;
 #[cfg(test)]
 use fake::Fake;
-
+use sea_orm::{DbErr, TryFromU64};
 // region: Digits
 
 digits!(BusinessRegistrationNumber, true, 10, {
@@ -24,6 +25,7 @@ digits!(IndustryCode, false, 5, {
     /// This field is a 5-digit number.
 });
 digits!(SmesId, false, 7);
+
 digits!(StockCode, false, 6, {
     /// ## 종목코드
     ///
@@ -53,7 +55,7 @@ non_empty_text!(SmesHtmlContent, {
 non_empty_text!(IndustryName, {
     /// ## 업종
 });
-non_empty_text!(Name, {
+non_empty_text!(CompanyName, {
     /// ## 기업명
 });
 non_empty_text!(RepresentativeName, {
