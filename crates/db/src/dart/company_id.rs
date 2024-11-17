@@ -1,36 +1,32 @@
-use diesel::prelude::*;
-use diesel::upsert::excluded;
+use crate::entities::dart::company_id;
+use crate::entities::dart::prelude::*;
+use crate::{DbError, PostgresDb, POSTGRES_MAX_PARAMETERS};
+use sea_orm::sea_query::OnConflict;
 use sea_orm::EntityTrait;
 use std::future::Future;
-
-use crate::entities::dart::company_id;
-use crate::schema::dart::company_id::dsl;
-use crate::{model, DbError, PostgresDb, POSTGRES_MAX_PARAMETERS};
 
 pub trait CompanyIdDb {
     fn get_company_ids(&mut self) -> impl Future<Output = Result<Vec<company_id::Model>, DbError>>;
     fn insert_company_ids(
         &mut self,
-        company_ids: Vec<model::dart::CompanyId>,
+        company_ids: Vec<company_id::ActiveModel>,
     ) -> impl Future<Output = Result<(), DbError>>;
     fn upsert_company_ids(
         &mut self,
-        company_ids: Vec<model::dart::CompanyId>,
+        company_ids: Vec<company_id::ActiveModel>,
     ) -> impl Future<Output = Result<(), DbError>>;
 }
 
 impl CompanyIdDb for PostgresDb {
     #[tracing::instrument(skip(self))]
     async fn get_company_ids(&mut self) -> Result<Vec<company_id::Model>, DbError> {
-        Ok(crate::entities::dart::prelude::CompanyId::find()
-            .all(&self.conn)
-            .await?)
+        Ok(CompanyId::find().all(&self.conn).await?)
     }
 
     #[tracing::instrument(skip(self, company_ids))]
     async fn insert_company_ids(
         &mut self,
-        company_ids: Vec<model::dart::CompanyId>,
+        company_ids: Vec<company_id::ActiveModel>,
     ) -> Result<(), DbError> {
         const BUFFER_DIVISOR: usize = 100;
 
@@ -44,7 +40,7 @@ impl CompanyIdDb for PostgresDb {
     #[tracing::instrument(skip(self, company_ids))]
     async fn upsert_company_ids(
         &mut self,
-        company_ids: Vec<model::dart::CompanyId>,
+        company_ids: Vec<company_id::ActiveModel>,
     ) -> Result<(), DbError> {
         const BUFFER_DIVISOR: usize = 100;
 
@@ -59,60 +55,33 @@ impl CompanyIdDb for PostgresDb {
 impl PostgresDb {
     async fn insert_company_ids_inner(
         &mut self,
-        company_ids: Vec<model::dart::CompanyId>,
+        company_ids: Vec<company_id::ActiveModel>,
     ) -> Result<(), DbError> {
         let total_company_id_count = company_ids.len();
-
-        self.diesel_conn.transaction(|conn| {
-            let insert_count = diesel::insert_into(dsl::company_id)
-                .values(&company_ids)
-                .execute(conn)?;
-
-            if insert_count == total_company_id_count {
-                tracing::trace!("Inserted {} company_ids", insert_count);
-                Ok(())
-            } else {
-                tracing::error!(
-                    "Inserted {}/{} company_ids. Rolling back transaction",
-                    insert_count,
-                    total_company_id_count
-                );
-                Err(diesel::result::Error::RollbackTransaction)
-            }
-        })?;
+        let res = CompanyId::insert_many(company_ids).exec(&self.conn).await?;
+        tracing::info!(?res.last_insert_id, "Inserted {} company_ids", total_company_id_count);
         Ok(())
     }
 
     async fn upsert_company_ids_inner(
         &mut self,
-        company_ids: Vec<model::dart::CompanyId>,
+        company_ids: Vec<company_id::ActiveModel>,
     ) -> Result<(), DbError> {
         let total_company_id_count = company_ids.len();
 
-        self.diesel_conn.transaction(|conn| {
-            for company_id in &company_ids {
-                let insert_count = diesel::insert_into(dsl::company_id)
-                    .values(company_id)
-                    .on_conflict(dsl::dart_id)
-                    .do_update()
-                    .set((
-                        dsl::company_name.eq(excluded(dsl::company_name)),
-                        dsl::stock_code.eq(excluded(dsl::stock_code)),
-                        dsl::id_modify_date.eq(excluded(dsl::id_modify_date)),
-                    ))
-                    .execute(conn)?;
+        let on_conflict = OnConflict::column(company_id::Column::DartId)
+            .update_columns(vec![
+                company_id::Column::CompanyName,
+                company_id::Column::StockCode,
+                company_id::Column::IdModifyDate,
+            ])
+            .to_owned();
 
-                if insert_count != 1 {
-                    tracing::error!(
-                        "Upserted {}/{} company_ids. Rolling back transaction",
-                        insert_count,
-                        total_company_id_count
-                    );
-                    return Err(diesel::result::Error::RollbackTransaction);
-                }
-            }
-            Ok(())
-        })?;
+        let res = CompanyId::insert_many(company_ids)
+            .on_conflict(on_conflict)
+            .exec(&self.conn)
+            .await?;
+        tracing::info!(?res.last_insert_id, "Upserted {} company_ids", total_company_id_count);
         Ok(())
     }
 }
@@ -123,7 +92,8 @@ mod tests {
     use crate::entities::dart::company_id;
     use crate::model::dart::CompanyId;
     use crate::test_utils::{PostgresTestContext, TestContext};
-    use fake::Fake;
+    use fake::{Fake, Faker};
+    use sea_orm::IntoActiveModel;
 
     #[tokio::test]
     async fn insert_and_get_company_ids_should_work() {
@@ -162,13 +132,13 @@ mod tests {
         let mut updated_company_ids = inserted_company_ids
             .iter()
             .map(|company_id| company_id::Model {
-                company_name: UPDATED_COMPANY_NAME.into(),
+                company_name: UPDATED_COMPANY_NAME.to_string(),
                 ..company_id.clone()
             })
             .collect::<Vec<_>>();
 
         // Add a new company to see that this company was properly updated
-        let mut new_company_id: CompanyId = ().fake::<CompanyId>();
+        let mut new_company_id: CompanyId = Faker.fake::<CompanyId>();
         const NEW_DART_ID: &str = "20000000";
         new_company_id.dart_id = NEW_DART_ID.try_into().expect("Failed to convert");
         let new_company_name = new_company_id.company_name.clone();
@@ -184,9 +154,7 @@ mod tests {
         db.upsert_company_ids(
             updated_company_ids
                 .into_iter()
-                .map(|company_id| {
-                    TryInto::<CompanyId>::try_into(company_id).expect("Failed to convert")
-                })
+                .map(|company_id| company_id.into_active_model())
                 .collect(),
         )
         .await

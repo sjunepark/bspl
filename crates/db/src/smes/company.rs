@@ -141,7 +141,7 @@ mod test {
     use crate::model::smes::NewCompany;
     use crate::smes::company::CompanyDb;
     use crate::test_utils::{PostgresTestContext, TestContext};
-    use fake::Fake;
+    use fake::{Fake, Faker};
     use hashbrown::HashSet;
 
     #[tokio::test]
@@ -212,7 +212,7 @@ mod test {
             .collect::<Vec<_>>();
 
         // Add a new company to see that this company was properly updated
-        let mut new_company = ().fake::<NewCompany>();
+        let mut new_company = Faker.fake::<NewCompany>();
         const NEW_COMPANY_ID: &str = "2000000";
         new_company.smes_id = NEW_COMPANY_ID
             .try_into()

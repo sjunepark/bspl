@@ -14,5 +14,13 @@ serde = { workspace = true, features = ["derive"] }
 thiserror = { workspace = true }
 tracing = { workspace = true }
 
+# For testing in external crates
+fake = { workspace = true, optional = true }
+rand = { workspace = true, optional = true }
+
 [dev-dependencies]
 fake = { workspace = true }
+rand = { workspace = true }
+
+[features]
+fake = ["dep:fake", "dep:rand"]

@@ -51,3 +51,10 @@ impl TryFrom<&str> for YYYYMMDD {
         value.parse()
     }
 }
+
+#[cfg(any(test, feature = "fake"))]
+impl fake::Dummy<fake::Faker> for YYYYMMDD {
+    fn dummy_with_rng<R: fake::Rng + ?Sized>(_config: &fake::Faker, _rng: &mut R) -> Self {
+        YYYYMMDD::new(NaiveDate::from_ymd_opt(2021, 1, 1).expect("invalid date passed"))
+    }
+}

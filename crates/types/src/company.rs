@@ -1,6 +1,6 @@
 use crate::base::digits;
 
-#[cfg(test)]
+#[cfg(any(feature = "fake", test))]
 use fake::Fake;
 
 // region: Digits
@@ -63,6 +63,7 @@ pub type RepresentativeName = String;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use fake::Faker;
 
     #[test]
     fn company_id_should_be_seven_digits() {
@@ -90,5 +91,11 @@ mod tests {
     fn corporation_registration_number_should_not_allow_empty_string() {
         assert!(CorporationRegistrationNumber::try_from("").is_err());
         assert!(CorporationRegistrationNumber::try_new("").is_err());
+    }
+
+    #[test]
+    fn dart_id_mock_should_work() {
+        let id = Faker.fake::<DartId>();
+        assert_eq!(id.0.len(), 8);
     }
 }

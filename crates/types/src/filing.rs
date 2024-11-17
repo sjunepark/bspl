@@ -1,7 +1,7 @@
 use crate::base::digits;
 use crate::YYYYMMDD;
 
-#[cfg(test)]
+#[cfg(any(feature = "fake", test))]
 use fake::Fake;
 
 // region: Text
