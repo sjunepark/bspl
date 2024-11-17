@@ -90,7 +90,7 @@ mod tests {
     use crate::model::smes::NewHtml;
     use crate::smes::HtmlDb;
     use crate::test_utils::{PostgresTestContext, TestContext};
-    use fake::Fake;
+    use fake::{Fake, Faker};
 
     #[tokio::test]
     async fn insert_and_get_htmls_should_work() {
@@ -138,7 +138,7 @@ mod tests {
             .collect::<Vec<_>>();
 
         // Add a new HTML to see that this HTML was properly updated
-        let mut new_html = ().fake::<NewHtml>();
+        let mut new_html = Faker.fake::<NewHtml>();
         const NEW_COMPANY_ID: &str = "2000000";
         new_html.smes_id = NEW_COMPANY_ID
             .try_into()

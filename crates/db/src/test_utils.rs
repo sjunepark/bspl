@@ -7,7 +7,7 @@ use fake::{Fake, Faker};
 use sea_orm::{Set, TryIntoModel};
 use tokio::sync::mpsc;
 
-use crate::entities::dart::company_id;
+use crate::entities::dart::{company_id, filing};
 use crate::model::smes::NewHtml;
 pub(crate) use postgres::PostgresTestContext;
 
@@ -87,22 +87,18 @@ pub(crate) trait TestContext<D: Db> {
     }
 
     #[tracing::instrument(skip(self))]
-    async fn populate_filings(&mut self, ids: &[u64]) -> Vec<crate::model::dart::NewFiling> {
-        let new_filings: Vec<crate::model::dart::NewFiling> = ids
+    async fn populate_filings(&mut self, ids: &[u64]) -> Vec<filing::Model> {
+        let new_filings: Vec<filing::ActiveModel> = ids
             .iter()
             .map(|id| {
-                let filing = Faker.fake::<crate::model::dart::NewFiling>();
-                crate::model::dart::NewFiling {
-                    dart_id: id
+                let filing = Faker.fake::<filing::ActiveModel>();
+                filing::ActiveModel {
+                    dart_id: Set(id
                         .to_string()
                         .as_str()
                         .try_into()
-                        .expect("failed to create dummy dart_id"),
-                    report_name: filing.report_name,
-                    receipt_number: filing.receipt_number,
-                    filer_name: filing.filer_name,
-                    receipt_date: filing.receipt_date,
-                    remark: filing.remark,
+                        .expect("failed to create dummy dart_id")),
+                    ..filing
                 }
             })
             .collect();
@@ -113,6 +109,9 @@ pub(crate) trait TestContext<D: Db> {
             .expect("Failed to insert filings");
 
         new_filings
+            .into_iter()
+            .map(|f| f.try_into_model().expect("failed to convert to model"))
+            .collect()
     }
 
     #[tracing::instrument(skip(self))]

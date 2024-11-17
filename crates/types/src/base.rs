@@ -43,9 +43,9 @@ macro_rules! digits {
             }
         }
 
-        #[cfg(test)]
-        impl<T> fake::Dummy<T> for $name {
-            fn dummy_with_rng<R: fake::Rng + ?Sized>(_config: &T, _rng: &mut R) -> Self {
+        #[cfg(any(feature = "fake", test))]
+        impl fake::Dummy<fake::Faker> for $name {
+            fn dummy_with_rng<R: fake::Rng + ?Sized>(_config: &fake::Faker, _rng: &mut R) -> Self {
                 let format = format!("^{}", "#".repeat($digits));
                 fake::faker::number::raw::NumberWithFormat(fake::locales::EN, &format)
                     .fake::<String>()

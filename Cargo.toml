@@ -33,7 +33,7 @@ tokio = "1.40.0"
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 
-# Local crates
+# Workspace crates
 db = { path = "crates/db" }
 migration = { path = "crates/migration" }
 smes = { path = "crates/smes" }
@@ -45,7 +45,7 @@ types = { path = "crates/types" }
 open-dart = { git = "https://github.com/sjunepark/open-dart", branch = "dev" }
 
 # Testing
-fake = "2.10.0"
+fake = "3.0.1"
 goldrust = { git = "https://github.com/sjunepark/goldrust", branch = "dev" }
 testcontainers-modules = "0.11.2"
 wiremock = "0.6.2"

@@ -1,17 +1,24 @@
+use chrono::NaiveDateTime;
 use diesel::{Insertable, Queryable, Selectable};
-use fake::faker::address::ja_jp::CityName;
-use fake::faker::company::ja_jp::{CompanyName, Industry};
-use fake::faker::name::ja_jp::Name;
-use fake::faker::number::raw::NumberWithFormat;
-use fake::locales::EN;
-use fake::{Dummy, Fake};
-use rand::Rng;
 use types::company;
+
+#[cfg(test)]
+use fake::faker::{
+    address::ja_jp::CityName,
+    company::ja_jp::{CompanyName, Industry},
+    name::en::Name,
+    number::raw::NumberWithFormat,
+};
+#[cfg(test)]
+use fake::locales::EN;
+#[cfg(test)]
+use fake::{Dummy, Fake, Faker};
 
 // region: Table company
 #[derive(Queryable, Selectable, Clone)]
 #[diesel(table_name = crate::schema::smes::company)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
+#[cfg_attr(test, derive(fake::Dummy))]
 pub struct Company {
     pub smes_id: company::SmesId,
     pub representative_name: company::RepresentativeName,
@@ -20,29 +27,8 @@ pub struct Company {
     pub company_name: company::CompanyName,
     pub industry_code: company::IndustryCode,
     pub industry_name: company::IndustryName,
-    pub created_at: time::PrimitiveDateTime,
-    pub updated_at: time::PrimitiveDateTime,
-}
-
-impl<T> Dummy<T> for Company {
-    fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
-        let fake_time =
-            fake::faker::time::en::DateTime().fake_with_rng::<time::PrimitiveDateTime, R>(rng);
-
-        let new_company = NewCompany::dummy_with_rng(_config, rng);
-
-        Company {
-            smes_id: new_company.smes_id,
-            representative_name: new_company.representative_name,
-            headquarters_address: new_company.headquarters_address,
-            business_registration_number: new_company.business_registration_number,
-            company_name: new_company.company_name,
-            industry_code: new_company.industry_code,
-            industry_name: new_company.industry_name,
-            created_at: fake_time,
-            updated_at: fake_time,
-        }
-    }
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Insertable, Clone, Debug)]
@@ -58,8 +44,9 @@ pub struct NewCompany {
     pub industry_name: company::IndustryName,
 }
 
-impl<T> Dummy<T> for NewCompany {
-    fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
+#[cfg(test)]
+impl Dummy<Faker> for NewCompany {
+    fn dummy_with_rng<R: rand::Rng + ?Sized>(_config: &Faker, rng: &mut R) -> Self {
         NewCompany {
             smes_id: NumberWithFormat(EN, "^######")
                 .fake::<String>()
@@ -118,26 +105,12 @@ impl PartialEq for NewCompany {
 #[derive(Queryable, Selectable, Clone)]
 #[diesel(table_name = crate::schema::smes::html)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
+#[cfg_attr(test, derive(fake::Dummy))]
 pub struct Html {
     pub smes_id: company::SmesId,
     pub html_content: company::SmesHtmlContent,
-    pub created_at: time::PrimitiveDateTime,
-    pub updated_at: time::PrimitiveDateTime,
-}
-
-impl<T> Dummy<T> for Html {
-    fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
-        let fake_time =
-            fake::faker::time::en::DateTime().fake_with_rng::<time::PrimitiveDateTime, R>(rng);
-        let new_html = NewHtml::dummy_with_rng(_config, rng);
-
-        Html {
-            smes_id: new_html.smes_id,
-            html_content: new_html.html_content,
-            created_at: fake_time,
-            updated_at: fake_time,
-        }
-    }
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Insertable, Clone, PartialEq, Debug)]
@@ -147,8 +120,10 @@ pub struct NewHtml {
     pub smes_id: company::SmesId,
     pub html_content: company::SmesHtmlContent,
 }
-impl<T> Dummy<T> for NewHtml {
-    fn dummy_with_rng<R: Rng + ?Sized>(_config: &T, rng: &mut R) -> Self {
+
+#[cfg(test)]
+impl Dummy<Faker> for NewHtml {
+    fn dummy_with_rng<R: rand::Rng + ?Sized>(_config: &Faker, rng: &mut R) -> Self {
         NewHtml {
             smes_id: NumberWithFormat(EN, "^######")
                 .fake::<String>().as_str().try_into().expect("dummy creation logic needs to be fixed within the source code"),

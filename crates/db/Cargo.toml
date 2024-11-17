@@ -10,13 +10,11 @@ derive_more = { workspace = true, features = ["as_ref", "display", "from", "into
 diesel = { workspace = true, features = ["postgres", "r2d2", "time", "chrono"] }
 diesel-derive-newtype = { workspace = true }
 diesel_migrations = { workspace = true }
-fake = { workspace = true, features = ["time"] }
 hashbrown = { workspace = true }
 rand = { workspace = true }
 sea-orm = { workspace = true, features = ["sqlx-postgres", "runtime-tokio-rustls", "macros", "with-chrono"] }
 serde = { workspace = true, features = ["derive"] }
 thiserror = { workspace = true }
-time = { workspace = true, features = ["serde"] }
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true, features = ["log"] }
 utils = { workspace = true }
@@ -25,7 +23,11 @@ utils = { workspace = true }
 types = { workspace = true }
 
 [dev-dependencies]
+fake = { workspace = true, features = ["derive", "chrono"] }
 migration = { workspace = true } # Local crate
 sea-orm-migration = { workspace = true }
 testcontainers-modules = { workspace = true, features = ["postgres"] }
 tracing-setup = { workspace = true }
+
+# Workspace crates
+types = { workspace = true, features = ["fake"] }

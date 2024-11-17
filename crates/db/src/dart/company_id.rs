@@ -20,9 +20,7 @@ pub trait CompanyIdDb {
 impl CompanyIdDb for PostgresDb {
     #[tracing::instrument(skip(self))]
     async fn get_company_ids(&mut self) -> Result<Vec<company_id::Model>, DbError> {
-        Ok(crate::entities::dart::prelude::CompanyId::find()
-            .all(&self.conn)
-            .await?)
+        Ok(CompanyId::find().all(&self.conn).await?)
     }
 
     #[tracing::instrument(skip(self, company_ids))]
